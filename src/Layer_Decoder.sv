@@ -65,7 +65,7 @@ module layer_decoder #(
 
   // ofmap 空間維度
   output logic [9:0]   out_R_o,
-  output logic [9:0]   out_C_o
+  output logic [9:0]   out_C_o 
 );
 
   //--------------------------------------------------------------------------
