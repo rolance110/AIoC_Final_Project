@@ -204,48 +204,63 @@ end
 
 endmodule
 
-module calc_tile_R_max#(
-    parameter int GLB_BYTES  = 64 * 1024,
-    parameter int BYTES_A      = 1,
-    parameter int BYTES_W      = 1,
-    parameter int BYTES_P      = 2
+
+/*==========================================================*
+ *  Module : calc_tile_R_max
+ *  Purpose: 計算最大 tile_R，考慮各種位元組大小參數
+ *==========================================================*/
+module calc_tile_R_max #(
+    parameter int GLB_BYTES = 64 * 1024,  // 全局 SRAM 容量 (byte)
+    parameter int BYTES_A   = 1,          // Activation bytes
+    parameter int BYTES_W   = 1,          // Weight bytes
+    parameter int BYTES_P   = 2           // Partial-sum bytes
 )(
-    /* --------  Inputs  -------- */
-    input logic [1:0] kernel_size,
-    input logic [1:0] stride, 
-    input logic [6:0] padded_C,   
-    input logic [6:0] tile_D,     
-    input logic [6:0] tile_K,    
-    input logic [6:0] out_C,       
-    output logic [6:0] tile_R_max 
+    /* ---- Inputs ---- */
+    input  logic [1:0]  kernel_size,     // 卷積核大小
+    input  logic [1:0]  stride,          // 步幅
+    input  logic [6:0]  padded_C,        // IFmap 寬度 (#channels)
+    input  logic [6:0]  tile_D,          // IFmap 深度 tile
+    input  logic [6:0]  tile_K,          // Kernel tile
+    input  logic [6:0]  out_C,           // OFmap 寬度 (#channels)
+    /* ---- Output ---- */
+    output logic [6:0]  tile_R_max       // 計算出的最大 tile_R
 );
 
-    /* --------  Locals  -------- */
-    logic [31:0] A, B, D, C;        
-    logic [31:0] numerator;        
-    logic [31:0] denominator;     
-    logic [31:0] calc_tile_R_max;
+    /* ---- 中介變數 ---- */
+    logic [31:0] A, B, D, C;
+    logic [31:0] numerator, denominator, result;
 
-    /* A = padded_C * tile_D                              */
-    assign A = padded_C * tile_D;
+    // A = 活化資料大小: padded_C * tile_D * BYTES_A (bytes)
+    assign A = padded_C * tile_D * BYTES_A;
 
-    /* D = 2 * tile_K * out_C                             */
-    assign D = 2 * tile_K * out_C;
+    // D = 每列部分和大小: tile_K * out_C * BYTES_P (bytes)
+    assign D = tile_K * out_C * BYTES_P;
 
-    /* B = tile_D * tile_K * kernel_size^2 + tile_K       */
-    assign B = tile_D * tile_K * kernel_size * kernel_size
-        + tile_K;
+    // B = 權重 + 偏差大小:
+    //   權重 = tile_D*tile_K*kernel_size^2 * BYTES_W
+    //   偏差 = tile_K * BYTES_P
+    assign B = tile_D
+             * tile_K
+             * kernel_size
+             * kernel_size
+             * BYTES_W
+             + tile_K * BYTES_P;
 
-    /* C = B + D - (D * kernel_size) / stride             */
-    assign C = B + D - (D * kernel_size) / stride;
+    // C = B + D - (D * kernel_size)/stride
+    assign C = B
+             + D
+             - (D * kernel_size) / stride;
 
-    /* tile_R_max = (SRAM_CAP - C) / (A + D / stride)     */
+    // 分子、分母
     assign numerator   = GLB_BYTES - C;
-    assign denominator = A + D / stride;
+    assign denominator = A + (D / stride);
 
-    /*  整數除法自動截尾 (floor)                           */
-    assign calc_tile_R_max = numerator / denominator;
-    
-    assign tile_R_max = calc_tile_R_max[6:0]; // 確保輸出為7位
+    // 加入除以 0 保護；整數除法自動向下取整
+    assign result = (denominator != 0)
+                    ? numerator / denominator
+                    : 32'd0;
+
+    // 取低 7 bits 作為輸出
+    assign tile_R_max = result[6:0];
 
 endmodule
