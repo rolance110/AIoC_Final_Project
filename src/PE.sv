@@ -3,12 +3,22 @@ module PE(
     input reset,
     input [7:0] ifmap_in,
     input [7:0] weight_in,
+    input weight_en,
 
     output logic [7:0] ifmap_out,
     output logic [15:0] prod_out
 );
 
 logic [15:0] prod_reg;
+logic [7:0] weight_reg;
+//store weight
+always_ff @(posedge clk or negedge reset) begin
+    if(reset)
+        weight_reg <= 8'd0;
+    else if(weight_en)
+        weight_reg <= weight_in;
+end
+
 //send ifmap to next PE
 always_ff @( posedge clk or negedge reset ) begin
     if(reset)
@@ -19,7 +29,7 @@ end
 
 //multiply ifmap and weight
 //send prod_out to adder tree
-assign prod_reg = ifmap_in * weight_in;
+assign prod_reg = ifmap_in * weight_reg;
 
 always_ff @( posedge clk or negedge reset ) begin
     if(reset)
