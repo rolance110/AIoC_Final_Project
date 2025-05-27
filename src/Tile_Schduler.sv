@@ -5,9 +5,7 @@
 // 三層迴圈依序為 K → R → D，D 方向完成後寫回 ofmap。
 //------------------------------------------------------------------------------
 
-`timescale 1ns/1ps
-
-module tile_scheduler #(
+module Tile_Scheduler #(
   parameter int BYTES_A = 1,    // activation bytes
   parameter int BYTES_W = 1,    // weight bytes
   parameter int BYTES_P = 2     // psum/ofmap bytes
@@ -35,11 +33,11 @@ module tile_scheduler #(
   input  logic [3:0]    flags_i,          // bit3=bias_en
 
   //=== DMA Interface ===
-  output logic          dma_req_vld_o,
-  output logic          dma_req_read_o,   // 1=read DRAM, 0=write DRAM
-  output logic [31:0]   dma_req_addr_o,
-  output logic [31:0]   dma_req_len_o,
-  input  logic          dma_done_i,
+  output logic          dma_enable_o,
+  output logic          dma_read_o,   // 1=read DRAM, 0=write DRAM
+  output logic [31:0]   dma_addr_o,
+  output logic [31:0]   dma_len_o,
+  input  logic          dma_interrupt_i,
 
   //=== Token Engine Interface ===
   output logic          pass_info_vld_o,
@@ -57,8 +55,10 @@ module tile_scheduler #(
 
 // Tile 3-loop index
 logic [6:0] k_idx, r_idx, d_idx;
-logic       bias_en = flags_i[3];
+logic bias_en;
+assign bias_en = flags_i[3];
 logic reach_last_D_tile;
+logic over_last_D_tile;
 logic reach_last_R_tile;
 logic reach_last_K_tile;
 
@@ -88,27 +88,28 @@ end
 
 always_comb begin
     case (cs_ts)
-        IDLE: 
+        IDLE: begin
             if (uLD_en_i)
                 ns_ts = uLD_LOAD;
             else
                 ns_ts = IDLE;
+        end
         uLD_LOAD:
             ns_ts = DMA_REQ_GEN;
         DMA_REQ_GEN:
             ns_ts = DMA_ifmap;
         DMA_ifmap:
-            if (dma_done_i)
+            if (dma_interrupt_i)
                 ns_ts = DMA_weight;
             else
                 ns_ts = DMA_ifmap;
         DMA_weight:
-            if (dma_done_i)
+            if (dma_interrupt_i)
                 ns_ts = (bias_en) ? DMA_bias : PASS_START;
             else
                 ns_ts = DMA_weight;
         DMA_bias:
-            if (dma_done_i)
+            if (dma_interrupt_i)
                 ns_ts = PASS_START;
             else
                 ns_ts = DMA_bias;
@@ -123,26 +124,28 @@ always_comb begin
             if (reach_last_D_tile)
                 ns_ts = DMA_ofmap;
             else
-                ns_ts = TILE_RK_CNT;
+                ns_ts = DMA_REQ_GEN;
+        DMA_ofmap:
+            if (dma_interrupt_i)
+                ns_ts = TILE_RK_CNT; // 回到 D tile 計數
+            else
+                ns_ts = DMA_ofmap;
         TILE_RK_CNT:
             if (reach_last_R_tile && reach_last_K_tile)
-                ns_ts = DMA_ofmap;
+                ns_ts = IDLE;
             else
-                ns_ts = TILE_D_CNT;
-        DMA_ofmap:
-            if (dma_done_i)
-                ns_ts = TILE_D_CNT; // 回到 D tile 計數
-            else
-                ns_ts = DMA_ofmap;
-        default: IDLE;
+                ns_ts = DMA_REQ_GEN;
+
+        default: ns_ts = IDLE;
     endcase
 end
 
 
 always_comb begin
-    reach_last_D_tile = (d_idx == num_tiles_D_i - 1);
-    reach_last_R_tile = (r_idx == num_tiles_R_i - 1);
-    reach_last_K_tile = (k_idx == num_tiles_K_i - 1);
+    reach_last_D_tile = (cs_ts == TILE_D_CNT)?  (d_idx == num_tiles_D_i - 1) : 1'b0;
+    over_last_D_tile =(cs_ts == TILE_RK_CNT)? (d_idx == num_tiles_D_i) : 1'b0;
+    reach_last_R_tile =(cs_ts == TILE_RK_CNT)? (r_idx == num_tiles_R_i - 1) : 1'b0;
+    reach_last_K_tile = (cs_ts == TILE_RK_CNT)? (k_idx == num_tiles_K_i - 1): 1'b0;
 end
 
 // d_idx
@@ -152,10 +155,9 @@ always_ff@(posedge clk or negedge rst_n) begin
     else if (cs_ts == uLD_LOAD)
         d_idx <= 7'd0; 
     else if (cs_ts == TILE_D_CNT)
-        if(reach_last_D_tile)
-            d_idx <= 7'd0;
-        else 
-            d_idx <= d_idx + 7'd1;
+        d_idx <= d_idx + 7'd1;
+    else if (cs_ts == TILE_RK_CNT)
+        d_idx <= 7'd0;
 end
 
 // r_idx
@@ -165,9 +167,9 @@ always_ff@(posedge clk or negedge rst_n) begin
     else if (cs_ts == uLD_LOAD)
         r_idx <= 7'd0; 
     else if (cs_ts == TILE_RK_CNT) begin
-        if(reach_last_D_tile && reach_last_R_tile) // reach last R tile
+        if(over_last_D_tile && reach_last_R_tile) // reach last R tile
             r_idx <= 7'd0;
-        else if(reach_last_D_tile) // reach last D tile
+        else if(over_last_D_tile) // reach last D tile
             r_idx <= r_idx + 7'd1;
         else // not reach last D tile
             r_idx <= r_idx;
@@ -181,16 +183,33 @@ always_ff@(posedge clk or negedge rst_n) begin
     else if (cs_ts == uLD_LOAD)
         k_idx <= 7'd0; 
     else if (cs_ts == TILE_RK_CNT) begin
-        if(reach_last_D_tile && reach_last_R_tile && reach_last_K_tile)
+        if(over_last_D_tile && reach_last_R_tile && reach_last_K_tile)
             k_idx <= 7'd0;
-        else if(reach_last_R_tile && reach_last_K_tile)
+        else if(over_last_D_tile && reach_last_R_tile)
             k_idx <= k_idx + 7'd1;
         else
             k_idx <= k_idx;
     end
 end
 
+//============= DMA =============
+//dma_enable_o
+always_comb begin
+    case (cs_ts)
+        DMA_ifmap, DMA_weight, DMA_bias, DMA_ofmap: dma_enable_o = 1'b1;
+        default: dma_enable_o = 1'b0;
+    endcase
+end
 
+//============= PASS =============
+// pass_info_vld_o
+always_comb begin
+    case (cs_ts)
+        PASS_START: pass_info_vld_o = 1'b1;
+        PASS_FINISH: pass_info_vld_o = 1'b0;
+        default: pass_info_vld_o = 1'b0;
+    endcase
+end
 
 
 endmodule
