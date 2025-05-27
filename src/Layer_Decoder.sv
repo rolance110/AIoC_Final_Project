@@ -16,12 +16,14 @@ module layer_decoder #(
 
 //* Layer Descriptor (uLD) inputs
     input logic uLD_en_i, // uLD enable signal
-    input  logic [7:0]   layer_id_i,
+    input  logic [5:0]   layer_id_i,
     input  logic [1:0]   layer_type_i,     // 0=PW,1=DW,2=STD,3=LIN
-    input  logic [9:0]   in_R_i, in_C_i,   // input H,W
-    input  logic [9:0]   in_D_i, out_K_i,  // input/out channels
-    input  logic [3:0]   stride_i,         // stride
-    input  logic [3:0]   pad_T_i, pad_B_i, pad_L_i, pad_R_i,
+    
+    input  logic [6:0]   in_R_i, in_C_i,   // input H,W
+    input  logic [10:0]   in_D_i, out_K_i,  // input/out channels
+    
+    input  logic [1:0]   stride_i,         // stride
+    input  logic [1:0]   pad_T_i, pad_B_i, pad_L_i, pad_R_i,
 
     input  logic [31:0]  base_ifmap_i,
     input  logic [31:0]  base_weight_i,
@@ -32,33 +34,37 @@ module layer_decoder #(
     input  logic [7:0]   quant_scale_i,   // per-layer scale
 
 //* Layer Descriptor (uLD) Buffered outputs
-    output logic [7:0]   layer_id_o,
+    output logic [5:0]   layer_id_o,
     output logic [1:0]   layer_type_o,
-    output logic [9:0]   in_padded_R_o, in_padded_C_o,
-    output logic [9:0]   in_D_o, out_K_o,
-    output logic [3:0]   stride_o,
-    output logic [3:0]   pad_H_o, pad_B_o, pad_L_o, pad_R_o,
+    
+    output logic [6:0]   padded_R_o, padded_C_o,
+    output logic [10:0]   in_D_o, out_K_o,
+    
+    output logic [1:0]   stride_o,
+    output logic [1:0]   pad_H_o, pad_B_o, pad_L_o, pad_R_o,
+    
     output logic [31:0]  base_ifmap_o,
     output logic [31:0]  base_weight_o,
     output logic [31:0]  base_bias_o,
     output logic [31:0]  base_ofmap_o,
+    
     output logic [3:0]   flags_o,
     output logic [7:0]   quant_scale_o,
 
-//* tile lengths
-    output logic [9:0]   tile_R_o,
-    output logic [9:0]   tile_D_o,
-    output logic [9:0]   tile_K_o,
-    output logic [9:0]   out_tile_R_o,
+//* tile lengths (size not sure)
+    output logic [6:0]   tile_R_o,
+    output logic [6:0]   tile_D_o,
+    output logic [6:0]   tile_K_o,
+    output logic [6:0]   out_tile_R_o,
 
-//* num tiles
-    output logic [9:0]   num_tiles_R_o,
-    output logic [9:0]   num_tiles_D_o,
-    output logic [9:0]   num_tiles_K_o,
+//* num tiles (size not sure)
+    output logic [6:0]   num_tiles_R_o,
+    output logic [6:0]   num_tiles_D_o,
+    output logic [6:0]   num_tiles_K_o,
 
-//* ofmap size
-    output logic [9:0]   out_R_o,
-    output logic [9:0]   out_C_o 
+//* ofmap size (size not sure)
+    output logic [6:0]   out_R_o,
+    output logic [6:0]   out_C_o 
 );
 
 //* Helper: ceil
@@ -66,28 +72,29 @@ function automatic int ceil_div(int a, int b);
     return (a + b - 1) / b;
 endfunction
 
-logic [9:0] padded_R, padded_C;
-logic [9:0] kH, kW;
-logic [9:0] tile_R_max, tile_R_dw;
-logic [9:0] out_R, out_C;
-logic [9:0] tile_D, tile_K;
+logic [6:0] padded_R, padded_C;
+logic [1:0] kH, kW;
+logic [6:0] tile_R_max, tile_R_dw;
+logic [6:0] out_R, out_C;
+logic [6:0] tile_D, tile_K;
 
 
 //* Kernel size (kH, kW)
 always_comb begin
     unique case (layer_type_i)
-        2'd0: begin kH = 1; kW = 1; end // Pointwise
-        2'd1: begin kH = 3; kW = 3; end // Depthwise (可讀自 uLD if 多種尺寸)
-        default: begin kH = 3; kW = 3; end
+        2'd0: begin kH = 2'd1; kW = 2'd1; end // Pointwise
+        2'd1: begin kH = 2'd3; kW = 2'd3; end // Depthwise (可讀自 uLD if 多種尺寸)
+        2'd2: begin kH = 2'd1; kW = 2'd1; end // linear (standard conv)
+        default: begin kH = 2'd3; kW = 2'd3; end
     endcase
 end
 
 //* tile_D, tile_K
 always_comb begin
     unique case (layer_type_i)
-      2'd0: begin tile_D = 32; tile_K = 32; end  // Pointwise
-      2'd1: begin tile_D = 1;  tile_K = 10; end  // Depthwise
-      default: begin tile_D = 32; tile_K = 32; end
+      2'd0: begin tile_D = 6'd32; tile_K = 6'd32; end  // Pointwise
+      2'd1: begin tile_D = 6'd1;  tile_K = 6'd10; end  //todo: Depthwise Set tile_D=1
+      default: begin tile_D = 6'd32; tile_K = 6'd32; end
     endcase
 end
 
@@ -113,7 +120,7 @@ calc_tile_R_max #(
     .tile_D(tile_D), 
     .tile_K(tile_K), 
     .out_C(out_C), 
-    .calc_tile_R_max(tile_R_max)
+    .tile_R_max(tile_R_max)
 );
 
 assign tile_R = tile_R_max - ( ( tile_R_max - kH ) % stride_i );
@@ -131,41 +138,41 @@ assign num_tiles_K_o = ceil_div(out_K_i, tile_K);
 
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        layer_id_o      <= '0;
-        layer_type_o    <= '0;
-        in_padded_R_o   <= '0; 
-        in_padded_C_o   <= '0;
-        in_D_o          <= '0; 
-        out_K_o         <= '0;
+        layer_id_o      <= 6'd0;
+        layer_type_o    <= 2'd0;
+        padded_R_o      <= 7'd0; 
+        padded_C_o      <= 7'd0;
+        in_D_o          <= 11'd0; 
+        out_K_o         <= 11'd0;
 
-        stride_o        <= '0;
-        pad_H_o         <= '0; 
-        pad_B_o         <= '0;
-        pad_L_o         <= '0; 
-        pad_R_o         <= '0;
+        stride_o        <= 2'd0;
+        pad_H_o         <= 2'd0; 
+        pad_B_o         <= 2'd0;
+        pad_L_o         <= 2'd0; 
+        pad_R_o         <= 2'd0;
         
-        base_ifmap_o    <= '0;
-        base_weight_o   <= '0;
-        base_bias_o     <= '0;
-        base_ofmap_o    <= '0;
+        base_ifmap_o    <= 32'd0;
+        base_weight_o   <= 32'd0;
+        base_bias_o     <= 32'd0;
+        base_ofmap_o    <= 32'd0;
         
-        flags_o         <= '0;
+        flags_o         <= 4'd0;
         
-        quant_scale_o   <= '0;
+        quant_scale_o   <= 8'd0;
         
-        tile_R_o        <= '0;
-        tile_D_o        <= '0;
-        tile_K_o        <= '0;
-        out_tile_R_o    <= '0;
+        tile_R_o        <= 7'd0;
+        tile_D_o        <= 7'd0;
+        tile_K_o        <= 7'd0;
+        out_tile_R_o    <= 7'd0;
         
-        out_R_o         <= '0;
-        out_C_o         <= '0;
+        out_R_o         <= 7'd0;
+        out_C_o         <= 7'd0;
     end 
     else if(uLD_en_i) begin
         layer_id_o      <= layer_id_i;
         layer_type_o    <= layer_type_i;
-        in_padded_R_o   <= padded_R;   
-        in_padded_C_o   <= padded_C;   
+        padded_R_o      <= padded_R;   
+        padded_C_o      <= padded_C;   
         in_D_o          <= in_D_i;   
         out_K_o         <= out_K_i;
         
@@ -204,24 +211,20 @@ module calc_tile_R_max#(
     parameter int BYTES_P      = 2
 )(
     /* --------  Inputs  -------- */
-    input logic [31:0] kernel_size,
-    input logic [31:0] stride, 
-    input logic [31:0] padded_C,   
-    input logic [31:0] tile_D,     
-    input logic [31:0] tile_K,    
-    input logic [31:0] out_C,       
-    output logic [31:0] calc_tile_R_max 
+    input logic [1:0] kernel_size,
+    input logic [1:0] stride, 
+    input logic [6:0] padded_C,   
+    input logic [6:0] tile_D,     
+    input logic [6:0] tile_K,    
+    input logic [6:0] out_C,       
+    output logic [6:0] tile_R_max 
 );
 
     /* --------  Locals  -------- */
-    logic [31:0] SRAM_CAP;            
     logic [31:0] A, B, D, C;        
     logic [31:0] numerator;        
     logic [31:0] denominator;     
-
-
-    /* 64 KiB SRAM 容量（單位須與其他變數一致） */
-    assign SRAM_CAP = GLB_BYTES;
+    logic [31:0] calc_tile_R_max;
 
     /* A = padded_C * tile_D                              */
     assign A = padded_C * tile_D;
@@ -237,10 +240,12 @@ module calc_tile_R_max#(
     assign C = B + D - (D * kernel_size) / stride;
 
     /* tile_R_max = (SRAM_CAP - C) / (A + D / stride)     */
-    assign numerator   = SRAM_CAP - C;
+    assign numerator   = GLB_BYTES - C;
     assign denominator = A + D / stride;
 
     /*  整數除法自動截尾 (floor)                           */
     assign calc_tile_R_max = numerator / denominator;
     
+    assign tile_R_max = calc_tile_R_max[6:0]; // 確保輸出為7位
+
 endmodule
