@@ -9,11 +9,8 @@ module PPU #(
 
     input clk,
     input rst,
-    input [DATA_BITS-1:0] data_in,
+    input signed [DATA_BITS-1:0] data_in,
     input [5:0] scaling_factor,
-    input maxpool_en,
-    input maxpool_init,
-    input relu_sel,
     input relu_en,
 
     output logic[7:0] data_out
@@ -21,61 +18,56 @@ module PPU #(
 );
 
 //---------- logic declaration ----------//
-logic signed [DATA_BITS-1:0] requant;
-logic [7:0] add_zp;
-// logic [DATA_BITS-1:0] result;
-// logic [7:0] clamped;
-logic [DATA_BITS-1:0] relu_data_in;
-// logic [7:0] result_no_zp;
-logic [7:0] max_value;
-// logic [1:0] pool_cnt;
+logic signed [15:0] temp; 
+logic [7:0] add_zp; 
+logic signed [15:0] scaled_value;
+logic signed [15:0] temp_with_zp;
 
-//---------- post quantization ----------//
+
 always_comb begin
 
-    relu_data_in = relu_en ? data_in[DATA_BITS-1] ? {DATA_BITS{1'd0}} : data_in > 16'd6 ? 16'd6 : data_in : data_in;
-    requant = relu_data_in >>> scaling_factor;
-    add_zp = requant[7] ? 8'd255 : requant[7:0] ^ 8'h80;
+    scaled_value = data_in >>> 8; // 算術右移
 
-end
-
-//---------- maxpooling ----------//
-always_ff@(posedge clk) begin
-
-    if(rst) begin
-
-        max_value <= 8'd0;
-        
-    end else if(maxpool_en) begin
-
-        if(maxpool_init) begin
-
-            max_value <= add_zp;
-        
-        end else begin
-
-            max_value <= (add_zp > max_value) ? add_zp : max_value;
-
-        end
-
+    // ReLU6
+    if (relu_en) begin
+        temp = (scaled_value > 0) ? ((scaled_value > 6) ? 6 : scaled_value) : 0; // ReLU6
+    end else begin
+        temp = scaled_value;
     end
-
 end
 
-//---------- ReLU ----------//
+// add zp
+always_comb begin
+    
+    temp_with_zp = temp + 16'd128; 
+
+
+    if (temp_with_zp >= 255) begin
+        add_zp = 8'd255;
+    end else if (temp_with_zp <= 0) begin
+        add_zp = 8'd0;
+    end else begin
+        add_zp = temp_with_zp[7:0]; 
+    end
+end
+// data out 
 always_comb begin
 
-    // todo: relu_sel = 0, choose post_quant,otherwise, choose maxpool
-    if(relu_sel == 1'd0) begin
+    if(add_zp < 8'd0) begin
 
-            data_out = add_zp;
+        data_out = 8'd0;
+
+    end else if(add_zp > 8'd255) begin
+
+        data_out = 8'd255;
 
     end else begin
 
-            data_out = max_value;
+        data_out = add_zp;
 
     end
 
 end
+
 
 endmodule
