@@ -93,7 +93,7 @@ end
 always_comb begin
     unique case (layer_type_i)
       2'd0: begin tile_D = 6'd32; tile_K = 6'd32; end  // Pointwise
-      2'd1: begin tile_D = 6'd1;  tile_K = 6'd10; end  //todo: Depthwise Set tile_D=1
+      2'd1: begin tile_D = 6'd1;  tile_K = 6'd8; end  //todo: Depthwise Set tile_D=1
       default: begin tile_D = 6'd32; tile_K = 6'd32; end
     endcase
 end
