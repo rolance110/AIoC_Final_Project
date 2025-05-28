@@ -18,56 +18,37 @@ module PPU #(
 );
 
 //---------- logic declaration ----------//
-logic signed [15:0] temp; 
+logic signed [15:0] relu; 
 logic [7:0] add_zp; 
-logic signed [15:0] scaled_value;
+logic signed [15:0] requant;
 logic signed [15:0] temp_with_zp;
 
 
 always_comb begin
 
-    scaled_value = data_in >>> 8; // 算術右移
+    requant = data_in >>> 8; 
 
     // ReLU6
     if (relu_en) begin
-        temp = (scaled_value > 0) ? ((scaled_value > 6) ? 6 : scaled_value) : 0; // ReLU6
+        relu = (requant > 0) ? ((requant > 6) ? 6 : requant) : 0; // ReLU6
     end else begin
-        temp = scaled_value;
+        relu = requant;
     end
 end
 
-// add zp
+// add zp & data out 
 always_comb begin
     
-    temp_with_zp = temp + 16'd128; 
+    temp_with_zp = relu + 16'd128; 
 
 
     if (temp_with_zp >= 255) begin
-        add_zp = 8'd255;
-    end else if (temp_with_zp <= 0) begin
-        add_zp = 8'd0;
-    end else begin
-        add_zp = temp_with_zp[7:0]; 
-    end
-end
-// data out 
-always_comb begin
-
-    if(add_zp < 8'd0) begin
-
-        data_out = 8'd0;
-
-    end else if(add_zp > 8'd255) begin
-
         data_out = 8'd255;
-
+    end else if (temp_with_zp <= 0) begin
+        data_out = 8'd0;
     end else begin
-
-        data_out = add_zp;
-
+        data_out = temp_with_zp[7:0]; 
     end
-
 end
-
 
 endmodule
