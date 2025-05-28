@@ -29,11 +29,19 @@ always_comb begin
     requant = data_in >>> 8; 
 
     // ReLU6
+    // if (relu_en) begin
+    //     relu = (requant > 0) ? ((requant > 6) ? 6 : requant) : 0; // ReLU6
+    // end else begin
+    //     relu = requant;
+    // end
+
+    // ReLU
     if (relu_en) begin
-        relu = (requant > 0) ? ((requant > 6) ? 6 : requant) : 0; // ReLU6
+        relu = (requant > 0) ? requant : 0; // ReLU6
     end else begin
         relu = requant;
     end
+
 end
 
 // add zp & data out 
