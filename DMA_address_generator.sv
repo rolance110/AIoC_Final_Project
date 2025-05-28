@@ -1,68 +1,70 @@
+//------------------------------------------------------------------------------
+// dma_addr_generator.sv
+//------------------------------------------------------------------------------
+// [R][C][D] 內存排列 → 支援 Pointwise / Depthwise
+//------------------------------------------------------------------------------ 
 module dma_addr_generator #(
-    parameter int DATA_BYTES = 1,       // ifmap, weight, bias default 1B
-    parameter int PSUM_BYTES = 2        // ofmap/psum default 2B
-)(                                      
-    input  logic [1:0]  layer_type,     // 0=PW,1=DW,2=STD,3=LIN  //TODO: 需補上conv linear
-    input  logic [6:0]  tile_R,
-    input  logic [6:0]  tile_D,
-    input  logic [6:0]  tile_K,
-    input  logic [6:0]  in_R, in_C,
-    input  logic [6:0]  out_R, out_C,
+    parameter int DATA_BYTES = 1,
+    parameter int PSUM_BYTES = 2,
+    parameter int IN_D        = 1024  // 最大 input channels
+)(
+    input  logic         clk,
+    input  logic         rst_n,
+    input  logic [1:0]   layer_type,    // 0=PW,1=DW
+    input  logic [6:0]   tile_R,
+    input  logic [6:0]   tile_D,
+    input  logic [6:0]   tile_K,
+    input  logic [6:0]   in_R,
+    input  logic [6:0]   in_C,
+    input  logic [6:0]   out_R,
+    input  logic [6:0]   out_C,
+    input  logic [31:0]  base_ifmap,
+    input  logic [31:0]  base_weight,
+    input  logic [31:0]  base_bias,
+    input  logic [31:0]  base_ofmap,
+    input  logic [6:0]   r_idx, c_idx, d_idx, k_idx,
 
-    input  logic [31:0] base_ifmap,
-    input  logic [31:0] base_weight,
-    input  logic [31:0] base_bias,
-    input  logic [31:0] base_ofmap,
-
-    input  logic [6:0]  r_idx,
-    input  logic [6:0]  d_idx,
-    input  logic [6:0]  k_idx,
-
-    output logic [31:0] addr_ifmap,
-    output logic [31:0] addr_weight,
-    output logic [31:0] addr_bias,
-    output logic [31:0] addr_ofmap
+    // Outputs to DMA controller
+    output logic [31:0]  dma_base_addr,
+    output logic [31:0]  dma_burst_len,
+    output logic [31:0]  dma_burst_stride
 );
 
-    // Intermediate offsets
-    logic [31:0] offset_ifmap;
-    logic [31:0] offset_weight;
-    logic [31:0] offset_bias;
-    logic [31:0] offset_ofmap;
+    logic [31:0] offset;
 
     always_comb begin
-        case (layer_type)
-            2'd0: begin  // Pointwise  //TODO: 更改取的方式
-                // offset_ifmap  = (d_idx * tile_D * in_R * in_C) + (r_idx * tile_R * in_C);
-                // offset_weight = (k_idx * tile_K * in_D) + (d_idx * tile_D);
-                // offset_bias   = k_idx * tile_K;
-                // offset_ofmap  = (k_idx * in_R * in_C) + (r_idx * tile_R * in_C);
-               
-                base_address = base_ifmap + ((r_idx * tile_R) + in_C + (tile_D * d_idx));
-                ifmap_tile = 
-                // addr_ifmap  = (base_ifmap  + offset_ifmap ) ;
-                // addr_weight = (base_weight + offset_weight) ;
-                // addr_bias   = (base_bias   + offset_bias  ) ;
-                // addr_ofmap  = (base_ofmap  + offset_ofmap ) ;
+        dma_base_addr    = 32'd0;
+        dma_burst_len    = 32'd0;
+        dma_burst_stride = 32'd0;
+
+        unique case (layer_type)
+            2'd0: begin  // Pointwise (PW)
+                // 計算 offset = 跳過前面 row 的全部資料 + 跳過前面 column * 全 channel + 跳過 d_idx 個 tile_D channel
+                offset = (r_idx * tile_R * in_C )                 // 前面幾行全部資料大小
+                       + (c_idx * IN_D * tile_R)                  // 前面幾列跳過的資料大小 (每列有 IN_D * tile_R bytes)
+                       + (d_idx * tile_D);                         // 同一列中跳過的 channel 數量
+                
+                dma_base_addr    = base_ifmap + offset * DATA_BYTES;
+                dma_burst_len    = tile_D * tile_R * DATA_BYTES; // 一次抓完整個 tile_R 行 × tile_D channels
+                // 取完這些 channel 後，要跳過該列剩餘 channel 數量才能到下一列的相同 channel 開頭
+                dma_burst_stride = (IN_D - tile_D) * tile_R * DATA_BYTES;
             end
 
-            2'd1: begin  // Depthwise
-                offset_ifmap  = (d_idx * in_R * in_C) + (r_idx * tile_R * in_C);
-                offset_weight = d_idx * 9;  // 3×3 kernel
-                offset_bias   = d_idx;
-                offset_ofmap  = (d_idx * out_R * out_C) + (r_idx * tile_R * out_C);
-
-                addr_ifmap  = base_ifmap  + offset_ifmap  * DATA_BYTES;
-                addr_weight = base_weight + offset_weight * DATA_BYTES;
-                addr_bias   = base_bias   + offset_bias   * DATA_BYTES;
-                addr_ofmap  = base_ofmap  + offset_ofmap  * PSUM_BYTES;
+            2'd1: begin  // Depthwise (DW)
+                // DW 一次取 tile_R 行 × 1 channel（tile_D=1）
+                offset = (r_idx * tile_R * in_C * IN_D)          // 跳過前面 row 的全部資料
+                       + (c_idx * IN_D * tile_R)                 // 跳過前面 column 的資料
+                       + d_idx;                                  // 跳過前面 channel
+                
+                dma_base_addr    = base_ifmap + offset * DATA_BYTES;
+                dma_burst_len    = tile_R * DATA_BYTES;          // 只抓 tile_R 行 × 1 channel
+                dma_burst_stride = 0;                             // 一次連續抓，不用跳躍
             end
 
             default: begin
-                addr_ifmap  = 32'd0;
-                addr_weight = 32'd0;
-                addr_bias   = 32'd0;
-                addr_ofmap  = 32'd0;
+                dma_base_addr    = 32'd0;
+                dma_burst_len    = 32'd0;
+                dma_burst_stride = 32'd0;
             end
         endcase
     end
