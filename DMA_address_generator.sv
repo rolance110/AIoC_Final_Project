@@ -33,6 +33,8 @@ module dma_addr_generator #(
 
     logic [31:0] offset,ifmap_offset,weight_offset,bias_offset;
     logic [31:0] data_length;
+    logic [6:0] D_idx = d_idx/tile_D;   //TODO 改掉除法方式
+    
     // 外部迴圈示意：
     // for (r_idx = 0; r_idx < num_tile_R; r_idx++) begin
     //   for (d_idx = 0; d_idx < num_tile_D; d_idx++) begin
@@ -52,14 +54,14 @@ module dma_addr_generator #(
             2'd0: begin // Pointwise
                 // for( r_idx < tile_R )
                 // for (d_idx < tile_D )         
-                ifmap_offset = (in_R * in_C * d_idx) + (tile_R * in_C *r_idx); 
+                ifmap_offset = (in_R * in_C * d_idx) + (tile_R * in_C *r_idx) + (D_idx * in_R * in_C * tile_D); 
                 
                 //in_K 是filter的個數 目前input還沒有
-                weight_offset =   k_idx * tile_D * tile_K + d_idx * tile_D *in_K;
+                weight_offset =   k_idx * tile_D * tile_K + D_idx * tile_D *in_K;
+                
                 //  假設bias是一次全部放到GLB
-                //bias_offset = in_K * PSUM_BYTES;
+                
 
-                dma_base_addr =  base_ifmap + ifmap_offset;
                 case(input_type)
                     2'd0: dma_base_addr = base_ifmap + ifmap_offset;
                     2'd1: dma_base_addr = base_weight+ weight_offset;
