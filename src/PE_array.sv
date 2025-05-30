@@ -4,13 +4,23 @@
 module PE_array(
     input clk,
     input reset,
-    input [`COL_NUM*8 - 1 : 0] array_ifmap_in,//input由左到右 0bit, 1bit, 2bit, ...., 31bit
+    input prod_out_en,//只有在cs == Compute的時候會輸出給Reducer，維持四個cycle
+    input [`COL_NUM*8 - 1 : 0] array_ifmap_in,//input由左到右 pe0(0~7bit) -> pe1(8~15bit) ... pe31(248~255bit)
     input [`ROW_NUM*`COL_NUM*8 - 1 : 0] array_weight_in,// ROW1=0~255, ROW2=256~511 ... ROW32=7936~8191
-    input [`ROW_NUM - 1 : 0] array_weight_en,//1 代表可以寫入新的weight
+    input [5:0] array_weight_en,//說明啟用幾個ROW
 
     output logic [`ROW_NUM*16 - 1 : 0] array_opsum
 );
-
+  // --------------------------------------------------
+  // 0) TODO 先設定enable signal，決定有幾個ROW會動作
+  // --------------------------------------------------
+  wire pe_weight_en [`ROW_NUM-1:0];
+  genvar k;
+  generate
+    for (k = 0; k < `ROW_NUM; k = k + 1) begin
+      assign pe_weight_en[k] = (k < array_weight_en) ? 1'b1 : 1'b0;
+    end
+  endgenerate
   // --------------------------------------------------
   // 1) TODO 拆出每顆 PE 的 ifmap_in / weight_in / weight_en
   // --------------------------------------------------
@@ -50,9 +60,10 @@ module PE_array(
         PE u_pe (
           .clk        (clk),
           .reset      (reset),
+          .prod_out_en(prod_out_en),
           .ifmap_in   (this_ifmap_in),
           .weight_in  (weight_wire[r][c]),
-          .weight_en  (array_weight_en[r]),
+          .weight_en  (pe_weight_en[r]),
           .ifmap_out  (ifmap_out_wire[r][c]),
           .prod_out   (prod_wire[r][c])
         );
