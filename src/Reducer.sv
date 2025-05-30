@@ -8,45 +8,58 @@ module Reducer(
     output [`ROW_NUM*16 - 1:0] reducer2opsum
 );
 
-  genvar r;
-  generate
-    for (r = 0; r < `ROW_NUM; r = r + 1) begin : RED
-      // pick base row of this 3-group
-      localparam int base = (r/3)*3;
+wire [15:0] prod_in [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
+wire [15:0] ipsum_in [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
+wire [15:0] PW_SUM [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
+wire [15:0] DW_CONV_SUM [9:0]; // 16-bit wide, 10 deep
 
-      // extract the three row inputs, out-of-range → 0
-      wire [15:0] in0 = array2reducer[ (base+0 < `ROW_NUM ? (base+0)*16 : 0) +: 16 ];
-      wire [15:0] in1 = array2reducer[ (base+1 < `ROW_NUM ? (base+1)*16 : 0) +: 16 ];
-      wire [15:0] in2 = array2reducer[ (base+2 < `ROW_NUM ? (base+2)*16 : 0) +: 16 ];
-      wire [15:0] ips = ipsum2reducer[ base*16 +: 16 ];  // only use ips of the first row
-
-      // instantiate both
-      wire [15:0] pw_sum;
-      ADD u_add (
-        .ipsum    (ips),
-        .row_in   (in0),
-        .add_out  (pw_sum)
-      );
-
-      wire [15:0] dw_sum;
-      ADDT u_addt (
-        .ipsum    (ips),
-        .row1     (in0),
-        .row2     (in1),
-        .row3     (in2),
-        .addt_out (dw_sum)
-      );
-
-      // choose: only r%3==0 produce, others zero
-    // --------------------------------------------------
-    // TODO output_en = 1，代表這個ROW可以輸出，然後再透過DW_PW_sel來確定輸出的是哪一種格式
-    // --------------------------------------------------
-      if ((r % 3) == 0) begin
-        assign reducer2opsum[r*16 +: 16] = (DW_PW_sel) ? pw_sum : dw_sum;
-      end else begin
-        assign reducer2opsum[r*16 +: 16] = (DW_PW_sel) ? pw_sum : 16'd0;
-      end
+genvar k;
+generate
+    for (k = 0; k < `ROW_NUM; k = k + 1) begin : PW
+        // unpack array2reducer and ipsum2reducer
+        assign prod_in[k] = array2reducer[k*16 +: 16];
+        assign ipsum_in[k] = ipsum2reducer[k*16 +: 16];
+        ADD ADD(
+          .ipsum    (ipsum_in[k]),
+          .row_in   (prod_in[k]),
+          .add_out  (PW_SUM[k])
+        );
     end
-  endgenerate
+endgenerate
+
+//3個row加一次(ADDT)
+genvar m;
+generate
+    for(m = 0;m < 10;m = m + 1) begin : DW_or_CONV
+        ADDT ADDT(
+            .ipsum    (ipsum_in[m*3]), // only use ipsum of the first row in each 3-group
+            .row1     (prod_in[m*3]),
+            .row2     (prod_in[m*3 + 1]),
+            .row3     (prod_in[m*3 + 2]),
+            .addt_out (DW_CONV_SUM[m])
+        );
+    end
+endgenerate
+
+genvar n;
+generate
+    for (n = 0; n < `ROW_NUM; n = n + 1) begin : OUTPUT
+        // --------------------------------------------------
+        // TODO output_en = 1，代表這個ROW可以輸出，然後再透過DW_PW_sel來確定輸出的是哪一種格式
+        // --------------------------------------------------
+        // 如果是DW模式，則每3個row加一次
+        // 如果是PW模式，則每個row獨立計算
+        if(n < 30) begin
+          if ((n % 3) == 0) begin
+              assign reducer2opsum[n*16 +: 16] = (DW_PW_sel) ? PW_SUM[n] : DW_CONV_SUM[n/3];
+          end else begin
+              assign reducer2opsum[n*16 +: 16] = (DW_PW_sel) ? PW_SUM[n] : 16'd0;
+          end
+        end
+        else begin
+          assign reducer2opsum[n*16 +: 16] = (DW_PW_sel) ? PW_SUM[n] : 16'd0;
+        end
+    end
+endgenerate
 
 endmodule
