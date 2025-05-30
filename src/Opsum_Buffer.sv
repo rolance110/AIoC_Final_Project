@@ -5,10 +5,10 @@ module Opsum_buffer(
     input reset,
     input read_opsum_f,//維持時間根據外面的FSM決定
     input store_compute_f,//告知存計算結果
-    input [`ROW_NUM*16 - 1:0] psum_in,//from Reducer
+    input [`ROW_NUM*16 - 1:0] opsum_in,//from Reducer
     //input [4:0] output_en,
 
-    output logic [`ROW_NUM-1:0] psum_out//send to GLB
+    output logic [`ROW_NUM-1:0] opsum_out//send to GLB
 );
 
   // 32 independent 4-deep, 16-bit FIFOs
@@ -51,7 +51,7 @@ module Opsum_buffer(
           fifo[r][3] <= fifo[r][2];
         end
         else if(store_compute_f)begin
-          fifo[r][0] <= psum_in[r*16 +: 16];
+          fifo[r][0] <= opsum_in[r*16 +: 16];
           // shift down
           fifo[r][1] <= fifo[r][0];
           fifo[r][2] <= fifo[r][1];
@@ -65,26 +65,26 @@ module Opsum_buffer(
   always_comb begin
     if(read_opsum_f) begin
       case(cnt)
-        4'd0: psum_out = {fifo[1][3], fifo[0][3]};
-        4'd1: psum_out = {fifo[3][3], fifo[2][3]};
-        4'd2: psum_out = {fifo[5][3], fifo[4][3]};
-        4'd3: psum_out = {fifo[7][3], fifo[6][3]};
-        4'd4: psum_out = {fifo[9][3], fifo[8][3]};
-        4'd5: psum_out = {fifo[11][3], fifo[10][3]};
-        4'd6: psum_out = {fifo[13][3], fifo[12][3]};
-        4'd7: psum_out = {fifo[15][3], fifo[14][3]};
-        4'd8: psum_out = {fifo[17][3], fifo[16][3]};
-        4'd9: psum_out = {fifo[19][3], fifo[18][3]};
-        4'd10: psum_out = {fifo[21][3], fifo[20][3]};
-        4'd11: psum_out = {fifo[23][3], fifo[22][3]};
-        4'd12: psum_out = {fifo[25][3], fifo[24][3]};
-        4'd13: psum_out = {fifo[27][3], fifo[26][3]};
-        4'd14: psum_out = {fifo[29][3], fifo[28][3]};
-        4'd15: psum_out = {fifo[31][3], fifo[30][3]};
+        4'd0: opsum_out = {fifo[1][3], fifo[0][3]};
+        4'd1: opsum_out = {fifo[3][3], fifo[2][3]};
+        4'd2: opsum_out = {fifo[5][3], fifo[4][3]};
+        4'd3: opsum_out = {fifo[7][3], fifo[6][3]};
+        4'd4: opsum_out = {fifo[9][3], fifo[8][3]};
+        4'd5: opsum_out = {fifo[11][3], fifo[10][3]};
+        4'd6: opsum_out = {fifo[13][3], fifo[12][3]};
+        4'd7: opsum_out = {fifo[15][3], fifo[14][3]};
+        4'd8: opsum_out = {fifo[17][3], fifo[16][3]};
+        4'd9: opsum_out = {fifo[19][3], fifo[18][3]};
+        4'd10: opsum_out = {fifo[21][3], fifo[20][3]};
+        4'd11: opsum_out = {fifo[23][3], fifo[22][3]};
+        4'd12: opsum_out = {fifo[25][3], fifo[24][3]};
+        4'd13: opsum_out = {fifo[27][3], fifo[26][3]};
+        4'd14: opsum_out = {fifo[29][3], fifo[28][3]};
+        4'd15: opsum_out = {fifo[31][3], fifo[30][3]};
       endcase
     end
     else
-      psum_out = 32'd0;
+      opsum_out = 32'd0;
   end
 
 endmodule
