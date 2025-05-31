@@ -90,9 +90,15 @@ module Tile_Scheduler_tb;
     .pass_done_i(pass_done_i)
   );
 
+// dump FSDB file
 initial begin
-    $fsdbDumpfile("tile_scheduler.fsdb");
-    $fsdbDumpvars(0, Tile_Scheduler_tb);
+    `ifdef FSDB
+        $fsdbDumpfile("../wave/top.fsdb");
+        $fsdbDumpvars(0, dut);
+    `elsif FSDB_ALL
+        $fsdbDumpfile("../wave/top.fsdb");
+        $fsdbDumpvars("+struct", "+mda", dut);
+    `endif
 end
   
   // Sim control

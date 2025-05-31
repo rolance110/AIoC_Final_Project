@@ -167,10 +167,14 @@ module Layer_Decoder_tb;
                  quant_scale_o);
     end
 
-    // Dump waveform for debugging
-    initial begin
-        $dumpfile("Layer_Decoder_tb.fsdb");
-        $dumpvars(0, Layer_Decoder_tb);
-        
-    end
+// dump FSDB file
+initial begin
+    `ifdef FSDB
+        $fsdbDumpfile("../wave/top.fsdb");
+        $fsdbDumpvars(0, uut);
+    `elsif FSDB_ALL
+        $fsdbDumpfile("../wave/top.fsdb");
+        $fsdbDumpvars("+struct", "+mda", uut);
+    `endif
+end
 endmodule

@@ -1,4 +1,3 @@
-`include "../src/Layer_Decoder.sv"
 
 /*==========================================================*
  *  Testbench : tb_calc_tile_R_max
@@ -50,5 +49,16 @@ module calc_tile_R_max_tb;
 
         $finish;
     end
+
+// dump FSDB file
+initial begin
+    `ifdef FSDB
+        $fsdbDumpfile("../wave/top.fsdb");
+        $fsdbDumpvars(0, uut);
+    `elsif FSDB_ALL
+        $fsdbDumpfile("../wave/top.fsdb");
+        $fsdbDumpvars("+struct", "+mda", uut);
+    `endif
+end
 
 endmodule
