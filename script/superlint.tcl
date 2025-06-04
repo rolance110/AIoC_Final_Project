@@ -12,14 +12,14 @@ config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
 #config_rtlds -rule  -reset -sync
 # vsd2023_constrain //
 
-analyze -sv +incdir+../include+../src/AXI ../src/top.sv 
+analyze -sv +incdir+../include+ ../src/Layer_Decoder.sv 
 # analyze -sv +incdir+../include+../src/AXI ../src/top.sv ../sim/SRAM/TS1N16ADFPCLLLVTA512X45M4SWSHOD.sv
 
-elaborate -bbox true -top top
+elaborate -bbox true -top layer_decoder
 
 # Setup clock and reset
 clock clk
-reset rst
+reset rst_n
 
 # Setup for CTL check
 set_superlint_fsm_ctl_livelock true

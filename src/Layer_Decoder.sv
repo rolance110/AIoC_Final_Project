@@ -110,8 +110,8 @@ logic [6:0] M;
 always_comb begin
     unique case (layer_type_i)
         2'd0: M = 7'd1; // Pointwise
-        2'd1: M = in_C+7'd1; // Depthwise
-        2'd2: M = in_C+7'd1; // Standard
+        2'd1: M = in_C_i+7'd1; // Depthwise
+        2'd2: M = in_C_i+7'd1; // Standard
         default: M = 7'd1; // Linear
     endcase
 end
