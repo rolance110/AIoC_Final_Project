@@ -88,20 +88,31 @@ end
 //* tile_D, tile_K
 always_comb begin
     unique case (layer_type_i)
-        2'd0: begin tile_D = 6'd32; tile_K = 6'd32; end  // Pointwise
-        2'd1: begin tile_D = 6'd10;  tile_K = 6'd10; end // Depthwise
-        2'd2: begin tile_D = 6'd10; tile_K = 6'd10; end  // Standard
-        default: begin tile_D = 6'd32; tile_K = 6'd32; end
+        2'd0: begin tile_D = 7'd32; tile_K = 7'd32; end  // Pointwise
+        2'd1: begin tile_D = 7'd10;  tile_K = 7'd10; end // Depthwise
+        2'd2: begin tile_D = 7'd10; tile_K = 7'd10; end  // Standard
+        default: begin tile_D = 7'd32; tile_K = 7'd32; end
     endcase
 end
 
 //* tile_D_f, tile_K_f
 always_comb begin
     unique case (layer_type_i)
-        2'd0: begin tile_D_f = 6'd32; tile_K_f = 6'd32; end  // Pointwise
-        2'd1: begin tile_D_f = 6'd1;  tile_K_f = 6'd10; end  //* Depthwise kernel size 1x3x3
-        2'd2: begin tile_D_f = 6'd10; tile_K_f = 6'd10; end  // Standard
-        default: begin tile_D_f = 6'd32; tile_K_f = 6'd32; end
+        2'd0: begin tile_D_f = 7'd32; tile_K_f = 7'd32; end  // Pointwise
+        2'd1: begin tile_D_f = 7'd1;  tile_K_f = 7'd10; end  //* Depthwise kernel size 1x3x3
+        2'd2: begin tile_D_f = 7'd10; tile_K_f = 7'd10; end  // Standard
+        default: begin tile_D_f = 7'd32; tile_K_f = 7'd32; end
+    endcase
+end
+
+//* M
+logic [6:0] M;
+always_comb begin
+    unique case (layer_type_i)
+        2'd0: M = 7'd1; // Pointwise
+        2'd1: M = in_C+7'd1; // Depthwise
+        2'd2: M = in_C+7'd1; // Standard
+        default: M = 7'd1; // Linear
     endcase
 end
 
@@ -126,6 +137,7 @@ calc_n_max #(
     .tile_K(tile_K),
     .tile_D_f(tile_D_f),
     .tile_K_f(tile_K_f),
+    .M(M), // Global SRAM capacity in bytes
 //* output
     .tile_n(tile_n)
 );
@@ -220,7 +232,7 @@ module calc_n_max #(
     input  logic [6:0]  tile_D_f,     
     input  logic [6:0]  tile_K_f,    
 
-    input  logic [31:0] M, // Global SRAM capacity in bytes    
+    input  logic [6:0]  M, // Global SRAM capacity in bytes    
     /* ---- Output ---- */
     output logic [31:0]  tile_n, // max number of tiles
     output logic [31:0]  tile_n_flat           
