@@ -157,24 +157,25 @@ end
 
 
 always_comb begin
+    //fixme:reach_last_On_tile = (cs_ts == TILE_IDX_GEN)? (On_idx == tile_n_i - 1) : 1'b0;
     reach_last_D_tile = (cs_ts == TILE_IDX_GEN)?  (d_idx == num_tiles_D_i - 1) : 1'b0;
-    over_last_D_tile =(cs_ts == TILE_IDX_GEN)? (d_idx == num_tiles_D_i) : 1'b0;
     reach_last_K_tile = (cs_ts == TILE_IDX_GEN)? (k_idx == num_tiles_K_i - 1): 1'b0;
 end
 
-// n_idx: count of input pixels
+//fixme: On_idx: 計數 目前輸出的 opsum pixel 數量
 always_ff@(posedge clk or negedge rst_n) begin
     if (!rst_n)
-        n_idx <= 7'd0;
+        On_idx <= 7'd0;
     else if (cs_ts == uLD_LOAD)
-        n_idx <= 7'd0; 
+        On_idx <= 7'd0; 
     else if (cs_ts == TILE_IDX_GEN) begin
-        if(reach_last_n_tile)
-            n_idx <= 7'd0;
-        else
-            n_idx <= n_idx + 7'd1;
+        if (reach_last_On_tile && opsum_handshake)
+            On_idx <= 7'd0;
+        else if (opsum_handshake)
+            On_idx <= On_idx + 7'd1;
     end
 end
+
 
 // d_idx
 always_ff@(posedge clk or negedge rst_n) begin
@@ -183,9 +184,9 @@ always_ff@(posedge clk or negedge rst_n) begin
     else if (cs_ts == uLD_LOAD)
         d_idx <= 7'd0; 
     else if (cs_ts == TILE_IDX_GEN) begin
-        if (reach_last_D_tile && reach_last_n_tile)
+        if (reach_last_D_tile && reach_last_On_tile)
             d_idx <= 7'd0;
-        else if (reach_last_n_tile)
+        else if (reach_last_On_tile)
             d_idx <= d_idx + 7'd1;
     end
 end
@@ -197,9 +198,9 @@ always_ff@(posedge clk or negedge rst_n) begin
     else if (cs_ts == uLD_LOAD)
         k_idx <= 7'd0; 
     else if (cs_ts == TILE_IDX_GEN) begin
-        if(reach_last_n_tile && reach_last_D_tile && reach_last_K_tile)
+        if(reach_last_On_tile && reach_last_D_tile && reach_last_K_tile)
             k_idx <= 7'd0;
-        else if(reach_last_n_tile && reach_last_D_tile)
+        else if(reach_last_On_tile && reach_last_D_tile)
             k_idx <= k_idx + 7'd1;
     end
 end
