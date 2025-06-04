@@ -64,15 +64,13 @@ logic reach_last_K_tile;
 typedef enum logic [3:0] {
     IDLE,
     uLD_LOAD,
-    DMA_REQ_GEN,
+    TILE_IDX_GEN,
     DMA_ifmap,
     DMA_weight,
     DMA_bias,
     PASS_START,
     PASS_FINISH,
-    TILE_D_CNT,
-    DMA_ofmap,
-    TILE_RK_CNT
+    DMA_ofmap
 } state_e;
 state_e cs_ts, ns_ts;
 
@@ -87,63 +85,95 @@ end
 always_comb begin
     case (cs_ts)
         IDLE: begin
-            if (uLD_en_i)
+            if (uLD_en_i) // read layer descriptor
                 ns_ts = uLD_LOAD;
             else
                 ns_ts = IDLE;
         end
         uLD_LOAD:
-            ns_ts = DMA_REQ_GEN;
-        DMA_REQ_GEN:
+            ns_ts = TILE_IDX_GEN;
+        TILE_IDX_GEN:begin
+            if (tile_idx_reach_max)
+                ns_ts = IDLE; // no tiles to process
+            else
+                ns_ts = GEN_ADDR_filter;
+        end
+        GEN_ADDR_filter:begin
+            ns_ts = DMA_filter;
+        end
+        DMA_filter:begin
+            if (DMA_filter_finish && dma_interrupt_i)
+                ns_ts = GEN_ADDR_ifmap;
+            else
+                ns_ts = DMA_filter;
+        end
+        GEN_ADDR_ifmap:begin
             ns_ts = DMA_ifmap;
-        DMA_ifmap:
+        end
+        DMA_ifmap:begin
             if (dma_interrupt_i)
-                ns_ts = DMA_weight;
+                ns_ts = GEN_ADDR_ifmap;
+            else if (DMA_ifmap_finish && dma_interrupt_i)
+                ns_ts = GEN_ADDR_bias;
             else
-                ns_ts = DMA_ifmap;
-        DMA_weight:
+                ns_ts = DMA_filter;
+        end
+        GEN_ADDR_bias:begin
+            ns_ts = DMA_bias;
+        end
+        DMA_bias:begin
             if (dma_interrupt_i)
-                ns_ts = (bias_en) ? DMA_bias : PASS_START;
-            else
-                ns_ts = DMA_weight;
-        DMA_bias:
-            if (dma_interrupt_i)
+                ns_ts = GEN_ADDR_bias;
+            else if (DMA_bias_finish && dma_interrupt_i)
                 ns_ts = PASS_START;
             else
                 ns_ts = DMA_bias;
-        PASS_START:
+        end
+        PASS_START:begin
             if (pass_done_i)
                 ns_ts = PASS_FINISH;
             else
                 ns_ts = PASS_START;
-        PASS_FINISH:
-            ns_ts = TILE_D_CNT;
-        TILE_D_CNT:
-            if (reach_last_D_tile)
-                ns_ts = DMA_ofmap;
-            else
-                ns_ts = DMA_REQ_GEN;
-        DMA_ofmap:
+        end
+        PASS_FINISH:begin
+            ns_ts =  GEN_ADDR_opsum;
+        end
+        GEN_ADDR_opsum:begin
+            ns_ts = DMA_opsum;
+        end
+        DMA_opsum:begin
             if (dma_interrupt_i)
-                ns_ts = TILE_RK_CNT; // 回到 D tile 計數
+                ns_ts = GEN_ADDR_opsum;
+            else if (DMA_opsum_finish && dma_interrupt_i)
+                ns_ts = TILE_IDX_GEN;
             else
-                ns_ts = DMA_ofmap;
-        TILE_RK_CNT:
-            if (reach_last_R_tile && reach_last_K_tile)
-                ns_ts = IDLE;
-            else
-                ns_ts = DMA_REQ_GEN;
-
-        default: ns_ts = IDLE;
+                ns_ts = DMA_opsum;
+        end
+        default:begin
+            ns_ts = IDLE;
+        end
     endcase
 end
 
 
 always_comb begin
-    reach_last_D_tile = (cs_ts == TILE_D_CNT)?  (d_idx == num_tiles_D_i - 1) : 1'b0;
-    over_last_D_tile =(cs_ts == TILE_RK_CNT)? (d_idx == num_tiles_D_i) : 1'b0;
-    reach_last_R_tile =(cs_ts == TILE_RK_CNT)? (r_idx == num_tiles_R_i - 1) : 1'b0;
-    reach_last_K_tile = (cs_ts == TILE_RK_CNT)? (k_idx == num_tiles_K_i - 1): 1'b0;
+    reach_last_D_tile = (cs_ts == TILE_IDX_GEN)?  (d_idx == num_tiles_D_i - 1) : 1'b0;
+    over_last_D_tile =(cs_ts == TILE_IDX_GEN)? (d_idx == num_tiles_D_i) : 1'b0;
+    reach_last_K_tile = (cs_ts == TILE_IDX_GEN)? (k_idx == num_tiles_K_i - 1): 1'b0;
+end
+
+// n_idx: count of input pixels
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        n_idx <= 7'd0;
+    else if (cs_ts == uLD_LOAD)
+        n_idx <= 7'd0; 
+    else if (cs_ts == TILE_IDX_GEN) begin
+        if(reach_last_n_tile)
+            n_idx <= 7'd0;
+        else
+            n_idx <= n_idx + 7'd1;
+    end
 end
 
 // d_idx
@@ -152,14 +182,13 @@ always_ff@(posedge clk or negedge rst_n) begin
         d_idx <= 7'd0;
     else if (cs_ts == uLD_LOAD)
         d_idx <= 7'd0; 
-    else if (cs_ts == TILE_D_CNT)
-        d_idx <= d_idx + 7'd1;
-    else if (cs_ts == TILE_RK_CNT)
-        d_idx <= 7'd0;
+    else if (cs_ts == TILE_IDX_GEN) begin
+        if (reach_last_D_tile && reach_last_n_tile)
+            d_idx <= 7'd0;
+        else if (reach_last_n_tile)
+            d_idx <= d_idx + 7'd1;
+    end
 end
-
-// n_idx: count of input pixels
-
 
 // k_idx
 always_ff@(posedge clk or negedge rst_n) begin
@@ -167,13 +196,11 @@ always_ff@(posedge clk or negedge rst_n) begin
         k_idx <= 7'd0;
     else if (cs_ts == uLD_LOAD)
         k_idx <= 7'd0; 
-    else if (cs_ts == TILE_RK_CNT) begin
-        if(over_last_D_tile && reach_last_R_tile && reach_last_K_tile)
+    else if (cs_ts == TILE_IDX_GEN) begin
+        if(reach_last_n_tile && reach_last_D_tile && reach_last_K_tile)
             k_idx <= 7'd0;
-        else if(over_last_D_tile && reach_last_R_tile)
+        else if(reach_last_n_tile && reach_last_D_tile)
             k_idx <= k_idx + 7'd1;
-        else
-            k_idx <= k_idx;
     end
 end
 
@@ -181,7 +208,7 @@ end
 //dma_enable_o
 always_comb begin
     case (cs_ts)
-        DMA_ifmap, DMA_weight, DMA_bias, DMA_ofmap: dma_enable_o = 1'b1;
+        DMA_filter, DMA_ifmap, DMA_bias, DMA_opsum: dma_enable_o = 1'b1;
         default: dma_enable_o = 1'b0;
     endcase
 end
