@@ -56,10 +56,6 @@ module layer_decoder #(
     output logic [6:0]   tile_D_o,
     output logic [6:0]   tile_K_o,
 
-//* num tiles (size not sure)
-    output logic [6:0]   num_tiles_R_o,
-    output logic [6:0]   num_tiles_D_o,
-    output logic [6:0]   num_tiles_K_o,
 
 //* ofmap size (size not sure)
     output logic [6:0]   out_R_o,
@@ -133,11 +129,6 @@ calc_n_max #(
 //* output
     .tile_n(tile_n)
 );
-
-
-//* num_tiles
-assign num_tiles_D_o = ceil_div(in_D_i, tile_D);
-assign num_tiles_K_o = ceil_div(out_K_i, tile_K);
 
 
 //--------------------------------------------------------------------------
@@ -229,7 +220,7 @@ module calc_n_max #(
     input  logic [6:0]  tile_D_f,     
     input  logic [6:0]  tile_K_f,        
     /* ---- Output ---- */
-    output logic [6:0]  tile_n           
+    output logic [31:0]  tile_n           
 );
 
 logic [31:0] n_max;
