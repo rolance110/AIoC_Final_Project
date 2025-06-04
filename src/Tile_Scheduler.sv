@@ -15,13 +15,11 @@ module Tile_Scheduler #(
 
   //=== Layer Descriptor ===
   input  logic          uLD_en_i,         // Descriptor valid
-  input  logic [6:0]    tile_R_i,         // ifmap rows per tile
+
+  input  logic [6:0]    tile_n_i,         // todo
   input  logic [6:0]    tile_D_i,         // input channels per tile
   input  logic [6:0]    tile_K_i,         // output channels per tile
-  input  logic [6:0]    out_tile_R_i,     // output rows per tile
-  input  logic [6:0]    num_tiles_R_i,    // # tiles in R
-  input  logic [6:0]    num_tiles_D_i,    // # tiles in D
-  input  logic [6:0]    num_tiles_K_i,    // # tiles in K
+
   input  logic [9:0]    in_C_i,           // ifmap/ofmap width
   input  logic [9:0]    in_D_i,           // input channel total
   input  logic [9:0]    out_R_i,          // ofmap height
@@ -160,21 +158,8 @@ always_ff@(posedge clk or negedge rst_n) begin
         d_idx <= 7'd0;
 end
 
-// r_idx
-always_ff@(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-        r_idx <= 7'd0;
-    else if (cs_ts == uLD_LOAD)
-        r_idx <= 7'd0; 
-    else if (cs_ts == TILE_RK_CNT) begin
-        if(over_last_D_tile && reach_last_R_tile) // reach last R tile
-            r_idx <= 7'd0;
-        else if(over_last_D_tile) // reach last D tile
-            r_idx <= r_idx + 7'd1;
-        else // not reach last D tile
-            r_idx <= r_idx;
-    end
-end
+// n_idx: count of input pixels
+
 
 // k_idx
 always_ff@(posedge clk or negedge rst_n) begin

@@ -17,7 +17,7 @@
 
 // Layer Descriptor flags
 `define FLAG_RELU 0 // ReLU activation
-`define FLAG_LINEAR 1 // Linear activation
+`define FLAG_ADD 1  // residual
 `define FLAG_SKIP 2 // Skip connection
 `define FLAG_BIAS 3 // Bias addition
 
