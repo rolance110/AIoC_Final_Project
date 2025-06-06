@@ -16,10 +16,9 @@
 `define LINEAR 3 // Bit width for activation
 
 // Layer Descriptor flags
-`define FLAG_RELU 0 // ReLU activation
-`define FLAG_ADD 1  // residual
-`define FLAG_SKIP 2 // Skip connection
-`define FLAG_BIAS 3 // Bias addition
+`define RELU_EN 1 // ReLU activation
+`define ADD_EN 1  // residual addition
+`define BIAS_EN 1 // Bias addition
 
 
 //quantization scale
