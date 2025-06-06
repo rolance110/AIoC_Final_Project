@@ -11,6 +11,10 @@ module calc_tile_n #(
     parameter int BYTES_P   = `BYTES_P           // Partial-sum bytes
 )(
     /* ---- Inputs ---- */
+
+    input logic [1:0] layer_type, // 0=PW,1=DW,2=STD,3=LIN
+    input logic [6:0] out_C, // Output channels
+
     input  logic [1:0]  kH,           
     input  logic [1:0]  kW,       
     input  logic [6:0]  tile_D,       
@@ -31,6 +35,12 @@ assign tmp1 = kH*kW*tile_D_f*tile_K_f*BYTES_W; // Weight bytes
 assign tmp2 = tile_D*BYTES_I + tile_K*BYTES_P; // ifmap bytes, opsum
 assign tmp3 = M*2*tile_D*BYTES_I;
 assign n_max = (GLB_BYTES - tmp1 - tmp3) / tmp2;
-assign tile_n = {n_max[31:2], 2'b0};
+
+always_comb begin
+    if (layer_type == `POINTWISE)
+        tile_n = {n_max[31:2], 2'b0};
+    else
+        tile_n = n_max / out_C ; // Depthwise, Standard
+end
 
 endmodule

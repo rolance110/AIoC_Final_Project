@@ -131,6 +131,8 @@ calc_tile_n #(
     .BYTES_P(BYTES_P)
 ) calc_n_max_u (
 //* input
+    .layer_type(layer_type_i),
+    .out_C(out_C),
     .kH(kH),
     .kW(kW),   
     .tile_D(tile_D), 
