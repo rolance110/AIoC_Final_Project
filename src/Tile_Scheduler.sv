@@ -5,49 +5,60 @@
 // 三層迴圈依序為 K → R → D，D 方向完成後寫回 ofmap。
 //------------------------------------------------------------------------------
 
+`include "../include/define.svh"
+
 module Tile_Scheduler #(
-  parameter int BYTES_A = 1,    // activation bytes
-  parameter int BYTES_W = 1,    // weight bytes
-  parameter int BYTES_P = 2     // psum/ofmap bytes
+    parameter int BYTES_I = `BYTES_I,    // activation bytes
+    parameter int BYTES_W = `BYTES_W,    // weight bytes
+    parameter int BYTES_P = `BYTES_P     // psum/ofmap bytes
 ) (
-  input  logic          clk,
-  input  logic          rst_n,
+    input  logic          clk,
+    input  logic          rst_n,
 
-  //=== Layer Descriptor ===
-  input  logic          uLD_en_i,         // Descriptor valid
+    //=== Layer Descriptor ===
+    input  logic          uLD_en_i,         // Descriptor valid
 
-  input  logic [6:0]    tile_n_i,         // todo
-  input  logic [6:0]    tile_D_i,         // input channels per tile
-  input  logic [6:0]    tile_K_i,         // output channels per tile
+    input  logic [31:0]   tile_n_i,         // todo
+    input  logic [31:0]   tile_D_i,         // input channels per tile
+    input  logic [31:0]   tile_K_i,         // output channels per tile
 
-  input  logic [9:0]    in_C_i,           // ifmap/ofmap width
-  input  logic [9:0]    in_D_i,           // input channel total
-  input  logic [9:0]    out_R_i,          // ofmap height
-  input  logic [9:0]    out_C_i,          // ofmap width
-  input  logic [31:0]   base_ifmap_i,
-  input  logic [31:0]   base_weight_i,
-  input  logic [31:0]   base_bias_i,
-  input  logic [31:0]   base_ofmap_i,
-  input  logic [3:0]    flags_i,          // bit3=bias_en
+    input  logic [1:0]    layer_type_i,     // 0=PW, 1=DW, 2=STD, 3=LIN
+    input  logic [1:0]    stride_i,         // stride
+    input  logic [1:0]    pad_T_i, pad_B_i, // padding
+    input  logic [1:0]    pad_L_i, pad_R_i, // padding
 
-  //=== DMA Interface ===
-  output logic          dma_enable_o,
-  output logic          dma_read_o,   // 1=read DRAM, 0=write DRAM
-  output logic [31:0]   dma_addr_o,
-  output logic [31:0]   dma_len_o,
-  input  logic          dma_interrupt_i,
+    input  logic [6:0]    in_R_i,           // ifmap/ofmap height
+    input  logic [9:0]    in_C_i,           // ifmap/ofmap width
+    input  logic [9:0]    in_D_i,           // input channel total
+    input  logic [9:0]    out_K_i,         // ifmap/ofmap height
+    input  logic [9:0]    out_R_i,          // ofmap height
+    input  logic [9:0]    out_C_i,          // ofmap width
+    input  logic [31:0]   base_ifmap_i,
+    input  logic [31:0]   base_weight_i,
+    input  logic [31:0]   base_bias_i,
+    input  logic [31:0]   base_ofmap_i,
+    input  logic [3:0]    flags_i,          // bit3=bias_en
+
+    //=== DMA Interface ===
+    output logic          dma_enable_o,
+    output logic          dma_read_o,   // 1=read DRAM, 0=write DRAM
+    output logic [31:0]   dma_addr_o,
+    output logic [31:0]   dma_len_o,
+    input  logic          dma_interrupt_i,
 
   //=== Token Engine Interface ===
-  output logic          pass_info_vld_o,
-  output logic [6:0]    pass_tile_R_o,
-  output logic [6:0]    pass_tile_D_o,
-  output logic [6:0]    pass_tile_K_o,
-  output logic [6:0]    pass_out_tile_R_o,
-  output logic [6:0]    pass_k_idx_o,
-  output logic [6:0]    pass_r_idx_o,
-  output logic [6:0]    pass_d_idx_o,
-  output logic [3:0]    pass_flags_o,
-  input  logic          pass_done_i
+    output logic          pass_start_o, // Pass start signal
+    input  logic          pass_done_i,  // Pass done  signal
+    output logic [31:0]   GLB_weight_base_addr_o,
+    output logic [31:0]   GLB_ifmap_base_addr_o,
+    output logic [31:0]   GLB_opsum_base_addr_o,
+
+    output logic [1:0]    pad_T_o, pad_B_o, pad_L_o, pad_R_o, // padding
+    output logic [1:0]    stride_o,
+    output logic [1:0]    layer_type_o, // 0=PW, 1=DW, 2=STD, 3=LIN
+    output logic [3:0]    flags_o,       // ReLU / Linear / Residual / Bias
+
+    output logic [6:0]    out_R_o, out_C_o // output size
 );
 
 
@@ -55,22 +66,46 @@ module Tile_Scheduler #(
 logic [6:0] k_idx, r_idx, d_idx;
 logic bias_en;
 assign bias_en = flags_i[3];
+assign flags_o = flags_i; // pass flags to next stage
+assign layer_type_o = layer_type_i; // pass layer type to next stage
+assign stride_o = stride_i; // pass stride to next stage
+assign pad_T_o = pad_T_i; // pass padding to next stage
+assign pad_B_o = pad_B_i; // pass padding to next stage
+assign pad_L_o = pad_L_i; // pass padding to next stage
+assign pad_R_o = pad_R_i; // pass padding to next stage
+
 logic reach_last_D_tile;
 logic over_last_D_tile;
+logic reach_last_On_tile; // reach last output channel tile
 logic reach_last_R_tile;
 logic reach_last_K_tile;
+
+logic tile_reach_max;
+logic DMA_ifmap_finish;
+logic DMA_filter_finish;
+logic DMA_bias_finish;
+logic DMA_opsum_finish;
+
+logic [6:0] num_tiles_D_i;
+logic [6:0] num_tiles_K_i;
+assign num_tiles_D_i = (in_D_i - 1) / tile_D_i; // ceil(in_D_i / tile_D_i)
+assign num_tiles_K_i = (out_K_i - 1) / tile_K_i; // ceil(in_K_i / tile_K_i)
 
 // FSM states
 typedef enum logic [3:0] {
     IDLE,
     uLD_LOAD,
     TILE_IDX_GEN,
+    GEN_ADDR_filter,
+    DMA_filter,
+    GEN_ADDR_ifmap, 
     DMA_ifmap,
-    DMA_weight,
+    GEN_ADDR_bias,
     DMA_bias,
     PASS_START,
     PASS_FINISH,
-    DMA_ofmap
+    GEN_ADDR_opsum,
+    DMA_opsum
 } state_e;
 state_e cs_ts, ns_ts;
 
@@ -93,7 +128,7 @@ always_comb begin
         uLD_LOAD:
             ns_ts = TILE_IDX_GEN;
         TILE_IDX_GEN:begin
-            if (tile_idx_reach_max)
+            if (tile_reach_max)
                 ns_ts = IDLE; // no tiles to process
             else
                 ns_ts = GEN_ADDR_filter;
@@ -162,18 +197,97 @@ always_comb begin
     reach_last_K_tile = (cs_ts == TILE_IDX_GEN)? (k_idx == num_tiles_K_i - 1): 1'b0;
 end
 
+logic [6:0] tile_On;
+
+logic [31:0] completed_On_cnt;
+logic [6:0] completed_OC_cnt;
+logic [6:0] completed_IC_cnt;
+//* completed_On_cnt:  計數目前已完成的 image pixel 數量
+always_ff@(posedge clk or negedge rst_n) begin
+    if(!rst_n)
+        completed_On_cnt <= 7'd0;
+    else if (cs_ts == uLD_LOAD)
+        completed_On_cnt <= 7'd0;
+    else if(/*算完一個 output channel tile*/)
+        completed_On_cnt <= 7'd0; // 歸 0
+    else if (layer_type_i == `POINTWISE/* && 算完一格 output pixel */)
+        completed_On_cnt <= completed_On_cnt + 7'd1;
+    else if (layer_type_i == `DEPTHWISE/* && 算完一個 output row */)
+        completed_On_cnt <= completed_On_cnt + 7'd1;
+end
+
+//* completed_IC_cnt: 計數目前已完成的 input channel 數量
+always_ff@(posedge clk or negedge rst_n) begin
+    if(!rst_n)
+        completed_IC_cnt <= 7'd0;
+    else if (cs_ts == uLD_LOAD)
+        completed_IC_cnt <= 7'd0;
+    else if (/*算完一個 output channel tile*/)
+        completed_IC_cnt <= 7'd0; // 歸 0
+    else if (layer_type_i == `POINTWISE /*&& 算完一個 input channel tile*/)
+        completed_IC_cnt <= completed_IC_cnt + 7'd32;
+    else if (layer_type_i == `DEPTHWISE /*&& 算完一個 input channel tile*/)
+        completed_IC_cnt <= completed_IC_cnt + 7'd10;
+end
+
+//* completed_OC_cnt: 計數目前已完成的 output channel 數量
+always_ff@(posedge clk or negedge rst_n) begin
+    if(!rst_n)
+        completed_OC_cnt <= 7'd0;
+    else if (cs_ts == uLD_LOAD)
+        completed_OC_cnt <= 7'd0;
+    else if (layer_type_i == `POINTWISE /*&& 算完一個 output channel tile*/)
+        completed_OC_cnt <= completed_OC_cnt + 7'd32;
+    else if (layer_type_i == `DEPTHWISE /*&& 算完一個 output channel tile*/)
+        completed_OC_cnt <= completed_OC_cnt + 7'd10;
+end
+
+logic [31:0] max_On_cnt;
+logic [6:0] max_OC_cnt;
+logic [6:0] max_IC_cnt;
+//* max_On_cnt: 目前 tile 最多能輸出的 On             數量
+//* max_OC_cnt: 目前 tile 最多能輸出的 output channel 數量
+//* max_IC_cnt: 目前 tile 最多能輸入的 input channel  數量
+always_comb begin
+    if(layer_type_i == `POINTWISE)
+        max_On_cnt = out_C_i * out_R_i; // Full Output Image Pixel
+    else if (layer_type_i == `DEPTHWISE)
+        max_On_cnt = out_R_i; // Depthwise: 每個 tile 處理單一 input channel
+    else if (layer_type_i == `STANDARD)
+        max_On_cnt = out_R_i; // Standard: 每個 tile 處理所有 output channel 和 input channel
+    else
+        max_On_cnt = out_C_i * out_R_i; // Linear: Full Output Image Pixel
+end
+
+always_comb begin
+    max_OC_cnt = tile_K_i;
+    max_IC_cnt = tile_D_i;
+end
+
+logic [6:0] On_real; 
+logic [6:0] IC_real;
+logic [6:0] OC_real;
+//* On_real: 目前 tile 實際總共要輸出 On_real 個 On (GLB => DRAM)
+//* IC_real: 目前 tile 實際總共要輸入 IC_real 個 input channel (DRAM => GLB)
+//* OC_real: 目前 tile 實際總共要輸入 OC_real 個 output channel pixel (DRAM <=> GLB)
+
+
+
+
+
+
 //fixme: On_idx: 計數 目前輸出的 opsum pixel 數量
 always_ff@(posedge clk or negedge rst_n) begin
-    if (!rst_n)
+    if(!rst_n)
         On_idx <= 7'd0;
     else if (cs_ts == uLD_LOAD)
-        On_idx <= 7'd0; 
-    else if (cs_ts == TILE_IDX_GEN) begin
-        if (reach_last_On_tile && opsum_handshake)
-            On_idx <= 7'd0;
-        else if (opsum_handshake)
-            On_idx <= On_idx + 7'd1;
-    end
+        On_idx <= 7'd0;
+    else if (/*算完一個 tile*/)
+        On_idx <= 7'd0; // 歸 0
+    else if (layer_type_i == `POINTWISE && /*算完一個 opsum*/)
+        On_idx <= On_idx + 7'd1;
+    else if (layer_type_i == `DEPTHWISE && /*算完 1 row opsum*/)
+        On_idx <= On_idx + 7'd1;
 end
 
 
@@ -214,15 +328,6 @@ always_comb begin
     endcase
 end
 
-//============= PASS =============
-// pass_info_vld_o
-always_comb begin
-    case (cs_ts)
-        PASS_START: pass_info_vld_o = 1'b1;
-        PASS_FINISH: pass_info_vld_o = 1'b0;
-        default: pass_info_vld_o = 1'b0;
-    endcase
-end
-
+// Gen_DMA_addr
 
 endmodule
