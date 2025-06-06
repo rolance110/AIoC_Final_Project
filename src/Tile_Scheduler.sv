@@ -86,11 +86,6 @@ logic DMA_filter_finish;
 logic DMA_bias_finish;
 logic DMA_opsum_finish;
 
-logic [6:0] num_tiles_D_i;
-logic [6:0] num_tiles_K_i;
-assign num_tiles_D_i = (in_D_i - 1) / tile_D_i; // ceil(in_D_i / tile_D_i)
-assign num_tiles_K_i = (out_K_i - 1) / tile_K_i; // ceil(in_K_i / tile_K_i)
-
 // FSM states
 typedef enum logic [3:0] {
     IDLE,
@@ -191,11 +186,6 @@ always_comb begin
 end
 
 
-always_comb begin
-    //fixme:reach_last_On_tile = (cs_ts == TILE_IDX_GEN)? (On_idx == tile_n_i - 1) : 1'b0;
-    reach_last_D_tile = (cs_ts == TILE_IDX_GEN)?  (d_idx == num_tiles_D_i - 1) : 1'b0;
-    reach_last_K_tile = (cs_ts == TILE_IDX_GEN)? (k_idx == num_tiles_K_i - 1): 1'b0;
-end
 
 logic [6:0] tile_On;
 
@@ -243,11 +233,7 @@ always_ff@(posedge clk or negedge rst_n) begin
 end
 
 logic [31:0] max_On_cnt;
-logic [6:0] max_OC_cnt;
-logic [6:0] max_IC_cnt;
 //* max_On_cnt: 目前 tile 最多能輸出的 On             數量
-//* max_OC_cnt: 目前 tile 最多能輸出的 output channel 數量
-//* max_IC_cnt: 目前 tile 最多能輸入的 input channel  數量
 always_comb begin
     if(layer_type_i == `POINTWISE)
         max_On_cnt = out_C_i * out_R_i; // Full Output Image Pixel
@@ -259,10 +245,7 @@ always_comb begin
         max_On_cnt = out_C_i * out_R_i; // Linear: Full Output Image Pixel
 end
 
-always_comb begin
-    max_OC_cnt = tile_K_i;
-    max_IC_cnt = tile_D_i;
-end
+
 
 logic [6:0] On_real; 
 logic [6:0] IC_real;
@@ -270,11 +253,32 @@ logic [6:0] OC_real;
 //* On_real: 目前 tile 實際總共要輸出 On_real 個 On (GLB => DRAM)
 //* IC_real: 目前 tile 實際總共要輸入 IC_real 個 input channel (DRAM => GLB)
 //* OC_real: 目前 tile 實際總共要輸入 OC_real 個 output channel pixel (DRAM <=> GLB)
+logic [6:0] remain_IC;
+assign remain_IC = in_D_i - completed_IC_cnt; // 剩餘的 input channel 數量
+logic [6:0] remain_OC;
+assign remain_OC = out_K_i - completed_OC_cnt; // 剩餘的 output channel 數量
+
+always_comb begin
+    if(remain_IC < tile_D_i)
+        IC_real = remain_IC; // 實際輸入的 input channel 數量
+    
+    else
+        IC_real = tile_D_i; // 最多輸入 32 個 input channel
+end
+
+always_comb begin
+    if(remain_OC < tile_K_i)
+        OC_real = remain_OC; // 實際輸出的 output channel 數量
+    else
+        OC_real = tile_K_i; // 最多輸出 32 個 output channel
+end
 
 
-
-
-
+always_comb begin
+    //fixme:reach_last_On_tile = (cs_ts == TILE_IDX_GEN)? (On_idx == tile_n_i - 1) : 1'b0;
+    reach_last_D_tile = (cs_ts == TILE_IDX_GEN)?  (d_idx == ((remain_IC < tile_D_i) || (remain_IC == tile_D_i) )) : 1'b0;
+    reach_last_K_tile = (cs_ts == TILE_IDX_GEN)? (k_idx == ((remain_OC < tile_K_i) || (remain_OC == tile_K_i))): 1'b0;
+end
 
 //fixme: On_idx: 計數 目前輸出的 opsum pixel 數量
 always_ff@(posedge clk or negedge rst_n) begin
