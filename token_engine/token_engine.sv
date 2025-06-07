@@ -5,6 +5,7 @@
 // 請依下列訊號，搭配您實際的 GLB/PE/PSUM Buffer 介面完成 RTL 實作。
 //==============================================================================
 
+`include "../include/define.svh"
 module token_engine_fsm (
     //==============================================================================
     // 1) Clock / Reset
@@ -16,7 +17,7 @@ module token_engine_fsm (
     // 2) Pass 觸發與參數 (由 Tile Scheduler / Layer Decoder 提供)
     //==============================================================================
     input  logic                      PASS_START,          // 1clk Pulse：收到後可開始向 GLB 抓值
-    input  logic [1:0]                pass_layer_type,     // 00=普通 Conv, 01=Pointwise (tile_D=32, tile_K=32), 10=Depthwise (tile_D=10, tile_K=10)
+    input  logic [1:0]                pass_layer_type,     // 
     input  logic [BYTE_CNT_WIDTH-1:0] pass_tile_n,         // 一次 DRAM→GLB 要搬入的 Ifmap bytes 總數
     input  logic [FLAG_WIDTH-1:0]     pass_flags,          // Flags 控制：bit[0]=bias_en, bit[1]=relu_en, bit[2]=skip_en, … 
 
@@ -53,7 +54,7 @@ module token_engine_fsm (
     //==============================================================================
     output logic [DATA_WIDTH-1:0] token_data,         // 送給 PE Array 的 Ifmap/Weight/Bias Pack
     // output logic                  token_valid,        // 1clk 脈衝：token_data + token_tag 現在有效
-    input  logic                  pe_busy,            // PE Array 拉高表示「目前忙碌中，尚在 Compute」
+    // input  logic                  pe_busy,            // PE Array 拉高表示「目前忙碌中，尚在 Compute」//FIXME: 感覺不用
 
     //==============================================================================
     // 6) Padding 控制 (Depthwise 或 空間 Padding)
@@ -77,6 +78,10 @@ module token_engine_fsm (
     // output logic pe_psum_ready,
     // input pe_psum_valid
     input logic [6:0] tile_K_o;
+    input logic [5:0] tile_D,
+
+    output logic [5:0] col_en, // 給pe確定有幾行要算
+    output logic [5:0] row_en, // 給pe確定有幾個WEIGHT要算
     //==============================================================================
     //==============================================================================
     // 8) Pass 完成回報 (送給 Tile Scheduler)
@@ -141,6 +146,14 @@ module token_engine_fsm (
     //===== 會拿通道數去 計算opsum_row_num
     logic [4:0] opsum_row_num; // OPSUM 有寫回的 row 數量
 
+    //---------------------------------------------------
+    // ofmap_addr
+    //---------------------------------------------------
+    logic [3:0] cnt_modify;
+    logic [8:0] hsk_cnt;
+    logic [5:0] d_cnt;
+    logic [5:0] k_cnt;
+    logic [31:0] channel_base;
 
     //---------------------------------------------------
     // opsum_addr 0~31
@@ -185,6 +198,8 @@ module token_engine_fsm (
 
     // 若需要外部索引 (tile_k_idx, tile_d_idx) 可在此新增，但簡化示例省略
 
+    assign col_en = tile_D;   
+    assign row_en = tile_K_o; 
     //==========================================================================
     // 1) Seq. Logic: 狀態暫存 (State Register)
     //==========================================================================
@@ -196,129 +211,140 @@ module token_engine_fsm (
             current_state   <= next_state;
         end
     end
-
-
-
     //==========================================================================
     // next_state
     //==========================================================================
     always_comb begin
-        case (current_state)
-            S_IDLE: begin
-                if (PASS_START) begin
-                    next_state = S_READ_WEIGHT;
-                end 
-                else begin
-                    next_state = S_IDLE;
-                end
-            end
-
-            S_READ_WEIGHT: begin
-                if (glb_read_valid && glb_read_ready) begin
-                    next_state = S_WRITE_WEIGHT;
-                end 
-                else begin
-                    next_state = S_READ_WEIGHT;
-                end
-            end
-
-
-            //FIXME: 可能改
-            S_WRITE_WEIGHT: begin
-                // 把 glb_read_data (Weight Pack) 推送到內部 pe，或做後續處理
-                if (cnt_weight == 6'd31 && pe_weight_ready && pe_weight_valid) begin // FIXME: check 32?
-                    next_state = S_READ_IFMAP;
-                end 
-                else if(pe_weight_ready && pe_weight_valid) begin
-                    next_state = S_READ_WEIGHT;
-                end 
-                else begin
-                    next_state = S_WRITE_WEIGHT;
-                end
-            end
-
-            S_READ_IFMAP: begin
-                if (glb_read_valid && glb_read_ready) begin
-                    next_state = S_WRITE_IFMAP;
-                end 
-                else begin
-                    next_state = S_READ_IFMAP;
-                end
-            end
-
-            //FIXME:可能改
-            S_WRITE_IFMAP: begin
-                // 把 glb_read_data (Ifmap Pack) 推送到內部 FIFO，或做後續處理
-
-                // 同時計算 control_padding (Depthwise / 空間 Padding)
-                // 若需要: control_padding = 1'b1;
-                if (cnt_ifmap == 6'd31 && pe_ifamp_valid && pe_ifmap_ready) begin  //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
-                    next_state = S_READ_BIAS;
-                end 
-                else if(pe_ifamp_valid && pe_ifmap_ready) begin
-                    next_state = S_READ_IFMAP;
-                end
-                else begin
-                    next_state = S_WRITE_IFMAP;
-                end
-            end
+        if(pass_layer_type == `POINTWISE) begin // 32-Channel Pack
+            case (current_state)
             
-            S_READ_BIAS: begin
-                if (glb_read_valid && glb_read_ready) begin
-                    next_state = S_WRITE_BIAS;
-                end 
-                else begin
-                    next_state = S_READ_BIAS;
-                end
-            end
-
-
-            //FIXME:可能改
-            S_WRITE_BIAS: begin
-                if ((cnt_bias == 6'd31) && pe_bias_valid && pe_bias_ready) begin //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
-                    next_state = S_WAIT_OPSUM;
-                end 
-                else if (pe_bias_valid && pe_bias_ready) begin
-                    next_state = S_READ_BIAS;
-                end 
-                else begin
-                    next_state = S_WRITE_BIAS;
-                end
-            end
-            
-            S_WAIT_OPSUM: begin
-                // 等待 PE / PSUM Buffer pop 出累加結果 (OPSUM)
-                if (pe_psum_valid && pe_psum_ready) begin
-                    next_state = S_WRITE_OPSUM;
-                end 
-                else begin
-                    next_state = S_WAIT_OPSUM;
-                end
-            end
-
-            S_WRITE_OPSUM: begin
-                // 將剛 Pop 出來的 OPSUM 寫回 GLB
-                if (glb_write_valid && glb_write_ready) begin
-                    //FIXME: 還沒寫
-                    if (total_opsum_num_cnt == (pass_tile_n * tile_K_o)) begin //整個算完
-                        next_state = S_PASS_DONE;
+                S_IDLE: begin
+                    if (PASS_START) begin
+                        next_state = S_READ_WEIGHT;
+                    end 
+                    else begin
+                        next_state = S_IDLE;
                     end
-                    else if (cnt_psum == opsum_row_num) begin
-                        next_state = S_READ_IFMAP; // FIXME: 這裡的條件要根據實際情況調整
+                end
+
+                S_READ_WEIGHT: begin
+                    if (glb_read_valid && glb_read_ready) begin
+                        next_state = S_WRITE_WEIGHT;
+                    end 
+                    else begin
+                        next_state = S_READ_WEIGHT;
                     end
+                end
+
+                //FIXME: 可能改
+                S_WRITE_WEIGHT: begin
+                    // 把 glb_read_data (Weight Pack) 推送到內部 pe，或做後續處理
+                    if (cnt_weight == 6'd31 && pe_weight_ready && pe_weight_valid) begin // FIXME: check 32?
+                        next_state = S_READ_IFMAP;
+                    end 
+                    else if(pe_weight_ready && pe_weight_valid) begin
+                        next_state = S_READ_WEIGHT;
+                    end 
+                    else begin
+                        next_state = S_WRITE_WEIGHT;
+                    end
+                end
+
+                S_READ_IFMAP: begin
+                    if (glb_read_valid && glb_read_ready) begin
+                        next_state = S_WRITE_IFMAP;
+                    end 
+                    else begin
+                        next_state = S_READ_IFMAP;
+                    end
+                end
+
+                //FIXME:可能改
+                S_WRITE_IFMAP: begin
+                    // 把 glb_read_data (Ifmap Pack) 推送到內部 FIFO，或做後續處理
+
+                    // 同時計算 control_padding (Depthwise / 空間 Padding)
+                    // 若需要: control_padding = 1'b1;
+                    if (cnt_ifmap == 6'd31 && pe_ifamp_valid && pe_ifmap_ready) begin  //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
+                        next_state = S_READ_BIAS;
+                    end 
+                    else if(pe_ifamp_valid && pe_ifmap_ready) begin
+                        next_state = S_READ_IFMAP;
+                    end
+                    else begin
+                        next_state = S_WRITE_IFMAP;
+                    end
+                end
+                
+                S_READ_BIAS: begin
+                    if (glb_read_valid && glb_read_ready) begin
+                        next_state = S_WRITE_BIAS;
+                    end 
+                    else begin
+                        next_state = S_READ_BIAS;
+                    end
+                end
+
+
+                //FIXME:可能改
+                S_WRITE_BIAS: begin
+                    if ((cnt_bias == 6'd31) && pe_bias_valid && pe_bias_ready) begin //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
+                        next_state = S_WAIT_OPSUM;
+                    end 
+                    else if (pe_bias_valid && pe_bias_ready) begin
+                        next_state = S_READ_BIAS;
+                    end 
+                    else begin
+                        next_state = S_WRITE_BIAS;
+                    end
+                end
+                
+                S_WAIT_OPSUM: begin
+                    // 等待 PE / PSUM Buffer pop 出累加結果 (OPSUM)
+                    if (pe_psum_valid && pe_psum_ready) begin
+                        next_state = S_WRITE_OPSUM;
+                    end 
                     else begin
                         next_state = S_WAIT_OPSUM;
                     end
-                end 
-                else begin
-                    next_state = S_WRITE_OPSUM;
                 end
-            end
 
-            S_PASS_DONE: begin //送出一個東西啟動DMA搬值(PASS_DONE)
-                next_state = S_IDLE;
-            end
-        endcase
+                S_WRITE_OPSUM: begin
+                    // 將剛 Pop 出來的 OPSUM 寫回 GLB
+                    if (glb_write_valid && glb_write_ready) begin
+                        //FIXME: 還沒寫
+                        if (total_opsum_num_cnt == (pass_tile_n * tile_K_o)) begin //整個算完
+                            next_state = S_PASS_DONE;
+                        end
+                        else if (cnt_psum == opsum_row_num) begin
+                            next_state = S_READ_IFMAP; // FIXME: 這裡的條件要根據實際情況調整
+                        end
+                        else begin
+                            next_state = S_WAIT_OPSUM;
+                        end
+                    end 
+                    else begin
+                        next_state = S_WRITE_OPSUM;
+                    end
+                end
+
+                S_PASS_DONE: begin //送出一個東西啟動DMA搬值(PASS_DONE)
+                    next_state = S_IDLE;
+                end
+            endcase
+        end
+        else if (pass_layer_type == `DEPTHWISE) begin
+
+
+        end
+
+        else if (pass_layer_type == `STANDARD) begin
+
+        end
+
+        else begin //LINEAR
+            
+        end
     end
 
     //---------- ifmap ----------//
@@ -410,11 +436,20 @@ always_ff@(posedge clk) begin
     if(rst) begin
         weight_addr <= 0;
     end 
-    else if(current_state == IDLE) begin
-        weight_addr <= BASE_WEIGHT;
-    end 
-    else if(current_state == S_WRITE_WEIGHT && pe_weight_valid && pe_weight_ready) begin
-        weight_addr <= weight_addr + 4;
+    else if (pass_layer_type == `POINTWISE) begin
+        if(current_state == IDLE) begin
+            weight_addr <= BASE_WEIGHT;
+        end 
+        else if(current_state == S_WRITE_WEIGHT && pe_weight_valid && pe_weight_ready) begin
+            weight_addr <= weight_addr + 4;
+        end
+    end
+    else if (pass_layer_type == `DEPTHWISE) begin
+
+
+
+
+
     end
 end
 
@@ -427,32 +462,44 @@ always_ff@(posedge clk) begin
     if(rst) begin
        d_cnt <= 0; // d_cnt 用於計算 Ifmap 的 Channel Pack 數量
     end 
-    else if((current_state == S_WRITE_IFMAP || current_state == S_WRITE_BIAS) && 
-        (pe_ifamp_valid && pe_ifmap_ready || pe_bias_valid && pe_bias_ready)) begin
-        d_cnt <= (d_cnt == tile_D) ? 0 : d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    else if (pass_layer_type == `POINTWISE) begin
+        if((current_state == S_WRITE_IFMAP || current_state == S_WRITE_BIAS) && 
+            (pe_ifamp_valid && pe_ifmap_ready || pe_bias_valid && pe_bias_ready)) begin
+            d_cnt <= (d_cnt == tile_D) ? 0 : d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        end
     end
-    // else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-    //     //FIXME:
-    // end
+    else if (pass_layer_type == `DEPTHWISE) begin
 
+
+
+
+    end
 end
+
 // n_cnt
 always_ff@(posedge clk) begin
     if(rst) begin
         n_cnt <= 0; // n_cnt 用於計算 Ifmap 的 Channel Pack 數量
     end
-    else if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
-        if(d_cnt == tile_D)
-            n_cnt <= ((n_cnt << 2) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    else if (pass_layer_type == `POINTWISE) begin
+        if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+            if(d_cnt == tile_D)
+                n_cnt <= ((n_cnt << 2) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        end
+        else if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
+            if(d_cnt == tile_D)
+                n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        end
+        else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+            //FIXME:
+            if(d_cnt == tile_D)
+                n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        end
     end
-    else if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
-        if(d_cnt == tile_D)
-            n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-    end
-    else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-        //FIXME:
-        if(d_cnt == tile_D)
-            n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+
+    else if (pass_layer_type == `DEPTHWISE) begin
+
+
     end
 end
 
@@ -461,18 +508,25 @@ always_ff@(posedge clk) begin
     if(rst) begin
         k_cnt <= 0; // k_cnt 用於計算 Weight 的 Channel Pack 數量
     end 
-    else if(current_state == S_WRITE_OPSUM && pe_weight_valid && pe_weight_ready) begin
-        if(k_cnt == tile_K_o - 1) begin
-            k_cnt <= 0; // 重置 k_cnt
-        end 
-        else if (current_state == S_WRITE_OPSUM && (hsk_cnt == (cnt_modify + 1) << 3)) begin
-            k_cnt <= 0;
-        end
-        else begin
-            if (hsk_cnt[0] && glb_write_ready && glb_write_valid) begin
-                k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    else if (pass_layer_type == `POINTWISE) begin
+        if(current_state == S_WRITE_OPSUM && pe_weight_valid && pe_weight_ready) begin
+            if(k_cnt == tile_K_o - 1) begin
+                k_cnt <= 0; // 重置 k_cnt
+            end 
+            else if (current_state == S_WRITE_OPSUM && (hsk_cnt == (cnt_modify + 1) << 3)) begin
+                k_cnt <= 0;
+            end
+            else begin
+                if (hsk_cnt[0] && glb_write_ready && glb_write_valid) begin
+                    k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+                end
             end
         end
+    end
+    else if (pass_layer_type == `DEPTHWISE) begin
+
+
+        
     end
 end
 
@@ -480,11 +534,18 @@ always_ff@(posedge clk) begin
     if(rst) begin
         ifmap_addr <= 0;
     end 
-    else if(current_state == IDLE) begin
-        ifmap_addr <= BASE_IFMAP;
-    end 
-    else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
-        ifmap_addr <= ifmap_addr + (n_cnt << 2) + channel_base; // n_cnt 為 4-Channel Pack 的數量        
+    else if (pass_layer_type == `POINTWISE) begin
+        if(current_state == IDLE) begin
+            ifmap_addr <= BASE_IFMAP;
+        end 
+        else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+            ifmap_addr <= ifmap_addr + (n_cnt << 2) + channel_base; // n_cnt 為 4-Channel Pack 的數量        
+        end
+    end
+    else if (pass_layer_type == `DEPTHWISE) begin
+
+
+
     end
 end
 
@@ -493,26 +554,34 @@ always_ff@(posedge clk) begin
     if(rst) begin
         bias_addr <= 0;
     end 
-    else if(current_state == IDLE) begin
-        bias_addr <= BASE_BIAS;
-    end 
-    else if(current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
-        bias_addr <= bias_addr + (n_cnt << 2 + channel_base) << 1; // n_cnt 為 4-Channel Pack 的數量
+    else if (pass_layer_type == `POINTWISE) begin
+        if(current_state == IDLE) begin
+            bias_addr <= BASE_BIAS;
+        end 
+        else if(current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
+            bias_addr <= bias_addr + (n_cnt << 2 + channel_base) << 1; // n_cnt 為 4-Channel Pack 的數量
+        end
+    end
+    else if (pass_layer_type == `DEPTHWISE) begin
+
     end
 end
 
 //---------------------------------------------------
 // ofmap_addr
 //---------------------------------------------------
-logic [3:0] cnt_modify;
-logic [8:0] hsk_cnt;
-logic [5:0] d_cnt;
-logic [5:0] k_cnt;
-logic [31:0] channel_base;
 
-assign channel_base = pass_tile_n * d_cnt;
+always_comb begin
+    if (pass_layer_type == `POINTWISE) begin
+        channel_base = pass_tile_n * d_cnt;
+    end
+    else if (pass_layer_type == `DEPTHWISE) begin
 
-// cnt_modify
+    end
+
+end
+
+// cnt_modify  //FIXME: 只有 POINTWISE 才有用到
 always_ff@(posedge clk) begin
     if(rst) begin
         cnt_modify <= 0; 
@@ -528,7 +597,7 @@ always_ff@(posedge clk) begin
     end 
 end
 
-// hsk_cnt
+// hsk_cnt  //FIXME: 只有 POINTWISE 才有用到
 always_ff@(posedge clk) begin
     if(rst) begin
         hsk_cnt <= 0; // 用於計數 Handshake 次數
@@ -541,8 +610,16 @@ always_ff@(posedge clk) begin
     end 
 end
 
+always_comb begin
+    if (pass_layer_type == `POINTWISE) begin
+        opsum_num =  k_cnt * pass_tile_n;
+    end
+    else if (pass_layer_type == `DEPTHWISE) begin
 
-assign opsum_num =  k_cnt * pass_tile_n;
+    end
+end
+
+// FIXME: 只有POINTWISE有   不改
 //---------------------------------------------------
 // opsum_addr 0~3
 //---------------------------------------------------
@@ -812,49 +889,54 @@ end
 // FIXME: 
 //---------------------------------------------------
 // opsum_addr
-always_comb begin   
-    case(k_cnt)
-        6'd0: opsum_addr = opsum_addr0;
-        6'd1: opsum_addr = opsum_addr1;
-        6'd2: opsum_addr = opsum_addr2;
-        6'd3: opsum_addr = opsum_addr3;
-        6'd4: opsum_addr = opsum_addr4;
-        6'd5: opsum_addr = opsum_addr5;
-        6'd6: opsum_addr = opsum_addr6;
-        6'd7: opsum_addr = opsum_addr7;
-        6'd8: opsum_addr = opsum_addr8;
-        6'd9: opsum_addr = opsum_addr9;
-        6'd10: opsum_addr = opsum_addr10;
-        6'd11: opsum_addr = opsum_addr11;
-        6'd12: opsum_addr = opsum_addr12;
-        6'd13: opsum_addr = opsum_addr13;
-        6'd14: opsum_addr = opsum_addr14;
-        6'd15: opsum_addr = opsum_addr15;
-        6'd16: opsum_addr = opsum_addr16;
-        6'd17: opsum_addr = opsum_addr17;
-        6'd18: opsum_addr = opsum_addr18;
-        6'd19: opsum_addr = opsum_addr19;
-        6'd20: opsum_addr = opsum_addr20;
-        6'd21: opsum_addr = opsum_addr21;
-        6'd22: opsum_addr = opsum_addr22;
-        6'd23: opsum_addr = opsum_addr23;
-        6'd24: opsum_addr = opsum_addr24;
-        6'd25: opsum_addr = opsum_addr25;
-        6'd26: opsum_addr = opsum_addr26;
-        6'd27: opsum_addr = opsum_addr27;
-        6'd28: opsum_addr = opsum_addr28;
-        6'd29: opsum_addr = opsum_addr29;
-        6'd30: opsum_addr = opsum_addr30;
-        6'd31: opsum_addr = opsum_addr31;
-        default :opsum_address = 6'd0; // 預設為最後一個地址
-    endcase
+always_comb begin 
+    if (pass_layer_type == `POINTWISE) begin  
+        case(k_cnt)
+            6'd0: opsum_addr = opsum_addr0;
+            6'd1: opsum_addr = opsum_addr1;
+            6'd2: opsum_addr = opsum_addr2;
+            6'd3: opsum_addr = opsum_addr3;
+            6'd4: opsum_addr = opsum_addr4;
+            6'd5: opsum_addr = opsum_addr5;
+            6'd6: opsum_addr = opsum_addr6;
+            6'd7: opsum_addr = opsum_addr7;
+            6'd8: opsum_addr = opsum_addr8;
+            6'd9: opsum_addr = opsum_addr9;
+            6'd10: opsum_addr = opsum_addr10;
+            6'd11: opsum_addr = opsum_addr11;
+            6'd12: opsum_addr = opsum_addr12;
+            6'd13: opsum_addr = opsum_addr13;
+            6'd14: opsum_addr = opsum_addr14;
+            6'd15: opsum_addr = opsum_addr15;
+            6'd16: opsum_addr = opsum_addr16;
+            6'd17: opsum_addr = opsum_addr17;
+            6'd18: opsum_addr = opsum_addr18;
+            6'd19: opsum_addr = opsum_addr19;
+            6'd20: opsum_addr = opsum_addr20;
+            6'd21: opsum_addr = opsum_addr21;
+            6'd22: opsum_addr = opsum_addr22;
+            6'd23: opsum_addr = opsum_addr23;
+            6'd24: opsum_addr = opsum_addr24;
+            6'd25: opsum_addr = opsum_addr25;
+            6'd26: opsum_addr = opsum_addr26;
+            6'd27: opsum_addr = opsum_addr27;
+            6'd28: opsum_addr = opsum_addr28;
+            6'd29: opsum_addr = opsum_addr29;
+            6'd30: opsum_addr = opsum_addr30;
+            6'd31: opsum_addr = opsum_addr31;
+            default :opsum_address = 6'd0; // 預設為最後一個地址
+        endcase
+    end
+    else if (pass_layer_type == `DEPTHWISE) begin
+    
+    
+    end
 end
 //---------------------------------------------------
 // FIXME: 
 //---------------------------------------------------
 always_comb begin
     case(current_state)
-
         S_READ_WEIGHT, S_WRITE_WEIGHT: begin
             glb_read_addr = weight_addr; 
         end
@@ -864,14 +946,9 @@ always_comb begin
         S_READ_BIAS, S_WRITE_BIAS: begin
             glb_read_addr = bias_addr; 
         end
-        // S_WRITE_OPSUM: begin
-        //     glb_write_addr = opsum_addr; 
-        // end
-
         default:begin
             glb_read_addr = '0; // 預設為 0
         end
-
     endcase
 end
 
@@ -896,6 +973,7 @@ always_ff @(posedge clk) begin
         total_opsum_num_cnt <= total_opsum_num_cnt + 1; // 每次寫回 OPSUM 都增加計數
     end 
 end
+
 //---------------------------------------------------
 // FIXME: 
 //---------------------------------------------------
