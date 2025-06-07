@@ -4,12 +4,12 @@
 // Decode the incoming Layer Descriptor (uLD) and produce all the
 // control parameters downstream (tile sizes, num_tiles, out_dims, base_addrs…)
 //------------------------------------------------------------------------------
-
+`include "../include/define.svh"
 module layer_decoder #(
-    parameter int GLB_BYTES  = 64 * 1024,
-    parameter int BYTES_A      = 1,
-    parameter int BYTES_W      = 1,
-    parameter int BYTES_P      = 2
+    parameter int GLB_BYTES  = `GLB_MAX_BYTES, // Global SRAM capacity in bytes
+    parameter int BYTES_I      = `BYTES_I, //input feature map bytes
+    parameter int BYTES_W      = `BYTES_W, //weight bytes
+    parameter int BYTES_P      = `BYTES_P  //partial sum bytes
 ) (
     input  logic         clk,
     input  logic         rst_n,
@@ -50,17 +50,13 @@ module layer_decoder #(
     
     output logic [3:0]   flags_o,
     output logic [7:0]   quant_scale_o,
+    //!
 
 //* tile lengths (size not sure)
-    output logic [6:0]   tile_R_o,
+    output logic [31:0]  tile_n_o, //todo: max number of tiles
     output logic [6:0]   tile_D_o,
     output logic [6:0]   tile_K_o,
-    output logic [6:0]   out_tile_R_o,
 
-//* num tiles (size not sure)
-    output logic [6:0]   num_tiles_R_o,
-    output logic [6:0]   num_tiles_D_o,
-    output logic [6:0]   num_tiles_K_o,
 
 //* ofmap size (size not sure)
     output logic [6:0]   out_R_o,
@@ -74,10 +70,11 @@ endfunction
 
 logic [6:0] padded_R, padded_C;
 logic [1:0] kH, kW;
-logic [6:0] tile_R_max, tile_R_dw;
 logic [6:0] out_R, out_C;
 logic [6:0] tile_D, tile_K;
+logic [6:0] tile_D_f, tile_K_f;
 
+logic [31:0] tile_n; // max number of tiles
 
 //* Kernel size (kH, kW)
 always_comb begin
@@ -92,9 +89,31 @@ end
 //* tile_D, tile_K
 always_comb begin
     unique case (layer_type_i)
-      2'd0: begin tile_D = 6'd32; tile_K = 6'd32; end  // Pointwise
-      2'd1: begin tile_D = 6'd1;  tile_K = 6'd8; end  //todo: Depthwise Set tile_D=1
-      default: begin tile_D = 6'd32; tile_K = 6'd32; end
+        2'd0: begin tile_D = 7'd32; tile_K = 7'd32; end  // Pointwise
+        2'd1: begin tile_D = 7'd10;  tile_K = 7'd10; end // Depthwise
+        2'd2: begin tile_D = 7'd10; tile_K = 7'd10; end  // Standard
+        default: begin tile_D = 7'd32; tile_K = 7'd32; end
+    endcase
+end
+
+//* tile_D_f, tile_K_f
+always_comb begin
+    unique case (layer_type_i)
+        2'd0: begin tile_D_f = 7'd32; tile_K_f = 7'd32; end  // Pointwise
+        2'd1: begin tile_D_f = 7'd1;  tile_K_f = 7'd10; end  //* Depthwise kernel size 1x3x3
+        2'd2: begin tile_D_f = 7'd10; tile_K_f = 7'd10; end  // Standard
+        default: begin tile_D_f = 7'd32; tile_K_f = 7'd32; end
+    endcase
+end
+
+//* M
+logic [6:0] M;
+always_comb begin
+    unique case (layer_type_i)
+        2'd0: M = 7'd1; // Pointwise
+        2'd1: M = in_C_i+7'd1; // Depthwise
+        2'd2: M = in_C_i+7'd1; // Standard
+        default: M = 7'd1; // Linear
     endcase
 end
 
@@ -105,31 +124,24 @@ assign padded_C = in_C_i + pad_L_i + pad_R_i; // 計算 padded C
 assign out_R = ceil_div(padded_R - kH, stride_i) + 1;
 assign out_C = ceil_div(padded_C - kW, stride_i) + 1;
 
-//* tile_R_max, tile_R
-
-
-calc_tile_R_max #(
+//* n max
+calc_n_max #(
     .GLB_BYTES(GLB_BYTES),
-    .BYTES_A(BYTES_A),
+    .BYTES_I(BYTES_I),
     .BYTES_W(BYTES_W),
     .BYTES_P(BYTES_P)
-) calc_tile_R_max_inst (
-    .kernel_size(kH), 
-    .stride(stride_i), 
-    .padded_C(padded_C), 
+) calc_n_max_u (
+//* input
+    .kH(kH),
+    .kW(kW),   
     .tile_D(tile_D), 
-    .tile_K(tile_K), 
-    .out_C(out_C), 
-    .tile_R_max(tile_R_max)
+    .tile_K(tile_K),
+    .tile_D_f(tile_D_f),
+    .tile_K_f(tile_K_f),
+    .M(M), // Global SRAM capacity in bytes
+//* output
+    .tile_n(tile_n)
 );
-
-assign tile_R = tile_R_max - ( ( tile_R_max - kH ) % stride_i );
-assign out_tile_R     = ceil_div(tile_R - kH, stride_i) + 1;
-
-//* num_tiles
-assign num_tiles_R_o = ceil_div(padded_R, tile_R_o);
-assign num_tiles_D_o = ceil_div(in_D_i, tile_D);
-assign num_tiles_K_o = ceil_div(out_K_i, tile_K);
 
 
 //--------------------------------------------------------------------------
@@ -160,10 +172,9 @@ always_ff @(posedge clk or negedge rst_n) begin
         
         quant_scale_o   <= 8'd0;
         
-        tile_R_o        <= 7'd0;
+        tile_n_o         <= 32'd0;
         tile_D_o        <= 7'd0;
         tile_K_o        <= 7'd0;
-        out_tile_R_o    <= 7'd0;
         
         out_R_o         <= 7'd0;
         out_C_o         <= 7'd0;
@@ -191,10 +202,9 @@ always_ff @(posedge clk or negedge rst_n) begin
         
         quant_scale_o   <= quant_scale_i;
         
-        tile_R_o        <= tile_R;
+        tile_n_o         <= tile_n;
         tile_D_o        <= tile_D;
         tile_K_o        <= tile_K;
-        out_tile_R_o    <= out_tile_R;
 
         out_R_o         <= out_R;
         out_C_o         <= out_C;
@@ -209,58 +219,33 @@ endmodule
  *  Module : calc_tile_R_max
  *  Purpose: 計算最大 tile_R，考慮各種位元組大小參數
  *==========================================================*/
-module calc_tile_R_max #(
-    parameter int GLB_BYTES = 64 * 1024,  // 全局 SRAM 容量 (byte)
-    parameter int BYTES_A   = 1,          // Activation bytes
-    parameter int BYTES_W   = 1,          // Weight bytes
-    parameter int BYTES_P   = 2           // Partial-sum bytes
+module calc_n_max #(
+    parameter int GLB_BYTES = `GLB_MAX_BYTES,  // 全局 SRAM 容量 (byte)
+    parameter int BYTES_I   = `BYTES_I,          // Activation bytes
+    parameter int BYTES_W   = `BYTES_W,          // Weight bytes
+    parameter int BYTES_P   = `BYTES_P           // Partial-sum bytes
 )(
     /* ---- Inputs ---- */
-    input  logic [1:0]  kernel_size,     // 卷積核大小
-    input  logic [1:0]  stride,          // 步幅
-    input  logic [6:0]  padded_C,        // IFmap 寬度 (#channels)
-    input  logic [6:0]  tile_D,          // IFmap 深度 tile
-    input  logic [6:0]  tile_K,          // Kernel tile
-    input  logic [6:0]  out_C,           // OFmap 寬度 (#channels)
+    input  logic [1:0]  kH,           
+    input  logic [1:0]  kW,       
+    input  logic [6:0]  tile_D,       
+    input  logic [6:0]  tile_K,      
+    input  logic [6:0]  tile_D_f,     
+    input  logic [6:0]  tile_K_f,    
+
+    input  logic [6:0]  M, // Global SRAM capacity in bytes    
     /* ---- Output ---- */
-    output logic [6:0]  tile_R_max       // 計算出的最大 tile_R
+    output logic [31:0]  tile_n, // max number of tiles
+    output logic [31:0]  tile_n_flat           
 );
 
-    /* ---- 中介變數 ---- */
-    logic [31:0] A, B, D, C;
-    logic [31:0] numerator, denominator, result;
+logic [31:0] n_max;
+logic [31:0] tmp1, tmp2, tmp3;
 
-    // A = 活化資料大小: padded_C * tile_D * BYTES_A (bytes)
-    assign A = padded_C * tile_D * BYTES_A;
-
-    // D = 每列部分和大小: tile_K * out_C * BYTES_P (bytes)
-    assign D = tile_K * out_C * BYTES_P;
-
-    // B = 權重 + 偏差大小:
-    //   權重 = tile_D*tile_K*kernel_size^2 * BYTES_W
-    //   偏差 = tile_K * BYTES_P
-    assign B = tile_D
-             * tile_K
-             * kernel_size
-             * kernel_size
-             * BYTES_W
-             + tile_K * BYTES_P;
-
-    // C = B + D - (D * kernel_size)/stride
-    assign C = B
-             + D
-             - (D * kernel_size) / stride;
-
-    // 分子、分母
-    assign numerator   = GLB_BYTES - C;
-    assign denominator = A + (D / stride);
-
-    // 加入除以 0 保護；整數除法自動向下取整
-    assign result = (denominator != 0)
-                    ? numerator / denominator
-                    : 32'd0;
-
-    // 取低 7 bits 作為輸出
-    assign tile_R_max = result[6:0];
+assign tmp1 = kH*kW*tile_D_f*tile_K_f*BYTES_W; // Weight bytes
+assign tmp2 = tile_D*BYTES_I + tile_K*BYTES_P; // ifmap bytes, opsum
+assign tmp3 = M*2*tile_D*BYTES_I;
+assign n_max = (GLB_BYTES - tmp1 - tmp3) / tmp2;
+assign tile_n = {n_max[31:2], 2'b0};
 
 endmodule
