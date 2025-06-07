@@ -2313,3 +2313,6 @@ wvZoomOut -win $_nWave1
 wvZoomOut -win $_nWave1
 wvZoomOut -win $_nWave1
 wvZoomOut -win $_nWave1
+wvSaveSignal -win $_nWave1 \
+           "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc"
+wvExit
