@@ -14,7 +14,7 @@ logic [15:0] prod_reg;
 logic [7:0] weight_reg;
 wire zero_f;
 //store weight
-always_ff @(posedge clk or negedge reset) begin
+always_ff @(posedge clk) begin
     if(reset)
         weight_reg <= 8'd0;
     else if(weight_en)
@@ -22,7 +22,7 @@ always_ff @(posedge clk or negedge reset) begin
 end
 
 //send ifmap to next PE
-always_ff @( posedge clk or negedge reset ) begin
+always_ff @( posedge clk ) begin
     if(reset)
         ifmap_out <= 8'd0;
     else if(prod_out_en)
@@ -34,7 +34,7 @@ end
 assign zero_f = (weight_reg == 8'd0) || (ifmap_in == 8'd0);
 assign prod_reg = (zero_f) ? 16'd0 : ifmap_in * weight_reg;
 
-always_ff @( posedge clk or negedge reset ) begin
+always_ff @( posedge clk ) begin
     if(reset)
         prod_out <= 16'd0;
     else if(prod_out_en)
