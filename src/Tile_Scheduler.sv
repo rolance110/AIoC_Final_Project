@@ -35,7 +35,7 @@ module Tile_Scheduler #(
     input  logic [9:0]    in_C_i,           // ifmap/ofmap width
     input  logic [9:0]    in_D_i,           // input channel total
     input  logic [9:0]    out_K_i,         // ifmap/ofmap height
-    input  logic [9:0]    out_R_i,          // ofmap height
+    input  logic [6:0]    out_R_i,          // ofmap height
     input  logic [9:0]    out_C_i,          // ofmap width
     input  logic [31:0]   base_ifmap_i,
     input  logic [31:0]   base_weight_i,
@@ -53,6 +53,7 @@ module Tile_Scheduler #(
   //=== Token Engine Interface ===
     output logic          pass_start_o, // Pass start signal
     input  logic          pass_done_i,  // Pass done  signal
+
     output logic [31:0]   GLB_weight_base_addr_o,
     output logic [31:0]   GLB_ifmap_base_addr_o,
     output logic [31:0]   GLB_opsum_base_addr_o,
@@ -62,7 +63,9 @@ module Tile_Scheduler #(
     output logic [1:0]    layer_type_o, // 0=PW, 1=DW, 2=STD, 3=LIN
     output logic [3:0]    flags_o,       // ReLU / Linear / Residual / Bias
 
-    output logic [6:0]    out_R_o, out_C_o // output size
+    output logic [6:0]    out_R_o, out_C_o, // output size
+
+    output logic tile_reach_max_o // tile reach max
 );
 
 
@@ -83,7 +86,6 @@ logic reach_last_On_tile; // reach last output channel tile
 logic reach_last_R_tile;
 logic reach_last_K_tile;
 
-logic tile_reach_max;
 logic DMA_ifmap_finish;
 logic DMA_filter_finish;
 logic DMA_bias_finish;
@@ -114,7 +116,7 @@ always_ff @(posedge clk or negedge rst_n) begin
     else
         cs_ts <= ns_ts;
 end
-
+assign tile_reach_max_o = reach_last_On_tile && reach_last_D_tile && reach_last_K_tile; // 是否已經處理完所有 tile
 always_comb begin
     case (cs_ts)
         IDLE: begin
@@ -126,7 +128,7 @@ always_comb begin
         uLD_LOAD:
             ns_ts = TILE_IDX_GEN;
         TILE_IDX_GEN:begin
-            if (tile_reach_max)
+            if (tile_reach_max_o)
                 ns_ts = IDLE; // no tiles to process
             else
                 ns_ts = GEN_ADDR_filter;
@@ -135,7 +137,7 @@ always_comb begin
             ns_ts = DMA_filter;
         end
         DMA_filter:begin
-            if (DMA_filter_finish && dma_interrupt_i)
+            if (/*DMA_filter_finish && */dma_interrupt_i)
                 ns_ts = GEN_ADDR_ifmap;
             else
                 ns_ts = DMA_filter;
@@ -144,20 +146,20 @@ always_comb begin
             ns_ts = DMA_ifmap;
         end
         DMA_ifmap:begin
-            if (dma_interrupt_i)
+            /*if (dma_interrupt_i)
                 ns_ts = GEN_ADDR_ifmap;
-            else if (DMA_ifmap_finish && dma_interrupt_i)
+            else */if (/*DMA_ifmap_finish && */dma_interrupt_i)
                 ns_ts = GEN_ADDR_bias;
             else
-                ns_ts = DMA_filter;
+                ns_ts = DMA_ifmap;
         end
         GEN_ADDR_bias:begin
             ns_ts = DMA_bias;
         end
         DMA_bias:begin
-            if (dma_interrupt_i)
+            /*if (dma_interrupt_i)
                 ns_ts = GEN_ADDR_bias;
-            else if (DMA_bias_finish && dma_interrupt_i)
+            else */if (/*DMA_bias_finish && */dma_interrupt_i)
                 ns_ts = PASS_START;
             else
                 ns_ts = DMA_bias;
@@ -175,9 +177,9 @@ always_comb begin
             ns_ts = DMA_opsum;
         end
         DMA_opsum:begin
-            if (dma_interrupt_i)
+            /*if (dma_interrupt_i)
                 ns_ts = GEN_ADDR_opsum;
-            else if (DMA_opsum_finish && dma_interrupt_i)
+            else */if (/*DMA_opsum_finish && */dma_interrupt_i)
                 ns_ts = TILE_IDX_GEN;
             else
                 ns_ts = DMA_opsum;
@@ -188,7 +190,12 @@ always_comb begin
     endcase
 end
 
-
+always_comb begin
+    if(cs_ts == PASS_START)
+        pass_start_o = 1'b1; // Pass start signal
+    else
+        pass_start_o = 1'b0; // Pass not started
+end
 
 logic [6:0] tile_On;
 
@@ -219,7 +226,7 @@ logic [6:0] OC_real;
 //* On_real: 目前 tile 實際總共要輸出 On_real 個 On (GLB => DRAM)
 //* IC_real: 目前 tile 實際總共要輸入 IC_real 個 input channel (DRAM => GLB)
 //* OC_real: 目前 tile 實際總共要輸入 OC_real 個 output channel pixel (DRAM <=> GLB)
-logic [6:0] remain_On;
+logic [31:0] remain_On;
 assign remain_On = max_On_cnt - completed_On_cnt; // 剩餘的 output pixel 數量
 logic [6:0] remain_IC;
 assign remain_IC = in_D_i - completed_IC_cnt; // 剩餘的 input channel 數量
@@ -233,7 +240,7 @@ always_comb begin
         On_real = tile_n_i; // 最多輸出 32 個 opsum pixel
 end
 
-
+//todo: 要使用 tile_D_f_i 判斷
 always_comb begin
     if(remain_IC < tile_D_i)
         IC_real = remain_IC; // 實際輸入的 input channel 數量
@@ -300,12 +307,12 @@ always_ff@(posedge clk or negedge rst_n) begin
         completed_IC_cnt <= 7'd0;
         d_idx <= 7'd0; // 歸 0
     end
-    else if (cs_ts == uLD_LOAD)begin
-        completed_IC_cnt <= 7'd0;
+    else if (cs_ts == uLD_LOAD)begin //depthwise 不考慮 input channel
+        completed_IC_cnt <= layer_type_i==`DEPTHWISE? in_D_i: 7'd0; 
         d_idx <= 7'd0; // 歸 0
     end
     else if (reach_last_D_tile && reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
-        completed_IC_cnt <= 7'd0; // 歸 0
+        completed_IC_cnt <= layer_type_i==`DEPTHWISE? in_D_i: 7'd0; 
         d_idx <= 7'd0; // 歸 0
     end
     else if (reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
