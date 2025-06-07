@@ -1,0 +1,142 @@
+0
+39
++define++FSDB_ALL
++incdir+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./include+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim
++itf+/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcsdp_lite.tab
++notimingcheck
++vcsd1
++vpi
+-Mamsrun=
+-Masflags=
+-Mcc=gcc
+-Mcfl= -pipe -fPIC -O -I/usr/cad/synopsys/vcs/2024.09-sp2/include
+-Mcplusplus=g++
+-Mcrt0=
+-Mcrtn=
+-Mcsrc=
+-Mexternalobj=
+-Mldflags= -rdynamic
+-Mobjects= /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/libvirsim.so /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/liberrorinf.so /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/libsnpsmalloc.so /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/libvfs.so
+-Mout=simv
+-Msaverestoreobj=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcs_save_restore_new.o
+-Msyslibs=/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/pli.a -ldl
+-Mvcsaceobjs=
+-Mxcflags= -pipe -fPIC -I/usr/cad/synopsys/vcs/2024.09-sp2/include
+-Mxllcflags=
+-P
+-Xfile_begin_f=/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f
+-Xfile_end
+-Xvcs_run_simv=1
+-debug_access+all
+-fsdb
+-full64
+-gen_obj
+-picarchive
+-sverilog
+/usr/cad/synopsys/vcs/2024.09-sp2/linux64/bin/vcs1
+/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/verdi.tab
+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/Tile_Scheduler_tb.sv
+../src/calc_tile_n.sv
+../src/Layer_Decoder.sv
+../src/Tile_Scheduler.sv
+82
+which_declare=declare -f
+XMODIFIERS=@im=ibus
+XLOCALEDIR=/usr/cad/synopsys/icc2/2024.09-sp2//etc/locale
+XDG_VTNR=2
+XDG_SESSION_TYPE=wayland
+XDG_SESSION_ID=2
+XDG_SESSION_DESKTOP=gnome
+XDG_SEAT=seat0
+XDG_RUNTIME_DIR=/run/user/1000
+XDG_MENU_PREFIX=gnome-
+XDG_DATA_DIRS=/home/n26130126/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/
+XDG_CURRENT_DESKTOP=GNOME
+XAUTHORITY=/run/user/1000/.mutter-Xwaylandauth.ZT7J72
+WAYLAND_DISPLAY=wayland-0
+VSCODE_GIT_IPC_HANDLE=/run/user/1000/vscode-git-e6522f7dcc.sock
+VSCODE_GIT_ASKPASS_NODE=/usr/share/code/code
+VSCODE_GIT_ASKPASS_MAIN=/usr/share/code/resources/app/extensions/git/dist/askpass-main.js
+VSCODE_GIT_ASKPASS_EXTRA_ARGS=
+VMR_MODE_FLAG=64
+VERDI_HOME=/usr/cad/synopsys/verdi/2024.09-sp2
+VENDOR=unknown
+VCS_STATIC_HOME=/usr/cad/synopsys/vcs/2024.09-sp2/vcfca
+VCS_PYTHON3=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/bin/Python3/bin/python3
+VCS_PATHMAP_PRELOAD_DONE=1
+VCS_MX_HOME_INTERNAL=1
+VCS_MODE_FLAG=64
+VCS_INTERNAL_CONVERTEDLIBS=
+VCS_HOME=/usr/cad/synopsys/vcs/2024.09-sp2
+VCS_EXEC_DONE=1
+VCS_DEPTH=0
+VCS_CC=gcc
+VCS_ARG_ADDED_FOR_TMP=1
+VCS_ARCH=linux64
+USERNAME=n26130126
+UNAME=/bin/uname
+TOOL_HOME=/usr/cad/synopsys/vcs/2024.09-sp2/linux64
+TERM_PROGRAM_VERSION=1.100.2
+TERM_PROGRAM=vscode
+SYN_MAN_DIR=/usr/cad/synopsys/synthesis/2024.09-sp4/doc/syn/man
+SYNOPSYS_LC_ROOT=/usr/cad/synopsys/lc/cur
+SSH_AUTH_SOCK=/run/user/1000/keyring/ssh
+SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
+SNPS_VCS_PYTHON3=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/bin/Python3/bin/python3
+SNPS_VCS_CLANG_PATH=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/clang
+SNPS_INTERNAL_VCS_LINUX_OS=linux
+SHLIB_PATH=/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/:
+SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/2556,unix/unix:/tmp/.ICE-unix/2556
+SCRNAME=vcs
+SCRIPT_NAME=vcs
+QT_IM_MODULE=ibus
+OVA_UUM=0
+OSTYPE=linux
+ORIGINAL_XDG_CURRENT_DESKTOP=GNOME
+NO_AT_BRIDGE=1
+MFLAGS=
+MAKE_TERMERR=/dev/pts/2
+MAKEOVERRIDES=${-*-command-variables-*-}
+MAKELEVEL=1
+MAKEFLAGS= -- FSDB=2
+LSCOLORS=ExFxCxDxBxegedabagacad
+LESSOPEN=||/usr/bin/lesspipe.sh %s
+LC_ALL=C
+HOSTTYPE=x86_64-linux
+HISTCONTROL=ignoredups
+GROUP=n26130126
+GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+GJS_DEBUG_TOPICS=JS ERROR;JS LOG
+GJS_DEBUG_OUTPUT=stderr
+GIT_ASKPASS=/usr/share/code/resources/app/extensions/git/dist/askpass.sh
+GIO_LAUNCHED_DESKTOP_FILE_PID=1257293
+GIO_LAUNCHED_DESKTOP_FILE=/usr/share/applications/code.desktop
+GDM_LANG=en_US.UTF-8
+GDMSESSION=gnome
+GDK_BACKEND=x11
+FSDB=2
+DESKTOP_SESSION=gnome
+DEBUGINFOD_URLS=https://debuginfod.centos.org/ 
+DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+COLORTERM=truecolor
+CLICOLOR=1
+CHROME_DESKTOP=code.desktop
+BASH_FUNC_which%%=() {  ( alias;_ eval ${which_declare} ) | /usr/bin/which --tty-only --read-alias --read-functions --show-tilde --show-dot $@_}
+0
+0
+8
+1749208579 ../include/define.svh
+1749298146 ../src/Tile_Scheduler.sv
+1749232618 ../src/Layer_Decoder.sv
+1749230903 ../src/calc_tile_n.sv
+1749298479 /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/Tile_Scheduler_tb.sv
+1749208846 /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f
+1741065587 /usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/verdi.tab
+1740888368 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcsdp_lite.tab
+4
+1740891987 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/libvirsim.so
+1740889567 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/liberrorinf.so
+1740889560 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/libsnpsmalloc.so
+1740889556 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/libvfs.so
+1749298485 simv.daidir
+-1 partitionlib

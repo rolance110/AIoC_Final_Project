@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1749288326.408352061, "rt":0.43, "ut":0.12, "st":0.06}}
+{"vcselab":{"timestamp_begin":1749288326.888526198, "rt":0.35, "ut":0.15, "st":0.04}}
+{"link":{"timestamp_begin":1749288327.271810484, "rt":0.12, "ut":0.09, "st":0.04}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1749288326.168446629}
+{"VCS_COMP_START_TIME": 1749288326.168446629}
+{"VCS_COMP_END_TIME": 1749288329.727710399}
+{"VCS_USER_OPTIONS": "-R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/Tile_Scheduler_tb.sv -f /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f -debug_access+all -full64 +incdir+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./include+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim +notimingcheck +define++FSDB_ALL"}
+{"vcs1": {"peak_mem": 313032}}
+{"vcselab": {"peak_mem": 179148}}
