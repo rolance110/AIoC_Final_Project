@@ -10,7 +10,7 @@ module token_engine_fsm (
     // 1) Clock / Reset
     //==============================================================================
     input  logic                 clk,               
-    input  logic                 reset_n,           
+    input  logic                 rst,           
 
     //==============================================================================
     // 2) Pass 觸發與參數 (由 Tile Scheduler / Layer Decoder 提供)
@@ -46,14 +46,13 @@ module token_engine_fsm (
     output logic [DATA_WIDTH-1:0] glb_write_data,     // 要寫回 GLB 的 PSUM 資料 (32‐lane Pack 或 4‐channel Pack)
     output logic                  glb_write_ready,    // 1clk 脈衝：開始一次 GLB Write 交易
     input  logic                  glb_write_valid,    // GLB 回應：「此筆 glb_write_data 已寫回完成」
-
     //==============================================================================
     // 5) PE Array 接口 (Token → PE)
     //    – Token Engine 送 token_data & token_valid
     //    – 監看 pe_busy
     //==============================================================================
     output logic [DATA_WIDTH-1:0] token_data,         // 送給 PE Array 的 Ifmap/Weight/Bias Pack
-    output logic                  token_valid,        // 1clk 脈衝：token_data + token_tag 現在有效
+    // output logic                  token_valid,        // 1clk 脈衝：token_data + token_tag 現在有效
     input  logic                  pe_busy,            // PE Array 拉高表示「目前忙碌中，尚在 Compute」
 
     //==============================================================================
@@ -75,8 +74,9 @@ module token_engine_fsm (
     output logic pe_ifamp_valid,
     input pe_bias_ready,
     output logic pe_bias_valid,
-    output logic pe_psum_ready,
-    input pe_psum_valid,
+    // output logic pe_psum_ready,
+    // input pe_psum_valid
+    input logic [6:0] tile_K_o;
     //==============================================================================
     //==============================================================================
     // 8) Pass 完成回報 (送給 Tile Scheduler)
@@ -124,7 +124,7 @@ module token_engine_fsm (
     logic [ADDR_WIDTH-1:0] base_bias;          // 可新增：若需要 Bias base，否則可省略
     logic [ADDR_WIDTH-1:0] base_opsum;         // Latched BASE_OPSUM
 
-    logic [DATA_WIDTH-1:0] ifmap_reg;
+    logic [DATA_WIDTH-1:0] data_2_pe_reg;
 
     // Counters 數送了幾個
     logic [5:0]            cnt_bias;          // 已推 Bias 的筆數 (0~tile_K_internal-1)
@@ -132,21 +132,67 @@ module token_engine_fsm (
     logic [5:0]            cnt_weight;        // 已推 Weight 的 4-Channel 組數 (0~⌈tile_D/4⌉-1)
     logic [5:0]            cnt_psum;          // 已 pop OPSUM 寫回的筆數 (0~tile_K_internal-1)
 
+    logic [ADDR_WIDTH-1:0] weight_addr;       // Weight 的位址計數器
+    logic [ADDR_WIDTH-1:0] ifmap_addr;        // Ifmap 的位址計數器
+    logic [ADDR_WIDTH-1:0] bias_addr;         // Bias 的位址計數器
+    logic [ADDR_WIDTH-1:0] opsum_addr;        // OPSUM 的位址計數器
+
 
     //===== 會拿通道數去 計算opsum_row_num
     logic [4:0] opsum_row_num; // OPSUM 有寫回的 row 數量
 
 
+    //---------------------------------------------------
+    // opsum_addr 0~31
+    //---------------------------------------------------
+
+    logic [ADDR_WIDTH-1:0] opsum_addr0;
+    logic [ADDR_WIDTH-1:0] opsum_addr1;
+    logic [ADDR_WIDTH-1:0] opsum_addr2;
+    logic [ADDR_WIDTH-1:0] opsum_addr3;
+    logic [ADDR_WIDTH-1:0] opsum_addr4;
+    logic [ADDR_WIDTH-1:0] opsum_addr5;
+    logic [ADDR_WIDTH-1:0] opsum_addr6;
+    logic [ADDR_WIDTH-1:0] opsum_addr7;
+    logic [ADDR_WIDTH-1:0] opsum_addr8;
+    logic [ADDR_WIDTH-1:0] opsum_addr9;
+    logic [ADDR_WIDTH-1:0] opsum_addr10;
+    logic [ADDR_WIDTH-1:0] opsum_addr11;
+    logic [ADDR_WIDTH-1:0] opsum_addr12;
+    logic [ADDR_WIDTH-1:0] opsum_addr13;
+    logic [ADDR_WIDTH-1:0] opsum_addr14;
+    logic [ADDR_WIDTH-1:0] opsum_addr15;
+    logic [ADDR_WIDTH-1:0] opsum_addr16;
+    logic [ADDR_WIDTH-1:0] opsum_addr17;
+    logic [ADDR_WIDTH-1:0] opsum_addr18;
+    logic [ADDR_WIDTH-1:0] opsum_addr19;
+    logic [ADDR_WIDTH-1:0] opsum_addr20;
+    logic [ADDR_WIDTH-1:0] opsum_addr21;
+    logic [ADDR_WIDTH-1:0] opsum_addr22;
+    logic [ADDR_WIDTH-1:0] opsum_addr23;
+    logic [ADDR_WIDTH-1:0] opsum_addr24;
+    logic [ADDR_WIDTH-1:0] opsum_addr25;
+    logic [ADDR_WIDTH-1:0] opsum_addr26;
+    logic [ADDR_WIDTH-1:0] opsum_addr27;
+    logic [ADDR_WIDTH-1:0] opsum_addr28;
+    logic [ADDR_WIDTH-1:0] opsum_addr29;
+    logic [ADDR_WIDTH-1:0] opsum_addr30;
+    logic [ADDR_WIDTH-1:0] opsum_addr31;
+    logic [31:0] opsum_num;
+
+    //hsk 時 +1， 因 hsk cnt 會有歸0的情況，當數到 tile_n * tile_K_o 時，此次tile算完
+    logic [31:0] total_opsum_num_cnt; 
 
     // 若需要外部索引 (tile_k_idx, tile_d_idx) 可在此新增，但簡化示例省略
 
     //==========================================================================
     // 1) Seq. Logic: 狀態暫存 (State Register)
     //==========================================================================
-    always_ff @(posedge clk or negedge reset_n) begin
-        if (!reset_n) begin
+    always_ff @(posedge clk) begin
+        if (rst) begin
             current_state   <= S_IDLE;
-        end else begin
+        end 
+        else begin
             current_state   <= next_state;
         end
     end
@@ -254,7 +300,7 @@ module token_engine_fsm (
                 // 將剛 Pop 出來的 OPSUM 寫回 GLB
                 if (glb_write_valid && glb_write_ready) begin
                     //FIXME: 還沒寫
-                    if () begin //整個算完
+                    if (total_opsum_num_cnt == (pass_tile_n * tile_K_o)) begin //整個算完
                         next_state = S_PASS_DONE;
                     end
                     else if (cnt_psum == opsum_row_num) begin
@@ -277,151 +323,584 @@ module token_engine_fsm (
 
     //---------- ifmap ----------//
     // todo: save the ifmap data
-    always_ff@(posedge clk) begin
-
-        if(rst) begin
-            ifmap_reg <= DATA_WIDTH'd0;
-        end else if(current_state == S_READ_IFMAP) begin
-            ifmap_reg <= glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
-        end
-
-    end
-    //==========================================================================
-    // 2) Comb. Logic: 下個狀態 (next_state) 及輸出控制
-    //==========================================================================
     always_comb begin
-        //--------------------------------------------------------------------------
-        // 2.1) 預設所有輸出信號為 0
-        //--------------------------------------------------------------------------
-        glb_read_addr    = '0;
-        glb_read_ready   = 1'b0;
-        glb_write_addr   = '0;
-        glb_write_data   = '0;
-        glb_write_ready  = 1'b0;
-        token_data       = '0;
-        token_valid      = 1'b0;
-        control_padding  = 1'b0;
-        pe_psum_ready    = 1'b0;
-        pass_done        = 1'b0;
-
-        //--------------------------------------------------------------------------
-
-        case (current_state)
-            //---------------------------------------------------
-            // state：S_IDLE
-            //---------------------------------------------------
-            //---------------------------------------------------
-            // state：S_READ_WEIGHT
-            //---------------------------------------------------
-            S_READ_WEIGHT: begin
-                glb_read_addr  = base_weight;   // 可自行加偏移：+ cnt_weight*BytesPerPack
-                glb_read_ready = 1'b1;          // 1clk 脈衝：請求讀取 Weight
-            end
-            //---------------------------------------------------
-            // state：S_WRITE_WEIGHT
-            //---------------------------------------------------
-            S_WRITE_WEIGHT: begin
-                // 把 glb_read_data (Weight Pack) 推送到內部 FIFO，或做後續處理
-                token_data      = glb_read_data; // Buffer 起始時可暫存
-                token_valid     = 1'b1;          // 與 PE 或 FIFO 做 handshake
-                // 也可以使用專屬訊號 write_weight…
-            end
-            //---------------------------------------------------
-            // state：S_READ_IFMAP
-            //---------------------------------------------------
-            S_READ_IFMAP: begin
-                // 啟動 GLB Read Ifmap (4-Channel Pack)
-                glb_read_addr  = base_ifmap;    // 可自行加偏移：+ cnt_ifmap*4*BytesPerChannel
-                glb_read_ready = 1'b1;          // 1clk 脈衝：請求讀取 Ifmap
-            end
-            //---------------------------------------------------
-            // state：S_WRITE_IFMAP
-            //---------------------------------------------------
-            S_WRITE_IFMAP: begin
-                // 把 glb_read_data (Ifmap Pack) 推送到內部 FIFO，或做後續處理
-                token_data      = glb_read_data;
-                token_valid     = 1'b1;         // 送給 PE 或 FIFO
-                // 同時計算 control_padding (Depthwise / 空間 Padding)
-                // 若需要: control_padding = 1'b1;
-            end
-            //---------------------------------------------------
-            // state：S_READ_BIAS
-            //---------------------------------------------------
-            S_READ_BIAS: begin
-                // 如果 pass_flags[0] = bias_en = 1，則讀 Bias
-                if (pass_flags[0]) begin
-                    glb_read_addr  = base_bias;  // 可自行加偏移：+ cnt_bias*BytesPerChannel
-                    glb_read_ready = 1'b1;        // 1clk 脈衝：請求讀取 Bias
-                end
-            end
-            //---------------------------------------------------
-            // state：S_WRITE_BIAS
-            //---------------------------------------------------
-            S_WRITE_BIAS: begin
-                // 把 glb_read_data (Bias) 推送到內部 FIFO，或做後續處理
-                token_data     = glb_read_data;
-                token_valid    = 1'b1;         // 送給 PE 或 FIFO
-                // bias 推完 (可在此處增加計數器 cnt_bias++)，直接進入 WAIT_OPSUM
-            end
-            //---------------------------------------------------
-            // state：S_WAIT_OPSUM
-            //---------------------------------------------------
-            S_WAIT_OPSUM: begin
-                // 等待 PE / PSUM Buffer pop 出累加結果 (OPSUM)
-                if (pe_psum_valid) begin
-                    pe_psum_ready = 1'b1;     // 通知 PSUM Buffer 可以 pop 一筆
-                end 
-                else begin
-                end
-            end
-            //---------------------------------------------------
-            // state：S_WRITE_OPSUM
-            //---------------------------------------------------
-            S_WRITE_OPSUM: begin
-                // 將剛 Pop 出來的 OPSUM 寫回 GLB
-                glb_write_addr  = base_opsum;     // 可自行加偏移：+ cnt_psum*BytesPerChannel
-                glb_write_data  = pe_psum_data;   // OPSUM 資料
-                glb_write_ready = 1'b1;            // 1clk 脈衝：請求寫回
-                if (glb_write_valid) begin
-                end 
-                else begin
-                end
-            end
-            //---------------------------------------------------
-            // state：S_PASS_DONE
-            //---------------------------------------------------
-            S_PASS_DONE: begin
-                // 通知 Tile Scheduler：本次 Pass (Tile) 完成
-                pass_done  = 1'b1; 
-            end
-            //---------------------------------------------------
-            // 預設：回到 IDLE
-            //---------------------------------------------------
-        endcase
+        data_2_pe_reg = glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
     end
 //---------------------------------------------------
 // weight, ifmap, bias, opsum, token 等訊號的 Handshake
 //---------------------------------------------------
-//TODO: 在對應的狀態中，加入 Handshake 邏輯 並且分好幾個always combination block
-
+//FIXME: 還沒考慮丟給PPU的部分
 always_comb begin
-    if (current_state == S_READ_WEIGHT) begin
-        glb_read_ready = 
+    if(current_state == S_WRITE_OPSUM || current_state == S_WAIT_OPSUM) begin
+        glb_write_data = pe_psum_data;
     end
-
-
+    else begin
+        glb_write_data = '0; // 清除資料
+    end
+end
+always_comb begin
+    if (current_state == S_READ_WEIGHT || current_state == S_READ_IFMAP || current_state == S_READ_BIAS) begin
+        glb_read_ready = 1'b1;
+    end
+    else begin
+        glb_read_ready = 1'b0;
+    end
 end
 
-    // typedef enum logic [3:0] {
-    //     S_IDLE        ,
-    //     S_READ_WEIGHT ,
-    //     S_WRITE_WEIGHT,
-    //     S_READ_IFMAP  ,
-    //     S_WRITE_IFMAP ,
-    //     S_READ_BIAS   ,
-    //     S_WRITE_BIAS  ,
-    //     S_WAIT_OPSUM  ,
-    //     S_WRITE_OPSUM ,
-    //     S_PASS_DONE   
-    // } state_t;
+always_comb begin
+    if(current_state == S_WRITE_WEIGHT || current_state == S_WRITE_IFMAP || current_state == S_WRITE_BIAS) begin
+        token_data = data_2_pe_reg; // 將讀取到的資料送給 PE
+    end
+    else begin
+        token_data = '0; // 清除資料
+    end
+end
+
+
+always_comb begin
+    if (current_state == S_WRITE_WEIGHT) begin
+        pe_weight_valid = 1'b1;
+    end
+    else begin
+        pe_weight_valid = 1'b0;
+    end
+end
+
+always_comb begin
+    if (current_state == S_WRITE_IFMAP) begin
+        pe_ifamp_valid = 1'b1;
+    end
+    else begin
+        pe_ifamp_valid = 1'b0;
+    end
+end
+
+always_comb begin
+    if (current_state == S_WRITE_BIAS) begin
+        pe_bias_valid = 1'b1;
+    end
+    else begin
+        pe_bias_valid = 1'b0;
+    end
+end
+
+always_comb begin
+    if (current_state == S_WRITE_OPSUM) begin
+        glb_write_ready = 1'b1; // 準備寫回 OPSUM
+    end
+    else begin
+        glb_write_ready = 1'b0;
+    end
+end
+
+always_comb begin
+    if (current_state == S_WAIT_OPSUM) begin
+        pe_psum_ready = 1'b1; // 準備 pop OPSUM
+    end
+    else begin
+        pe_psum_ready = 1'b0;
+    end
+end
+
+//---------------------------------------------------
+// weight, ifmap, bias, opsum 等 addr 的計算
+//---------------------------------------------------
+// weight_addr
+always_ff@(posedge clk) begin
+    if(rst) begin
+        weight_addr <= 0;
+    end 
+    else if(current_state == IDLE) begin
+        weight_addr <= BASE_WEIGHT;
+    end 
+    else if(current_state == S_WRITE_WEIGHT && pe_weight_valid && pe_weight_ready) begin
+        weight_addr <= weight_addr + 4;
+    end
+end
+
+//---------------------------------------------------
+// ifmap_addr 、 bias_addr
+//---------------------------------------------------
+// d_cnt
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+       d_cnt <= 0; // d_cnt 用於計算 Ifmap 的 Channel Pack 數量
+    end 
+    else if((current_state == S_WRITE_IFMAP || current_state == S_WRITE_BIAS) && 
+        (pe_ifamp_valid && pe_ifmap_ready || pe_bias_valid && pe_bias_ready)) begin
+        d_cnt <= (d_cnt == tile_D) ? 0 : d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    end
+    // else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+    //     //FIXME:
+    // end
+
+end
+// n_cnt
+always_ff@(posedge clk) begin
+    if(rst) begin
+        n_cnt <= 0; // n_cnt 用於計算 Ifmap 的 Channel Pack 數量
+    end
+    else if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+        if(d_cnt == tile_D)
+            n_cnt <= ((n_cnt << 2) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    end
+    else if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
+        if(d_cnt == tile_D)
+            n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    end
+    else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+        //FIXME:
+        if(d_cnt == tile_D)
+            n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    end
+end
+
+//k_cnt
+always_ff@(posedge clk) begin
+    if(rst) begin
+        k_cnt <= 0; // k_cnt 用於計算 Weight 的 Channel Pack 數量
+    end 
+    else if(current_state == S_WRITE_OPSUM && pe_weight_valid && pe_weight_ready) begin
+        if(k_cnt == tile_K_o - 1) begin
+            k_cnt <= 0; // 重置 k_cnt
+        end 
+        else if (current_state == S_WRITE_OPSUM && (hsk_cnt == (cnt_modify + 1) << 3)) begin
+            k_cnt <= 0;
+        end
+        else begin
+            if (hsk_cnt[0] && glb_write_ready && glb_write_valid) begin
+                k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+            end
+        end
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        ifmap_addr <= 0;
+    end 
+    else if(current_state == IDLE) begin
+        ifmap_addr <= BASE_IFMAP;
+    end 
+    else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+        ifmap_addr <= ifmap_addr + (n_cnt << 2) + channel_base; // n_cnt 為 4-Channel Pack 的數量        
+    end
+end
+
+// bias_addr
+always_ff@(posedge clk) begin
+    if(rst) begin
+        bias_addr <= 0;
+    end 
+    else if(current_state == IDLE) begin
+        bias_addr <= BASE_BIAS;
+    end 
+    else if(current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
+        bias_addr <= bias_addr + (n_cnt << 2 + channel_base) << 1; // n_cnt 為 4-Channel Pack 的數量
+    end
+end
+
+//---------------------------------------------------
+// ofmap_addr
+//---------------------------------------------------
+logic [3:0] cnt_modify;
+logic [8:0] hsk_cnt;
+logic [5:0] d_cnt;
+logic [5:0] k_cnt;
+logic [31:0] channel_base;
+
+assign channel_base = pass_tile_n * d_cnt;
+
+// cnt_modify
+always_ff@(posedge clk) begin
+    if(rst) begin
+        cnt_modify <= 0; 
+    end
+    else if(current_state == IDLE) begin
+        cnt_modify <= 0; // 重置計數器
+    end
+    else if (cnt_modify == 4'd8) begin
+        cnt_modify <= 4'd8;
+    end
+    else if(current_state == S_WRITE_OPSUM && (hsk_cnt == (cnt_modify + 1) << 3)) begin
+        cnt_modify <= cnt_modify + 1; // 每次寫回 OPSUM 都增加計數
+    end 
+end
+
+// hsk_cnt
+always_ff@(posedge clk) begin
+    if(rst) begin
+        hsk_cnt <= 0; // 用於計數 Handshake 次數
+    end 
+    else if(current_state == S_READ_IFMAP) begin
+        hsk_cnt <= 0; // 重置計數器
+    end
+    else if(current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+        hsk_cnt <= hsk_cnt + 1; // 每次寫回 OPSUM 都增加計數
+    end 
+end
+
+
+assign opsum_num =  k_cnt * pass_tile_n;
+//---------------------------------------------------
+// opsum_addr 0~3
+//---------------------------------------------------
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        opsum_addr0 <= ADDR_WIDTH'd0;
+        opsum_addr1 <= ADDR_WIDTH'd0;
+        opsum_addr2 <= ADDR_WIDTH'd0;
+        opsum_addr3 <= ADDR_WIDTH'd0;
+    end
+    else if (current_state == IDLE) begin
+        opsum_addr0 <= BASE_OPSUM;
+        opsum_addr1 <= BASE_OPSUM;
+        opsum_addr2 <= BASE_OPSUM;
+        opsum_addr3 <= BASE_OPSUM;
+    end
+    //FIXME: ERROR CHECK
+    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        if (cnt_modify == 4'd0)  begin // 已經修改完
+            opsum_addr0 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr1 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr2 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr3 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+        end
+        else begin 
+            opsum_addr0 <= opsum_addr0 + ((n_cnt << 2) + opsum_num    ) << 1;
+            opsum_addr1 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 1) << 1;
+            opsum_addr2 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 2) << 1;
+            opsum_addr3 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 3) << 1;
+        end 
+    end
+end
+//---------------------------------------------------
+// opsum_addr 4~7
+//---------------------------------------------------
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        opsum_addr4 <= ADDR_WIDTH'd0;
+        opsum_addr5 <= ADDR_WIDTH'd0;
+        opsum_addr6 <= ADDR_WIDTH'd0;
+        opsum_addr7 <= ADDR_WIDTH'd0;
+    end
+    else if (current_state == IDLE) begin
+        opsum_addr4 <= BASE_OPSUM;
+        opsum_addr5 <= BASE_OPSUM;
+        opsum_addr6 <= BASE_OPSUM;
+        opsum_addr7 <= BASE_OPSUM;
+    end
+    //FIXME: ERROR CHECK
+    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        if (cnt_modify == 4'd1)  begin // 已經修改完
+            opsum_addr4 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr5 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr6 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr7 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+        end
+        else begin 
+            opsum_addr4 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 4) << 1;
+            opsum_addr5 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 5) << 1;
+            opsum_addr6 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 6) << 1;
+            opsum_addr7 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 7) << 1;
+        end 
+    end
+end
+
+//---------------------------------------------------
+// opsum_addr 8-11
+//---------------------------------------------------
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        opsum_addr8  <= ADDR_WIDTH'd0;
+        opsum_addr9  <= ADDR_WIDTH'd0;
+        opsum_addr10 <= ADDR_WIDTH'd0;
+        opsum_addr11 <= ADDR_WIDTH'd0;
+    end
+    else if (current_state == IDLE) begin
+        opsum_addr8  <= BASE_OPSUM;
+        opsum_addr9  <= BASE_OPSUM;
+        opsum_addr10 <= BASE_OPSUM;
+        opsum_addr11 <= BASE_OPSUM;
+    end
+    //FIXME: ERROR CHECK
+    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        if (cnt_modify == 4'd2)  begin // 已經修改完
+            opsum_addr8  <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr9  <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr10 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr11 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+        end
+        else begin 
+            opsum_addr8  <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 8 ) << 1;
+            opsum_addr9  <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 9 ) << 1;
+            opsum_addr10 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 10) << 1;
+            opsum_addr11 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 11) << 1;
+        end 
+    end
+end
+
+//---------------------------------------------------
+// opsum_addr 12-15
+//---------------------------------------------------
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        opsum_addr12 <= ADDR_WIDTH'd0;
+        opsum_addr13 <= ADDR_WIDTH'd0;
+        opsum_addr14 <= ADDR_WIDTH'd0;
+        opsum_addr15 <= ADDR_WIDTH'd0;
+    end
+    else if (current_state == IDLE) begin
+        opsum_addr12 <= BASE_OPSUM;
+        opsum_addr13 <= BASE_OPSUM;
+        opsum_addr14 <= BASE_OPSUM;
+        opsum_addr15 <= BASE_OPSUM;
+    end
+    //FIXME: ERROR CHECK
+    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        if (cnt_modify == 4'd3)  begin // 已經修改完
+            opsum_addr12 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr13 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr14 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr15 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+        end
+        else begin 
+            opsum_addr12 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 12) << 1;
+            opsum_addr13 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 13) << 1;
+            opsum_addr14 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 14) << 1;
+            opsum_addr15 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 15) << 1;
+        end 
+    end
+end
+
+//---------------------------------------------------
+// opsum_addr 16-19
+//---------------------------------------------------
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        opsum_addr16 <= ADDR_WIDTH'd0;
+        opsum_addr17 <= ADDR_WIDTH'd0;
+        opsum_addr18 <= ADDR_WIDTH'd0;
+        opsum_addr19 <= ADDR_WIDTH'd0;
+    end
+    else if (current_state == IDLE) begin
+        opsum_addr16 <= BASE_OPSUM;
+        opsum_addr17 <= BASE_OPSUM;
+        opsum_addr18 <= BASE_OPSUM;
+        opsum_addr19 <= BASE_OPSUM;
+    end
+    //FIXME: ERROR CHECK
+    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        if (cnt_modify == 4'd4)  begin // 已經修改完
+            opsum_addr16 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr17 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr18 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr19 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+        end
+        else begin 
+            opsum_addr16 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 16) << 1;
+            opsum_addr17 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 17) << 1;
+            opsum_addr18 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 18) << 1;
+            opsum_addr19 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 19) << 1;
+        end 
+    end
+end
+
+//---------------------------------------------------
+// opsum_addr 20-23
+//---------------------------------------------------
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        opsum_addr20 <= ADDR_WIDTH'd0;
+        opsum_addr21 <= ADDR_WIDTH'd0;
+        opsum_addr22 <= ADDR_WIDTH'd0;
+        opsum_addr23 <= ADDR_WIDTH'd0;
+    end
+    else if (current_state == IDLE) begin
+        opsum_addr20 <= BASE_OPSUM;
+        opsum_addr21 <= BASE_OPSUM;
+        opsum_addr22 <= BASE_OPSUM;
+        opsum_addr23 <= BASE_OPSUM;
+    end
+    //FIXME: ERROR CHECK
+    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        if (cnt_modify == 4'd5)  begin // 已經修改完
+            opsum_addr20 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr21 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr22 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr23 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+        end
+        else begin 
+            opsum_addr20 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 20) << 1;
+            opsum_addr21 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 21) << 1;
+            opsum_addr22 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 22) << 1;
+            opsum_addr23 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 23) << 1;
+        end 
+    end
+end
+
+//---------------------------------------------------
+// opsum_addr 24-27
+//---------------------------------------------------
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        opsum_addr24 <= ADDR_WIDTH'd0;
+        opsum_addr25 <= ADDR_WIDTH'd0;
+        opsum_addr26 <= ADDR_WIDTH'd0;
+        opsum_addr27 <= ADDR_WIDTH'd0;
+    end
+    else if (current_state == IDLE) begin
+        opsum_addr24 <= BASE_OPSUM;
+        opsum_addr25 <= BASE_OPSUM;
+        opsum_addr26 <= BASE_OPSUM;
+        opsum_addr27 <= BASE_OPSUM;
+    end
+    //FIXME: ERROR CHECK
+    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        if (cnt_modify == 4'd6)  begin // 已經修改完
+            opsum_addr24 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr25 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr26 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr27 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+        end
+        else begin 
+            opsum_addr24 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 24) << 1;
+            opsum_addr25 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 25) << 1;
+            opsum_addr26 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 26) << 1;
+            opsum_addr27 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 27) << 1;
+        end 
+    end
+end
+
+//---------------------------------------------------
+// opsum_addr 28-31
+//---------------------------------------------------
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        opsum_addr28 <= ADDR_WIDTH'd0;
+        opsum_addr29 <= ADDR_WIDTH'd0;
+        opsum_addr30 <= ADDR_WIDTH'd0;
+        opsum_addr31 <= ADDR_WIDTH'd0;
+    end
+    else if (current_state == IDLE) begin
+        opsum_addr28 <= BASE_OPSUM;
+        opsum_addr29 <= BASE_OPSUM;
+        opsum_addr30 <= BASE_OPSUM;
+        opsum_addr31 <= BASE_OPSUM;
+    end
+    //FIXME: ERROR CHECK
+    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        if (cnt_modify == 4'd7)  begin // 已經修改完
+            opsum_addr28 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr29 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr30 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+            opsum_addr31 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
+        end
+        else begin 
+            opsum_addr28 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 28) << 1;
+            opsum_addr29 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 29) << 1;
+            opsum_addr30 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 30) << 1;
+            opsum_addr31 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 31) << 1;
+        end 
+    end
+end
+
+
+
+//---------------------------------------------------
+// FIXME: 
+//---------------------------------------------------
+// opsum_addr
+always_comb begin   
+    case(k_cnt)
+        6'd0: opsum_addr = opsum_addr0;
+        6'd1: opsum_addr = opsum_addr1;
+        6'd2: opsum_addr = opsum_addr2;
+        6'd3: opsum_addr = opsum_addr3;
+        6'd4: opsum_addr = opsum_addr4;
+        6'd5: opsum_addr = opsum_addr5;
+        6'd6: opsum_addr = opsum_addr6;
+        6'd7: opsum_addr = opsum_addr7;
+        6'd8: opsum_addr = opsum_addr8;
+        6'd9: opsum_addr = opsum_addr9;
+        6'd10: opsum_addr = opsum_addr10;
+        6'd11: opsum_addr = opsum_addr11;
+        6'd12: opsum_addr = opsum_addr12;
+        6'd13: opsum_addr = opsum_addr13;
+        6'd14: opsum_addr = opsum_addr14;
+        6'd15: opsum_addr = opsum_addr15;
+        6'd16: opsum_addr = opsum_addr16;
+        6'd17: opsum_addr = opsum_addr17;
+        6'd18: opsum_addr = opsum_addr18;
+        6'd19: opsum_addr = opsum_addr19;
+        6'd20: opsum_addr = opsum_addr20;
+        6'd21: opsum_addr = opsum_addr21;
+        6'd22: opsum_addr = opsum_addr22;
+        6'd23: opsum_addr = opsum_addr23;
+        6'd24: opsum_addr = opsum_addr24;
+        6'd25: opsum_addr = opsum_addr25;
+        6'd26: opsum_addr = opsum_addr26;
+        6'd27: opsum_addr = opsum_addr27;
+        6'd28: opsum_addr = opsum_addr28;
+        6'd29: opsum_addr = opsum_addr29;
+        6'd30: opsum_addr = opsum_addr30;
+        6'd31: opsum_addr = opsum_addr31;
+        default :opsum_address = 6'd0; // 預設為最後一個地址
+    endcase
+end
+//---------------------------------------------------
+// FIXME: 
+//---------------------------------------------------
+always_comb begin
+    case(current_state)
+
+        S_READ_WEIGHT, S_WRITE_WEIGHT: begin
+            glb_read_addr = weight_addr; 
+        end
+        S_READ_IFMAP, S_WRITE_IFMAP: begin
+            glb_read_addr = ifmap_addr; 
+        end
+        S_READ_BIAS, S_WRITE_BIAS: begin
+            glb_read_addr = bias_addr; 
+        end
+        // S_WRITE_OPSUM: begin
+        //     glb_write_addr = opsum_addr; 
+        // end
+
+        default:begin
+            glb_read_addr = '0; // 預設為 0
+        end
+
+    endcase
+end
+
+always_comb begin
+    if(current_state == S_WRITE_OPSUM || current_state == S_WAIT_OPSUM) begin
+        glb_write_addr = opsum_addr; 
+    end
+    else begin
+        glb_write_addr = '0; // 預設為 0
+    end
+end
+
+//total_opsum_num_cnt
+always_ff @(posedge clk) begin
+    if (rst) begin
+        total_opsum_num_cnt <= 0; // 用於計算總的 OPSUM 數量
+    end 
+    else if (current_state == S_PASS_DONE) begin
+        total_opsum_num_cnt <= 0;
+    end
+    else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+        total_opsum_num_cnt <= total_opsum_num_cnt + 1; // 每次寫回 OPSUM 都增加計數
+    end 
+end
+//---------------------------------------------------
+// FIXME: 
+//---------------------------------------------------
+always_comb begin
+    pass_done = (current_state == S_PASS_DONE) ? 1'b1 : 1'b0; // 當前狀態為 S_PASS_DONE 時，送出 PASS_DONE 信號
+end
+
 endmodule
