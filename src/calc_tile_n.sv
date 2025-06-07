@@ -24,8 +24,7 @@ module calc_tile_n #(
 
     input  logic [6:0]  M, // Global SRAM capacity in bytes    
     /* ---- Output ---- */
-    output logic [31:0]  tile_n, // max number of tiles
-    output logic [31:0]  tile_n_flat           
+    output logic [31:0]  tile_n // max number of tiles
 );
 
 logic [31:0] n_max;
@@ -33,7 +32,7 @@ logic [31:0] tmp1, tmp2, tmp3;
 
 assign tmp1 = kH*kW*tile_D_f*tile_K_f*BYTES_W; // Weight bytes
 assign tmp2 = tile_D*BYTES_I + tile_K*BYTES_P; // ifmap bytes, opsum
-assign tmp3 = M*2*tile_D*BYTES_I;
+assign tmp3 = M*tile_D*BYTES_I;
 assign n_max = (GLB_BYTES - tmp1 - tmp3) / tmp2;
 
 always_comb begin

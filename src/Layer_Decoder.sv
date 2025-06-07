@@ -7,9 +7,9 @@
 `include "../include/define.svh"
 module layer_decoder #(
     parameter int GLB_BYTES  = `GLB_MAX_BYTES, // Global SRAM capacity in bytes
-    parameter int BYTES_I      = `BYTES_I, //input feature map bytes
-    parameter int BYTES_W      = `BYTES_W, //weight bytes
-    parameter int BYTES_P      = `BYTES_P  //partial sum bytes
+    parameter int BYTES_I    = `BYTES_I, //input feature map bytes
+    parameter int BYTES_W    = `BYTES_W, //weight bytes
+    parameter int BYTES_P    = `BYTES_P  //partial sum bytes
 ) (
     input  logic         clk,
     input  logic         rst_n,
@@ -42,7 +42,10 @@ module layer_decoder #(
     
     output logic [1:0]   stride_o,
     output logic [1:0]   pad_H_o, pad_B_o, pad_L_o, pad_R_o,
-    
+
+    output logic [1:0]   kH_o, kW_o, // kernel size    
+
+
     output logic [31:0]  base_ifmap_o,
     output logic [31:0]  base_weight_o,
     output logic [31:0]  base_bias_o,
@@ -55,6 +58,8 @@ module layer_decoder #(
     output logic [31:0]  tile_n_o, //todo: max number of tiles
     output logic [6:0]   tile_D_o,
     output logic [6:0]   tile_K_o,
+    output logic [6:0]   tile_D_f_o, // tile_D_f
+    output logic [6:0]   tile_K_f_o, // tile_K_f
 
 
 //* ofmap size (size not sure)
@@ -110,8 +115,8 @@ logic [6:0] M;
 always_comb begin
     unique case (layer_type_i)
         2'd0: M = 7'd1; // Pointwise
-        2'd1: M = in_C_i+7'd1; // Depthwise
-        2'd2: M = in_C_i+7'd1; // Standard
+        2'd1: M = 2*in_C_i; // Depthwise
+        2'd2: M = 2*in_C_i; // Standard
         default: M = 7'd1; // Linear
     endcase
 end
@@ -155,6 +160,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         layer_type_o    <= 2'd0;
         padded_R_o      <= 7'd0; 
         padded_C_o      <= 7'd0;
+        kH_o           <= 2'd0;
+        kW_o           <= 2'd0;
         in_D_o          <= 11'd0; 
         out_K_o         <= 11'd0;
 
@@ -176,6 +183,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         tile_n_o         <= 32'd0;
         tile_D_o        <= 7'd0;
         tile_K_o        <= 7'd0;
+        tile_D_f_o      <= 7'd0;
+        tile_K_f_o      <= 7'd0;
         
         out_R_o         <= 7'd0;
         out_C_o         <= 7'd0;
@@ -185,6 +194,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         layer_type_o    <= layer_type_i;
         padded_R_o      <= padded_R;   
         padded_C_o      <= padded_C;   
+        kH_o           <= kH;
+        kW_o           <= kW;
         in_D_o          <= in_D_i;   
         out_K_o         <= out_K_i;
         
@@ -206,6 +217,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         tile_n_o         <= tile_n;
         tile_D_o        <= tile_D;
         tile_K_o        <= tile_K;
+        tile_D_f_o        <= tile_D_f;
+        tile_K_f_o        <= tile_K_f;
 
         out_R_o         <= out_R;
         out_C_o         <= out_C;

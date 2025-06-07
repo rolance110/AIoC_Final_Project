@@ -18,9 +18,13 @@ module Tile_Scheduler #(
     //=== Layer Descriptor ===
     input  logic          uLD_en_i,         // Descriptor valid
 
+    input  logic [1:0] kH_i, kW_i, // kernel height, width
+
     input  logic [31:0]   tile_n_i,         // todo
     input  logic [31:0]   tile_D_i,         // input channels per tile
     input  logic [31:0]   tile_K_i,         // output channels per tile
+    input  logic [31:0]   tile_D_f_i,       // input channels per tile (filter)
+    input  logic [31:0]   tile_K_f_i,       // output channels per tile (filter)
 
     input  logic [1:0]    layer_type_i,     // 0=PW, 1=DW, 2=STD, 3=LIN
     input  logic [1:0]    stride_i,         // stride
@@ -63,9 +67,8 @@ module Tile_Scheduler #(
 
 
 // Tile 3-loop index
-logic [6:0] k_idx, r_idx, d_idx;
-logic bias_en;
-assign bias_en = flags_i[3];
+logic [6:0] k_idx, d_idx;
+
 assign flags_o = flags_i; // pass flags to next stage
 assign layer_type_o = layer_type_i; // pass layer type to next stage
 assign stride_o = stride_i; // pass stride to next stage
@@ -192,45 +195,8 @@ logic [6:0] tile_On;
 logic [31:0] completed_On_cnt;
 logic [6:0] completed_OC_cnt;
 logic [6:0] completed_IC_cnt;
-//* completed_On_cnt:  計數目前已完成的 image pixel 數量
-always_ff@(posedge clk or negedge rst_n) begin
-    if(!rst_n)
-        completed_On_cnt <= 7'd0;
-    else if (cs_ts == uLD_LOAD)
-        completed_On_cnt <= 7'd0;
-    else if(/*算完一個 output channel tile*/)
-        completed_On_cnt <= 7'd0; // 歸 0
-    else if (layer_type_i == `POINTWISE/* && 算完一格 output pixel */)
-        completed_On_cnt <= completed_On_cnt + 7'd1;
-    else if (layer_type_i == `DEPTHWISE/* && 算完一個 output row */)
-        completed_On_cnt <= completed_On_cnt + 7'd1;
-end
 
-//* completed_IC_cnt: 計數目前已完成的 input channel 數量
-always_ff@(posedge clk or negedge rst_n) begin
-    if(!rst_n)
-        completed_IC_cnt <= 7'd0;
-    else if (cs_ts == uLD_LOAD)
-        completed_IC_cnt <= 7'd0;
-    else if (/*算完一個 output channel tile*/)
-        completed_IC_cnt <= 7'd0; // 歸 0
-    else if (layer_type_i == `POINTWISE /*&& 算完一個 input channel tile*/)
-        completed_IC_cnt <= completed_IC_cnt + 7'd32;
-    else if (layer_type_i == `DEPTHWISE /*&& 算完一個 input channel tile*/)
-        completed_IC_cnt <= completed_IC_cnt + 7'd10;
-end
 
-//* completed_OC_cnt: 計數目前已完成的 output channel 數量
-always_ff@(posedge clk or negedge rst_n) begin
-    if(!rst_n)
-        completed_OC_cnt <= 7'd0;
-    else if (cs_ts == uLD_LOAD)
-        completed_OC_cnt <= 7'd0;
-    else if (layer_type_i == `POINTWISE /*&& 算完一個 output channel tile*/)
-        completed_OC_cnt <= completed_OC_cnt + 7'd32;
-    else if (layer_type_i == `DEPTHWISE /*&& 算完一個 output channel tile*/)
-        completed_OC_cnt <= completed_OC_cnt + 7'd10;
-end
 
 logic [31:0] max_On_cnt;
 //* max_On_cnt: 目前 tile 最多能輸出的 On             數量
@@ -253,10 +219,20 @@ logic [6:0] OC_real;
 //* On_real: 目前 tile 實際總共要輸出 On_real 個 On (GLB => DRAM)
 //* IC_real: 目前 tile 實際總共要輸入 IC_real 個 input channel (DRAM => GLB)
 //* OC_real: 目前 tile 實際總共要輸入 OC_real 個 output channel pixel (DRAM <=> GLB)
+logic [6:0] remain_On;
+assign remain_On = max_On_cnt - completed_On_cnt; // 剩餘的 output pixel 數量
 logic [6:0] remain_IC;
 assign remain_IC = in_D_i - completed_IC_cnt; // 剩餘的 input channel 數量
 logic [6:0] remain_OC;
 assign remain_OC = out_K_i - completed_OC_cnt; // 剩餘的 output channel 數量
+
+always_comb begin
+    if(remain_On < tile_n_i)
+        On_real = remain_On; // 實際輸出的 opsum pixel 數量
+    else
+        On_real = tile_n_i; // 最多輸出 32 個 opsum pixel
+end
+
 
 always_comb begin
     if(remain_IC < tile_D_i)
@@ -274,54 +250,103 @@ always_comb begin
 end
 
 
+//reach_last_On_tile: 是否正在處理 最後一個 On tile
+always_comb  begin
+    if ((cs_ts == TILE_IDX_GEN) && (remain_On == 7'd0))
+        reach_last_On_tile = 1'b1; // reach last output channel tile
+    else
+        reach_last_On_tile = 1'b0;
+end
+//reach_last_D_tile: 是否正在處理 最後一個 D tile
 always_comb begin
-    //fixme:reach_last_On_tile = (cs_ts == TILE_IDX_GEN)? (On_idx == tile_n_i - 1) : 1'b0;
-    reach_last_D_tile = (cs_ts == TILE_IDX_GEN)?  (d_idx == ((remain_IC < tile_D_i) || (remain_IC == tile_D_i) )) : 1'b0;
-    reach_last_K_tile = (cs_ts == TILE_IDX_GEN)? (k_idx == ((remain_OC < tile_K_i) || (remain_OC == tile_K_i))): 1'b0;
+    if ((cs_ts == TILE_IDX_GEN) && (remain_IC == 7'd0))
+        reach_last_D_tile = 1'b1; // reach last input channel tile
+    else
+        reach_last_D_tile = 1'b0;
+end
+//reach_last_K_tile: 是否正在處理 最後一個 K tile
+always_comb begin
+    if ((cs_ts == TILE_IDX_GEN) && (remain_OC == 7'd0))
+        reach_last_K_tile = 1'b1; // reach last output channel tile
+    else
+        reach_last_K_tile = 1'b0;
 end
 
-//fixme: On_idx: 計數 目前輸出的 opsum pixel 數量
+
+//todo: idx: 計數目前正在計算第幾個 tile 
+//todo: completed_On_cnt: 計數 目前這張圖輸出的 opsum pixel 數量
+logic [6:0] On_idx; // 計數目前正在處理第幾個 On tile
 always_ff@(posedge clk or negedge rst_n) begin
-    if(!rst_n)
+    if(!rst_n)begin
+        completed_On_cnt <= 7'd0;
         On_idx <= 7'd0;
-    else if (cs_ts == uLD_LOAD)
-        On_idx <= 7'd0;
-    else if (/*算完一個 tile*/)
+    end
+    else if (cs_ts == uLD_LOAD)begin
+        completed_On_cnt <= 7'd0;
         On_idx <= 7'd0; // 歸 0
-    else if (layer_type_i == `POINTWISE && /*算完一個 opsum*/)
-        On_idx <= On_idx + 7'd1;
-    else if (layer_type_i == `DEPTHWISE && /*算完 1 row opsum*/)
-        On_idx <= On_idx + 7'd1;
+    end
+    else if (reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
+        completed_On_cnt <= 7'd0; // 
+        On_idx <= 7'd0; // 歸 0
+    end
+    else if (cs_ts == TILE_IDX_GEN)begin
+        completed_On_cnt <= completed_On_cnt + On_real;
+        On_idx <= On_idx + 7'd1; // 處理下一個 On tile
+    end
 end
-
-
-// d_idx
+//* completed_IC_cnt: 計數目前已完成的 input channel 數量
 always_ff@(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-        d_idx <= 7'd0;
-    else if (cs_ts == uLD_LOAD)
-        d_idx <= 7'd0; 
-    else if (cs_ts == TILE_IDX_GEN) begin
-        if (reach_last_D_tile && reach_last_On_tile)
-            d_idx <= 7'd0;
-        else if (reach_last_On_tile)
-            d_idx <= d_idx + 7'd1;
+    if(!rst_n)begin
+        completed_IC_cnt <= 7'd0;
+        d_idx <= 7'd0; // 歸 0
+    end
+    else if (cs_ts == uLD_LOAD)begin
+        completed_IC_cnt <= 7'd0;
+        d_idx <= 7'd0; // 歸 0
+    end
+    else if (reach_last_D_tile && reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
+        completed_IC_cnt <= 7'd0; // 歸 0
+        d_idx <= 7'd0; // 歸 0
+    end
+    else if (reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
+        completed_IC_cnt <= completed_IC_cnt + IC_real;
+        d_idx <= d_idx + 7'd1; // 處理下一個 D tile
     end
 end
 
-// k_idx
+//* completed_OC_cnt: 計數目前已完成的 output channel 數量
 always_ff@(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-        k_idx <= 7'd0;
-    else if (cs_ts == uLD_LOAD)
-        k_idx <= 7'd0; 
-    else if (cs_ts == TILE_IDX_GEN) begin
-        if(reach_last_On_tile && reach_last_D_tile && reach_last_K_tile)
-            k_idx <= 7'd0;
-        else if(reach_last_On_tile && reach_last_D_tile)
-            k_idx <= k_idx + 7'd1;
+    if(!rst_n)begin
+        completed_OC_cnt <= 7'd0;
+        k_idx <= 7'd0; // 歸 0
+    end
+    else if (cs_ts == uLD_LOAD)begin
+        completed_OC_cnt <= 7'd0;
+        k_idx <= 7'd0; // 歸 0
+    end
+    else if (reach_last_K_tile && reach_last_D_tile && reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
+        completed_OC_cnt <= 7'd0; // 歸 0
+        k_idx <= 7'd0; // 歸 0
+    end
+    else if (reach_last_On_tile && reach_last_D_tile && cs_ts == TILE_IDX_GEN)begin
+        completed_OC_cnt <= completed_OC_cnt + OC_real;
+        k_idx <= k_idx + 7'd1; // 處理下一個 K tile
     end
 end
+
+
+
+
+//============= GLB Base Address =============
+logic [31:0] weight_size, ifmap_size;
+assign weight_size = tile_D_f_i * tile_K_f_i * kH_i * kW_i * BYTES_W; // Weight size in bytes
+assign ifmap_size = tile_D_i * tile_n_i * BYTES_I; // Ifmap size in bytes
+always_comb begin
+    GLB_weight_base_addr_o = 32'd0;
+    GLB_ifmap_base_addr_o = weight_size;
+    GLB_opsum_base_addr_o = weight_size + ifmap_size;
+end
+
 
 //============= DMA =============
 //dma_enable_o
