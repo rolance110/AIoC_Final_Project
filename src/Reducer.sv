@@ -27,12 +27,14 @@ generate
     end
 endgenerate
 
-//3個row加一次(ADDT)
+//TODO: DW & CONV
+//3個row加一次(ADDT)，因為是用來做DW & CONV的，所以每3個row加一次
+//可以用前面10個ipsum跟opsum來做就好，不一定要除以三
 genvar m;
 generate
     for(m = 0;m < 10;m = m + 1) begin : DW_or_CONV
         ADDT ADDT(
-            .ipsum    (ipsum_in[m*3]), // only use ipsum of the first row in each 3-group
+            .ipsum    (ipsum_in[m]), //FIXME: 改成用固定前10個ipsum_fifo，這樣就可以跟PW共用
             .row1     (prod_in[m*3]),
             .row2     (prod_in[m*3 + 1]),
             .row3     (prod_in[m*3 + 2]),
