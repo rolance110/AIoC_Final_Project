@@ -25,4 +25,13 @@
 `define QUANT_SCALE 8 // Bit width for quantization scale
 `define ZERO_POINT 128 // Zero point for quantization
 
+
+// DMA address
+`define DMA_BASE_ADDR 32'h3000_0000 // Base address for DMA transfers
+// DMA offset
+`define DMA_SOURCE_OFFSET 32'h0000_0100 // Offset for input feature map
+`define DMA_DEST_OFFSET 32'h0000_0200 // Offset for output feature map
+`define DMA_LEN_OFFSET 32'h0000_0300 // Offset for weights
+`define DMA_EN_OFFSET 32'h0000_0400 // Offset for bias
+
 `endif // DEFINE_LD

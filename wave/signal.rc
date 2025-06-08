@@ -16,16 +16,18 @@ signalSpacing 5
 
 ; windowTimeUnit is used for zoom, cursor & marker
 ; waveform viewport range
-zoom 0.000000 36789250.000000
-cursor 29265000.000000
+zoom 0.000000 220820.312500
+cursor 55000.000000
 marker 0.000000
 
 ; user define markers
 ; userMarker time_pos marker_name color linestyle
+userMarker 1115000 M1 ID_GREEN5 long_dashed
+
 ; visible top row signal index
-top 0
+top 9
 ; marker line index
-markerPos 2
+markerPos 28
 
 ; event list
 ; addEvent event_name event_expression
@@ -47,44 +49,50 @@ curSTATUS ByChange
 
 addGroup "G1"
 activeDirFile "" "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb"
-addSignal -h 15 /Tile_Scheduler_tb/dut/clk
-addSignal -h 15 -UNSIGNED -HEX -holdScope layer_type_i[1:0]
-addSignal -h 15 -UNSIGNED -HEX -holdScope pad_B_i[1:0]
-addSignal -h 15 -UNSIGNED -HEX -holdScope pad_B_o[1:0]
-addSignal -h 15 -UNSIGNED -HEX -holdScope pad_L_i[1:0]
-addSignal -h 15 -UNSIGNED -HEX -holdScope pad_L_o[1:0]
-addSignal -h 15 -UNSIGNED -HEX -holdScope pad_R_i[1:0]
-addSignal -h 15 -UNSIGNED -HEX -holdScope pad_R_o[1:0]
-addSignal -h 15 -UNSIGNED -HEX -holdScope pad_T_i[1:0]
-addSignal -h 15 -holdScope dma_enable_o
-addSignal -h 15 -holdScope dma_interrupt_i
-addSignal -h 15 -UNSIGNED -holdScope cs_ts[3:0]
-addSignal -h 15 -holdScope uLD_en_i
-addSignal -h 15 -UNSIGNED -HEX -holdScope flags_i[3:0]
-addSignal -h 15 -holdScope pass_done_i
-addSignal -h 15 -holdScope pass_start_o
+addSignal -h 25 /Tile_Scheduler_tb/dut/clk
+addSignal -h 25 -UNSIGNED -HEX -holdScope layer_type_i[1:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope pad_B_i[1:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope pad_B_o[1:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope pad_L_i[1:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope pad_L_o[1:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope pad_R_i[1:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope pad_R_o[1:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope pad_T_i[1:0]
+addSignal -h 25 -holdScope dma_enable_o
+addSignal -h 25 -holdScope dma_interrupt_i
+addSignal -h 25 -UNSIGNED -holdScope cs_ts[3:0]
+addSignal -h 25 -holdScope uLD_en_i
+addSignal -h 25 -UNSIGNED -HEX -holdScope flags_i[3:0]
+addSignal -h 25 -holdScope pass_done_i
+addSignal -h 25 -holdScope pass_start_o
 addGroup "G2"
-addSignal -h 15 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/On_real[6:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope IC_real[6:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope OC_real[6:0]
+addSignal -h 25 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/On_real[6:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope IC_real[6:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope OC_real[6:0]
 addGroup "G3"
-addSignal -h 15 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/completed_On_cnt[31:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope completed_IC_cnt[6:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope completed_OC_cnt[6:0]
+addSignal -h 25 -UNSIGNED -HEX /Tile_Scheduler_tb/dut/completed_On_cnt[31:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope completed_IC_cnt[6:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope completed_OC_cnt[6:0]
 addGroup "G4"
-addSignal -h 15 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/max_On_cnt[31:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope remain_On[6:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope remain_IC[6:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope remain_OC[6:0]
-addSignal -h 15 -holdScope reach_last_On_tile
-addSignal -h 15 -holdScope reach_last_D_tile
-addSignal -h 15 -holdScope reach_last_K_tile
+addSignal -h 25 -UNSIGNED -HEX /Tile_Scheduler_tb/dut/max_On_cnt[31:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope max_On_cnt[31:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope remain_On[31:0]
+addSignal -h 25 -UNSIGNED -HEX -holdScope completed_On_cnt[31:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope remain_IC[6:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope remain_OC[6:0]
+addSignal -h 25 -holdScope reach_last_On_tile
+addSignal -h 25 -holdScope reach_last_D_tile
+addSignal -h 25 -holdScope reach_last_K_tile
 addGroup "G5"
-addSignal -h 15 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/On_idx[6:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope d_idx[6:0]
-addSignal -h 15 -UNSIGNED -UDEC -holdScope k_idx[6:0]
+addSignal -h 25 /Tile_Scheduler_tb/dut/layer_first_tile
+addSignal -h 25 -holdScope filter_en
+addSignal -h 25 -holdScope bias_en
+addSignal -h 25 -holdScope ipsum_en
+addSignal -c ID_ORANGE5 -ls solid -lw 4 -h 25 -UNSIGNED -UDEC -holdScope On_idx[6:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope d_idx[6:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope k_idx[6:0]
 addGroup "G6"
-addSignal -h 15 /Tile_Scheduler_tb/dut/tile_reach_max_o
+addSignal -h 25 /Tile_Scheduler_tb/dut/tile_reach_max_o
 addGroup "G7"
 
 ; getSignalForm Scope Hierarchy Status

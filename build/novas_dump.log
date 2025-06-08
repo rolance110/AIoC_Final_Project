@@ -152,10 +152,10 @@ Runtime environment variables:
 UNAME=/bin/uname
 LC_ALL=C
 LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=01;05;37;41:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=01;36:*.au=01;36:*.flac=01;36:*.m4a=01;36:*.mid=01;36:*.midi=01;36:*.mka=01;36:*.mp3=01;36:*.mpc=01;36:*.ogg=01;36:*.ra=01;36:*.wav=01;36:*.oga=01;36:*.opus=01;36:*.spx=01;36:*.xspf=01;36:
-LD_LIBRARY_PATH=/usr/cad/synopsys/vcs/2024.09-sp2/lib:/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib::::::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/cur/share/PLI/VCS/LINUX64::/lib64:/usr/lib64:/usr/local/lib64
+LD_LIBRARY_PATH=/usr/cad/synopsys/vcs/2024.09-sp2/lib:/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib::::::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/cur/share/PLI/VCS/LINUX64::/lib64:/usr/lib64:/usr/local/lib64::::::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/cur/share/PLI/VCS/LINUX64::/lib64:/usr/lib64:/usr/local/lib64
 HOSTTYPE=x86_64-linux
 SNPS_INTERNAL_VCS_LINUX_OS=linux
-SNPS_VCS_INTERNAL_ROOT_START_TIME=1749298482.446185950
+SNPS_VCS_INTERNAL_ROOT_START_TIME=1749388676.555045393
 XDG_MENU_PREFIX=gnome-
 LANG=en_US.UTF-8
 GDM_LANG=en_US.UTF-8
@@ -167,7 +167,7 @@ SCRNAME=vcs
 ORIGINAL_XDG_CURRENT_DESKTOP=GNOME
 OLDPWD=/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch
 VCS_INTERNAL_CONVERTEDLIBS=
-SNPS_VCS_INTERNAL_CURR_PID=1301952
+SNPS_VCS_INTERNAL_CURR_PID=1490237
 TOOL_HOME=/usr/cad/synopsys/vcs/2024.09-sp2/linux64
 COLORTERM=truecolor
 SNPS_VCS_INTERNAL_MAKE_OPT=
@@ -208,7 +208,7 @@ XDG_SESSION_TYPE=wayland
 VCS_CC=gcc
 VCS_ARG_ADDED_FOR_TMP=1
 XDG_DATA_DIRS=/home/n26130126/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/
-SHLIB_PATH=/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/:
+SHLIB_PATH=/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/:
 XDG_SESSION_DESKTOP=gnome
 GJS_DEBUG_OUTPUT=stderr
 FSDB=2
@@ -216,26 +216,26 @@ MAIL=/var/spool/mail/n26130126
 VSCODE_GIT_ASKPASS_MAIN=/usr/share/code/resources/app/extensions/git/dist/askpass-main.js
 SHELL=/bin/bash
 TERM=xterm
-SNPS_VCS_INTERNAL_ROOT_PID=1301952
+SNPS_VCS_INTERNAL_ROOT_PID=1490237
 MAKEOVERRIDES=${-*-command-variables-*-}
 SCRIPT_NAME=vcs
 QT_IM_MODULE=ibus
 XMODIFIERS=@im=ibus
 SNPS_VCS_INTERNAL_MEMPRELOAD_USE_LIBC=1
 LM_LICENSE_FILE=5280@lstn:26585@lstn:
-SNPS_VCS_TMPDIR=/tmp/vcs_20250607121442_1301952
+SNPS_VCS_TMPDIR=/tmp/vcs_20250608131756_1490237
 XDG_CURRENT_DESKTOP=GNOME
 XLOCALEDIR=/usr/cad/synopsys/icc2/2024.09-sp2//etc/locale
 MAKELEVEL=1
 GIO_LAUNCHED_DESKTOP_FILE=/usr/share/applications/code.desktop
 VERDI_HOME=/usr/cad/synopsys/verdi/2024.09-sp2
 XDG_SEAT=seat0
-SHLVL=6
+SHLVL=7
 VCS_COM=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/bin/vcs1
 MAKE_TERMERR=/dev/pts/2
 VSCODE_GIT_IPC_HANDLE=/run/user/1000/vscode-git-e6522f7dcc.sock
 VCS_ARCH=linux64
-MANPATH=/usr/cad/synopsys/vcs/2024.09-sp2/doc/man:/usr/cad/synopsys/synthesis/2024.09-sp4/doc/syn/man
+MANPATH=/usr/cad/synopsys/vcs/2024.09-sp2/doc/man:/usr/cad/synopsys/synthesis/2024.09-sp4/doc/syn/man:/usr/cad/synopsys/vcs/2024.09-sp2/doc/man:/usr/cad/synopsys/synthesis/2024.09-sp4/doc/syn/man
 VCS_DEPTH=0
 GDK_BACKEND=x11
 GDMSESSION=gnome
@@ -245,7 +245,7 @@ DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
 GIT_ASKPASS=/usr/share/code/resources/app/extensions/git/dist/askpass.sh
 XDG_RUNTIME_DIR=/run/user/1000
 XAUTHORITY=/run/user/1000/.mutter-Xwaylandauth.ZT7J72
-PATH=.:/usr/riscv/bin:/usr/cad/cadence/JASPER/jasper_2022.03p002/bin:/usr/cad/synopsys/icc2/2024.09-sp2//bin:/usr/cad/synopsys/synthesis/2024.09-sp4/amd64/syn/bin:/usr/cad/synopsys/lc/cur/bin:/usr/cad/synopsys/fc/2024.09-sp2//bin:/usr/cad/synopsys/spyglass/2024.09-sp2/SPYGLASS_HOME/bin:/usr/cad/synopsys/verdi/2024.09-sp2/bin:/usr/cad/synopsys/verdi/2024.09-sp2/bin:/usr/cad/synopsys/vcs/2024.09-sp2/bin:/usr/cad/synopsys/vcs/2024.09-sp2/vcfca/bin:/usr/cad/synopsys/vcs/2024.09-sp2/amd64/bin:/home/n26130126/.local/bin:/home/n26130126/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/bin:/usr/local/bin:/home/n26130126/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/usr/local/bin:/usr/local/bin:/usr/local/bin
+PATH=.:/usr/riscv/bin:/usr/cad/cadence/JASPER/jasper_2022.03p002/bin:/usr/cad/synopsys/icc2/2024.09-sp2//bin:/usr/cad/synopsys/synthesis/2024.09-sp4/amd64/syn/bin:/usr/cad/synopsys/lc/cur/bin:/usr/cad/synopsys/fc/2024.09-sp2//bin:/usr/cad/synopsys/spyglass/2024.09-sp2/SPYGLASS_HOME/bin:/usr/cad/synopsys/verdi/2024.09-sp2/bin:/usr/cad/synopsys/verdi/2024.09-sp2/bin:/usr/cad/synopsys/vcs/2024.09-sp2/bin:/usr/cad/synopsys/vcs/2024.09-sp2/vcfca/bin:/usr/cad/synopsys/vcs/2024.09-sp2/amd64/bin:/usr/riscv/bin:/usr/cad/cadence/JASPER/jasper_2022.03p002/bin:/usr/cad/synopsys/icc2/2024.09-sp2//bin:/usr/cad/synopsys/synthesis/2024.09-sp4/amd64/syn/bin:/usr/cad/synopsys/lc/cur/bin:/usr/cad/synopsys/fc/2024.09-sp2//bin:/usr/cad/synopsys/spyglass/2024.09-sp2/SPYGLASS_HOME/bin:/usr/cad/synopsys/verdi/2024.09-sp2/bin:/usr/cad/synopsys/verdi/2024.09-sp2/bin:/usr/cad/synopsys/vcs/2024.09-sp2/bin:/usr/cad/synopsys/vcs/2024.09-sp2/vcfca/bin:/usr/cad/synopsys/vcs/2024.09-sp2/amd64/bin:/home/n26130126/.local/bin:/home/n26130126/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/bin:/usr/local/bin:/home/n26130126/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/usr/local/bin:/usr/local/bin:/usr/local/bin
 VCS_HOME=/usr/cad/synopsys/vcs/2024.09-sp2
 DEBUGINFOD_URLS=https://debuginfod.centos.org/ 
 sysc_uni_pwd=/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build
@@ -271,8 +271,8 @@ argv[0]=simv
 argv[1]=+notimingcheck
 argv[2]=+define++FSDB_ALL
 270 profile - 100
-          CPU/Mem usage: 0.050 sys,  0.160 user,  228.97M mem
-271 Elapsed time:    0:00:01    Sat Jun  7 20:14:44 2025
+          CPU/Mem usage: 0.040 sys,  0.130 user,  229.01M mem
+271 Elapsed time:    0:00:02    Sun Jun  8 21:18:01 2025
 272 User CPU time used: 0 seconds
 273 System CPU time used: 0 seconds
 274 pliAppInit
@@ -312,57 +312,57 @@ argv[2]=+define++FSDB_ALL
 308 *Verdi* : Enable +struct and +mda dumping.
 309 *Verdi* : End of traversing.
 310 pliAppHDL_DumpVarComplete traverse var: profile - 
-          CPU/Mem usage: 0.070 sys,  0.170 user,  327.41M mem
-                   incr: 0.010 sys,  0.000 user,  8.13M mem
-                   accu: 0.010 sys,  0.000 user,  8.13M mem
-              accu incr: 0.010 sys,  0.000 user,  8.13M mem
+          CPU/Mem usage: 0.040 sys,  0.130 user,  327.47M mem
+                   incr: 0.000 sys,  0.000 user,  8.15M mem
+                   accu: 0.000 sys,  0.000 user,  8.15M mem
+              accu incr: 0.000 sys,  0.000 user,  8.15M mem
 
-          Count usage: 74 var,  74 idcode,  55 callback
-                 incr: 74 var,  74 idcode,  55 callback
-                 accu: 74 var,  74 idcode,  55 callback
-            accu incr: 74 var,  74 idcode,  55 callback
+          Count usage: 83 var,  83 idcode,  56 callback
+                 incr: 83 var,  83 idcode,  56 callback
+                 accu: 83 var,  83 idcode,  56 callback
+            accu incr: 83 var,  83 idcode,  56 callback
 311 Idcode  0 - bc1:0  mda:0
-312 Elapsed time:    0:00:01    Sat Jun  7 20:14:44 2025
+312 Elapsed time:    0:00:03    Sun Jun  8 21:18:02 2025
 313 User CPU time used: 0 seconds
 314 System CPU time used: 0 seconds
 315 pliAppHDL_DumpVarComplete: profile - 
-          CPU/Mem usage: 0.070 sys,  0.170 user,  327.41M mem
+          CPU/Mem usage: 0.040 sys,  0.130 user,  327.47M mem
                    incr: 0.000 sys,  0.000 user,  0.00M mem
-                   accu: 0.010 sys,  0.000 user,  8.13M mem
+                   accu: 0.000 sys,  0.000 user,  8.15M mem
               accu incr: 0.000 sys,  0.000 user,  0.00M mem
 
-          Count usage: 74 var,  74 idcode,  55 callback
+          Count usage: 83 var,  83 idcode,  56 callback
                  incr: 0 var,  0 idcode,  0 callback
-                 accu: 74 var,  74 idcode,  55 callback
+                 accu: 83 var,  83 idcode,  56 callback
             accu incr: 0 var,  0 idcode,  0 callback
 316 Idcode  0 - bc1:0  mda:0
-317 Elapsed time:    0:00:01    Sat Jun  7 20:14:44 2025
+317 Elapsed time:    0:00:03    Sun Jun  8 21:18:02 2025
 318 User CPU time used: 0 seconds
 319 System CPU time used: 0 seconds
-320 End of simulation at 36425000
-321 Memory usage: 327.414 M
-322 Maximum resident set size: 116 MB
-323 Hard page faults: 0
-324 Soft page faults: 15784
-325 Elapsed time:    0:00:01    Sat Jun  7 20:14:44 2025
+320 End of simulation at 28265000
+321 Memory usage: 327.467 M
+322 Maximum resident set size: 115 MB
+323 Hard page faults: 55
+324 Soft page faults: 14909
+325 Elapsed time:    0:00:03    Sun Jun  8 21:18:02 2025
 326 User CPU time used: 0 seconds
 327 System CPU time used: 0 seconds
 328 Begin FSDB profile info:
-329 FSDB Writer : bc1(11016) bcn(4303) mtf/stf(0/0)
-FSDB Writer elapsed time : flush(0.085552) io wait(0.000000) theadpool wait(0.000000)
+329 FSDB Writer : bc1(8568) bcn(3511) mtf/stf(0/0)
+FSDB Writer elapsed time : flush(0.141040) io wait(0.000000) theadpool wait(0.000000)
 FSDB Writer cpu time : MT Compression : 0
 330 End FSDB profile info
-331 FSDB closed. Name: ../wave/top.fsdb Size: 12884
+331 FSDB closed. Name: ../wave/top.fsdb Size: 13835
 332 Parallel profile     - ProducerThread:1 ConsumerThread:1 Buffer:64MB
-333                      - BlockUsed:1 Acquire:0 BufferUsed:307156
+333                      - BlockUsed:1 Acquire:0 BufferUsed:241468
 334                      - Flush:3 Expand:0 ProducerWait:0 ConsumerWait:0
-335                      - MainProducerTime:0.265804004 TotalConsumerTime:0.000000000
-336                      - ElapsedTime:0.819941000
-337 Producer   0 profile - BlockUsed:2 Acquire:0 BufferUsed:307156
+335                      - MainProducerTime:0.190105772 TotalConsumerTime:0.000000000
+336                      - ElapsedTime:1.977923000
+337 Producer   0 profile - BlockUsed:2 Acquire:0 BufferUsed:241468
 338 Consumer   0 profile - Affinity:-1 CPUTime:0.000000000 LifeTime:0.000000000 (-nan%)
-339                      - BlockUsed:2 Acquire:0 BufferUsed:307156
+339                      - BlockUsed:2 Acquire:0 BufferUsed:241468
 340 SimExit
-341 Elapsed time:    0:00:02    Sat Jun  7 20:14:45 2025
+341 Elapsed time:    0:00:04    Sun Jun  8 21:18:03 2025
 342 User CPU time used: 0 seconds
 343 System CPU time used: 0 seconds
 344 Sim process exit
