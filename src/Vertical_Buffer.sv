@@ -3,7 +3,7 @@
 module Vertical_Buffer(
     input clk,
     input reset,
-    input col_en,
+    input [4:0] col_en,
     //handshake 
     input ready_if,
     input valid_if,
@@ -11,7 +11,7 @@ module Vertical_Buffer(
     //input [`COL_NUM - 1 : 0] col_en,//用來決定是否要關掉，直到所有PE算完，在切換到下一個layer的ifmap
     input ifmap_out_f,//開始輸出FIFO內容的signal,在compute的時候開始拉為1，總共維持四個cycle
 
-    output logic [`COL_NUM*8 - 1 : 0] ifmap_out
+    output logic [`COL_NUM*8 - 1 : 0]  
 );
 
 // 32 independent FIFOs, each 8-bit wide, depth = 4

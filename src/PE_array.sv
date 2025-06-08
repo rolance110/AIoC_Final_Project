@@ -33,7 +33,7 @@ module PE_array(
   generate
     for (r = 0; r < `ROW_NUM; r = r + 1) begin : UNPACK
       for (c = 0; c < `COL_NUM; c = c + 1) begin : COLS
-        // weight
+        // weight FIXME: 方向跟weight_buffer當中存的相反
         assign weight_wire[r][c] = array_weight_in[((r*`COL_NUM + c)*8) +: 8];
       end
     end

@@ -38,7 +38,7 @@ wire [5:0] ifmap_load_time;
 wire [6:0] ipsum_load_time, opsum_load_time;
 
 wire [4:0] col_in = col_en - 5'd1;//從0開始到31
-wire [3:0] col_num = col_in[5:3];
+wire [3:0] col_num = {1'd0, col_in[4:2]} + 4'd1; //col_num = col_in[5:3] + 1，因為col_in是從0開始算，所以需要加1
 assign weight_load_time = (row_en * col_num) - 8'd1;//總共有幾筆weight要輸入進來(weight一個ROW最多需要8個cycle)
 assign ifmap_load_time = col_en - 6'd1;//一次載入32bit，剛好是一個col所需的時間
 assign ipsum_load_time = (row_en << 1) - 7'd1;//一個ROW需要2個cycle才能填滿(因為一筆ipsum = 16 bit)
@@ -61,8 +61,8 @@ logic first_f;
 logic [2:0] first_8_cnt; //用來計算第一個8個cycle的weight load
 
 //給ipsum & opsum說明幾個ROW要使用
-logic [5:0] time_4_cnt = ((first_8_cnt + 3'd1) << 2); //第一個8個cycle的ifmap load時間，因為每個ifmap需要2個cycle才能填滿，所以需要乘以2
-logic [6:0] time_8_cnt = (time_4_cnt << 1) - 7'd1; //psum是16bit，所以4個ROW需要8個cycle才能填滿
+wire [5:0] time_4_cnt = ((first_8_cnt + 3'd1) << 2); //第一個8個cycle的ifmap load時間，因為每個ifmap需要2個cycle才能填滿，所以需要乘以2
+wire [6:0] time_8_cnt = (time_4_cnt << 1) - 7'd1; //psum是16bit，所以4個ROW需要8個cycle才能填滿
 
 always_ff @(posedge clk) begin
     if(reset)
@@ -87,8 +87,10 @@ end
 logic close_f; //用來關閉PE array的信號
 logic [2:0] close_8_cnt;
 
+wire [2:0] close_sub1 = close_8_cnt - 3'd1;
+
 //0 - 4 - 8 - 12 - 16 - 20 - 24 - 28(總共8次)
-wire [4:0] close_start_num = close_8_cnt << 2; //關閉PE array的ROW起始位子
+wire [4:0] close_start_num = close_sub1 << 2; //關閉PE array的ROW起始位子
 wire [5:0] close_num = (row_en << 1) - (close_start_num << 1) - 6'd1;
 
 always_ff @(posedge clk) begin
@@ -96,7 +98,7 @@ always_ff @(posedge clk) begin
         close_f <= 1'b0;
     else if(cs == IDLE && ns == IPSUM_LOAD)
         close_f <= 1'b1; //當進入WEIGHT_LOAD的時候，代表已經完成第一個8個cycle的weight load
-    else if(cs == OPSUM_OUT && ns == IDLE && (close_8_cnt == 3'd7))//等最後一次做完才放下
+    else if(cs == OPSUM_OUT && ns == IDLE && (close_sub1 == 3'd7))//等最後一次做完才放下
         close_f <= 1'b0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
 end
 
@@ -267,6 +269,7 @@ end
 //--------------------------------------------------------------//
 //horizontal buffer
 //TODO: handshake的時候才能輸入一筆data
+logic [8191:0] weight_out; //32個ROW，每個ROW 256bit，總共8192bit
 
 always_comb begin
     if(cs == WEIGHT_LOAD)
@@ -297,7 +300,8 @@ Horizontal_Buffer Horizontal_Buffer(
 //vertical buffer
 //TODO: 需要拉5個cycle，因為需要先花一個cycle從FIFO取出，再花四個cycle來pipeline 計算&取出
 wire ifmap_out_f;
-assign ifmap_out_f = ((cs == IPSUM_LOAD) && (ns == COMPUTE)) || ((cs == COMPUTE) && (cnt < 8'd4));//在compute的時候開始拉為1，總共維持四個cycle
+logic [255:0] ifmap_out; //32個ROW，每個ROW 8bit，總共256bit
+assign ifmap_out_f = /*((cs == IPSUM_LOAD) && (ns == COMPUTE)) || */((cs == COMPUTE) && (cnt < 8'd4));//在compute的時候開始拉為1，總共維持四個cycle
 
 always_comb begin
     if(cs == IFMAP_LOAD)
@@ -309,7 +313,7 @@ end
 Vertical_Buffer Vertical_Buffer(
     .clk(clk),
     .reset(reset),
-    .col_en(col_en),
+    .col_en(col_in),
     .ready_if(ready_if),
     .valid_if(valid_if),
     .ifmap_in(ifmap_in),
@@ -328,6 +332,7 @@ Vertical_Buffer Vertical_Buffer(
 //更改成考慮哪一種conv(PW DW Conv Linear)
 //
 logic ipsum_out_f;
+logic [511:0] ipsum_out;
 
 always_comb begin
     case(DW_PW_sel)
@@ -354,7 +359,7 @@ Ipsum_buffer Ipsum_buffer(
     .ready_ip(ready_ip),
     .valid_ip(valid_ip),
     //剛開始啟動PE array
-    .time_4_cnt(time_4_cnt),//用來決定有幾個ROW要使用
+    .ip_time_4(time_4_cnt),//用來決定有幾個ROW要使用
     .first_f(first_f), //用來決定是否是第一個8個cycle的weight load
     //要關閉PE array
     .close_start_num(close_start_num), //用來決定關閉PE array的ROW起始位子
@@ -374,15 +379,24 @@ Ipsum_buffer Ipsum_buffer(
 //opsum buffer
 //TODO: 因為進入cs = compute，下一個cycle ipsum才會在reducer跟prod做累加
 // 所以store_opsum_f 也需要配合在compute的下一個cycle開始儲存opsum
-wire [15:0] reducer2opsum;
+logic [511:0] reducer2opsum;
 logic store_opsum_f;
 
-always_comb begin
-    if(cs == OPSUM_OUT)
-        valid_op = 1'b1; //在OPSUM_OUT的時候，valid_op = 1
+always_ff @(posedge clk) begin
+    if(reset)
+        valid_op <= 1'd0;
+    else if(cs == OPSUM_OUT)
+        valid_op <= 1'd1; //在OPSUM_OUT的時候，valid_op = 1
     else
-        valid_op = 1'b0; //其他狀態不需要valid_op
+        valid_op <= 1'd0; //其他狀態不需要valid_op
 end
+
+// always_comb begin
+//     if(cs == OPSUM_OUT)
+//         valid_op = 1'b1; //在OPSUM_OUT的時候，valid_op = 1
+//     else
+//         valid_op = 1'b0; //其他狀態不需要valid_op
+// end
 
 always_ff @(posedge clk) begin
     if(reset)
@@ -401,11 +415,14 @@ Opsum_buffer Opsum_buffer(
     .valid_op(valid_op),
     //first 8 cycle
     .first_f(first_f),
-    .time_4_cnt(time_4_cnt), //用來決定有幾個ROW要使用
+    .ip_time_4(time_4_cnt), //用來決定有幾個ROW要使用
 
+    .close_start_num(close_start_num), //用來決定關閉PE array的ROW起始位子
+    .close_f(close_f), //用來關閉PE array的信號
+    .row_en(row_en), //用來決定有幾個ROW要使用
     .store_opsum_f(store_opsum_f),
     .opsum_in(reducer2opsum),
-    .opsum2GLB(opsum2GLB)//to GLB
+    .opsum_out(opsum2GLB)//to GLB
 );
 //--------------------------------------------------------------//
 
@@ -417,7 +434,7 @@ Opsum_buffer Opsum_buffer(
 //PE array
 //TODO: 增加DW的pass功能，讓他可以把所有ifmap擺定位再開始動作
 wire prod_out_en;
-wire [15:0] array_opsum;
+wire [511:0] array_opsum;
 assign prod_out_en = (cs == COMPUTE) && (cnt < 8'd4); //在compute的時候開始輸出給Reducer，維持四個cycle
 
 PE_array PE_array(
@@ -425,7 +442,6 @@ PE_array PE_array(
     .reset(reset),
     .array_ifmap_in(ifmap_out), //從Vertical_Buffer來的
     .array_weight_in(weight_out), //從Horizontal_Buffer來的
-    .ipsum_in(ipsum_out), //從Ipsum_buffer來的
     .prod_out_en(prod_out_en),
     .array_weight_en(row_en), //根據row_en來決定有幾個ROW會動作
     .array_opsum(array_opsum) //送到Opsum_buffer

@@ -25,8 +25,9 @@ module Horizontal_Buffer(
 logic [31:0] weight_mem [0:`ROW_NUM-1][0:7];
 logic [2:0] col_cnt;
 logic [5:0] row_cnt;
+logic change_f_reg;
 
-wire [2:0] col_num = col_in[5:3];//最多一個ROW有8筆32bit
+wire [2:0] col_num = col_in[4:2];//最多一個ROW有8筆32bit
 
 wire handshake_f = ready_w && valid_w;
 
@@ -64,7 +65,14 @@ always_ff @(posedge clk) begin
 end
 
 always_ff @(posedge clk) begin
-   if(reset || change_weight_f) begin
+    if(reset) 
+        change_f_reg <= 1'd0;
+    else
+        change_f_reg <= change_weight_f;
+end
+
+always_ff @(posedge clk) begin
+   if(reset || (change_f_reg == 1'd0 && change_weight_f == 1'd1)) begin
      for(int i=0;i<32;i=i+1) begin
        for(int j=0;j<8;j=j+1) begin
          weight_mem[i][j] <= 32'd0;

@@ -69,8 +69,7 @@ module Opsum_buffer(
       always_ff @(posedge clk) begin
         if (reset) begin
           fifo[r][0] <= 16'd0;
-          fifo[r][1] <= 16'd0;
-          fifo[r][2] <= 16'd0;
+          fifo[r][1] <= 16'd0;          fifo[r][2] <= 16'd0;
           fifo[r][3] <= 16'd0;
         end 
         else if(store_opsum_f)begin
