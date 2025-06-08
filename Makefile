@@ -46,10 +46,18 @@ rtl2: | $(bld_dir) $(wave_dir)
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
 	+define+$(FSDB_DEF)
+
+rtl3: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/TS_AXI_wrapper_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF)
+
 # Utilities
 nWave: | $(wave_dir)
 	cd $(wave_dir); \
-	nWave &
+	nWave -ssf ../wave/top.fsdb &
 
 verdi: | $(wave_dir)
 	cd $(wave_dir); \

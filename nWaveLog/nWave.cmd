@@ -1492,3 +1492,4 @@ wvChangeDisplayAttr -win $_nWave1 -h 25
 wvSetPosition -win $_nWave1 {("G4" 3)}
 wvSaveSignal -win $_nWave1 \
            "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc"
+wvExit

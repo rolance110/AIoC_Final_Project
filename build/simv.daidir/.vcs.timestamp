@@ -1,5 +1,5 @@
 0
-39
+40
 +define++FSDB_ALL
 +incdir+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./include+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim
 +itf+/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcsdp_lite.tab
@@ -35,8 +35,9 @@
 -sverilog
 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/bin/vcs1
 /usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/verdi.tab
-/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/Tile_Scheduler_tb.sv
+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/TS_AXI_wrapper_tb.sv
 ../src/calc_tile_n.sv
+../src/TS_AXI_wrapper.sv
 ../src/Layer_Decoder.sv
 ../src/Tile_Scheduler.sv
 82
@@ -85,7 +86,7 @@ SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
 SNPS_VCS_PYTHON3=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/bin/Python3/bin/python3
 SNPS_VCS_CLANG_PATH=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/clang
 SNPS_INTERNAL_VCS_LINUX_OS=linux
-SHLIB_PATH=/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/:
+SHLIB_PATH=/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/:
 SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/2556,unix/unix:/tmp/.ICE-unix/2556
 SCRNAME=vcs
 SCRIPT_NAME=vcs
@@ -95,7 +96,7 @@ OSTYPE=linux
 ORIGINAL_XDG_CURRENT_DESKTOP=GNOME
 NO_AT_BRIDGE=1
 MFLAGS=
-MAKE_TERMERR=/dev/pts/2
+MAKE_TERMERR=/dev/pts/3
 MAKEOVERRIDES=${-*-command-variables-*-}
 MAKELEVEL=1
 MAKEFLAGS= -- FSDB=2
@@ -124,13 +125,14 @@ CHROME_DESKTOP=code.desktop
 BASH_FUNC_which%%=() {  ( alias;_ eval ${which_declare} ) | /usr/bin/which --tty-only --read-alias --read-functions --show-tilde --show-dot $@_}
 0
 0
-8
-1749382887 ../include/define.svh
-1749388669 ../src/Tile_Scheduler.sv
+9
+1749391645 ../include/define.svh
+1749388802 ../src/Tile_Scheduler.sv
 1749232618 ../src/Layer_Decoder.sv
+1749393091 ../src/TS_AXI_wrapper.sv
 1749230903 ../src/calc_tile_n.sv
-1749298479 /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/Tile_Scheduler_tb.sv
-1749208846 /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f
+1749394424 /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/TS_AXI_wrapper_tb.sv
+1749393177 /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f
 1741065587 /usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/verdi.tab
 1740888368 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcsdp_lite.tab
 4
@@ -138,5 +140,5 @@ BASH_FUNC_which%%=() {  ( alias;_ eval ${which_declare} ) | /usr/bin/which --tty
 1740889567 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/liberrorinf.so
 1740889560 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/libsnpsmalloc.so
 1740889556 /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/libvfs.so
-1749388683 simv.daidir
+1749394430 simv.daidir
 -1 partitionlib
