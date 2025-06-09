@@ -1,5 +1,6 @@
 `define COL_NUM 32
 `define ROW_NUM 32
+//TODO: PW 0 DW 1 CONV 2 LINEAR 3
 
 module conv_unit(
     input clk,
@@ -17,6 +18,10 @@ module conv_unit(
     input valid_if,
     input valid_ip,
     input ready_op,
+
+    //DW
+    input DW_row_f,//說明DW要換下一個ROW使用，所以要先關閉
+    input [1:0] DW_num,//說明這次有幾筆data_in(1~3)，幫助ifmap決定輸出幾筆
 
     //control signal
     input DW_PW_sel,//用來決定是DW還是PW，PW = 1, DW = 0
@@ -51,64 +56,99 @@ assign ifmap_in = (cs == IFMAP_LOAD) ? data_in : 32'd0;
 assign ipsum_in = (cs == IPSUM_LOAD) ? data_in : 32'd0;
 assign data_out = (cs == OPSUM_OUT) ? opsum2GLB : 32'd0;
 
-//--------------------------------------------------------------//
-//TODO:
-//設計一個用來計算剛啟動這個PE array的時候，因為不會滿載，所以並非所有ROW都要使用
-//所以可以只輸入部分ipsum & 只輸出部分opsum
-//所以需要計算8個大循環，8個循環以後才會滿載計算
+//PW open & close signal
+    //--------------------------------------------------------------//
+    //TODO:
+    //設計一個用來計算剛啟動這個PE array的時候，因為不會滿載，所以並非所有ROW都要使用
+    //所以可以只輸入部分ipsum & 只輸出部分opsum
+    //所以需要計算8個大循環，8個循環以後才會滿載計算
 
-logic first_f;
-logic [2:0] first_8_cnt; //用來計算第一個8個cycle的weight load
+    logic pw_open_f;
+    logic [2:0] pw_open_cnt; //用來計算第一個8個cycle的weight load
 
-//給ipsum & opsum說明幾個ROW要使用
-wire [5:0] time_4_cnt = ((first_8_cnt + 3'd1) << 2); //第一個8個cycle的ifmap load時間，因為每個ifmap需要2個cycle才能填滿，所以需要乘以2
-wire [6:0] time_8_cnt = (time_4_cnt << 1) - 7'd1; //psum是16bit，所以4個ROW需要8個cycle才能填滿
+    //給ipsum & opsum說明幾個ROW要使用
+    wire [5:0] pw_time_4 = ((pw_open_cnt + 3'd1) << 2); //第一個8個cycle的ifmap load時間，因為每個ifmap需要2個cycle才能填滿，所以需要乘以2
+    wire [6:0] pw_time_8 = (pw_time_4 << 1) - 7'd1; //psum是16bit，所以4個ROW需要8個cycle才能填滿
+
+    always_ff @(posedge clk) begin
+        if(reset)
+            pw_open_f <= 1'd0;
+        else if(cs == IDLE && ns == WEIGHT_LOAD)
+            pw_open_f <= 1'd1;
+        else if(cs == OPSUM_OUT && ns == IDLE && (pw_open_cnt == 3'd7))//等最後一次做完才放下
+            pw_open_f <= 1'd0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
+    end
+
+    always_ff @(posedge clk) begin
+        if(reset || (cs == WEIGHT_LOAD))
+            pw_open_cnt <= 3'd0;
+        else if(cs == IDLE && ns == IFMAP_LOAD)
+            pw_open_cnt <= pw_open_cnt + 3'd1;
+    end
+    //--------------------------------------------------------------//
+
+
+    //---------------------------------------------------------------//
+    //TODO: 關閉PE array信號設定
+    logic pw_close_f; //用來關閉PE array的信號
+    logic [2:0] pw_close_cnt;
+
+    wire [2:0] pw_sub1 = pw_close_cnt - 3'd1;
+
+    //0 - 4 - 8 - 12 - 16 - 20 - 24 - 28(總共8次)
+    wire [4:0] pw_close_start_num = pw_sub1 << 2; //關閉PE array的ROW起始位子
+    wire [5:0] pw_close_num = (row_en << 1) - (pw_close_start_num << 1) - 6'd1;
+
+    always_ff @(posedge clk) begin
+        if(reset)
+            pw_close_f <= 1'b0;
+        else if(cs == IDLE && ns == IPSUM_LOAD)
+            pw_close_f <= 1'b1; //當進入WEIGHT_LOAD的時候，代表已經完成第一個8個cycle的weight load
+        else if(cs == OPSUM_OUT && ns == IDLE && (pw_sub1 == 3'd7))//等最後一次做完才放下
+            pw_close_f <= 1'b0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
+    end
+
+    always_ff @(posedge clk) begin
+        if(reset || (cs == WEIGHT_LOAD))
+            pw_close_cnt <= 3'd0;
+        else if(cs == IDLE && ns == IPSUM_LOAD)
+            pw_close_cnt <= pw_close_cnt + 3'd1;
+    end
+    //----------------------------------------------------------------//
+
+
+//DW open & close signal setting
+//TODO: open_f拉著的時候，只會在state = ifmap這個狀態動作，然後PE會直接往下傳送ifmap，不做計算
+logic dw_open_f;
+logic [3:0] dw_open_cnt; //總共需要10個cycle來放ifmap(因為需要先擺滿再開始做計算)
 
 always_ff @(posedge clk) begin
     if(reset)
-        first_f <= 1'd0;
+        dw_open_f <= 1'd0;
     else if(cs == IDLE && ns == WEIGHT_LOAD)
-        first_f <= 1'd1;
-    else if(cs == OPSUM_OUT && ns == IDLE && (first_8_cnt == 3'd7))//等最後一次做完才放下
-        first_f <= 1'd0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
+        dw_open_f <= 1'd1; //當進入WEIGHT_LOAD的時候，代表已經完成第一個8個cycle的weight load
+    else if(cs == OPSUM_OUT && ns == IDLE && (dw_open_cnt == 4'd9))//等最後一次做完才放下
+        dw_open_f <= 1'd0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
 end
 
 always_ff @(posedge clk) begin
     if(reset || (cs == WEIGHT_LOAD))
-        first_8_cnt <= 3'd0;
+        dw_open_cnt <= 4'd0;
     else if(cs == IDLE && ns == IFMAP_LOAD)
-        first_8_cnt <= first_8_cnt + 3'd1;
-end
-//--------------------------------------------------------------//
-
-
-//---------------------------------------------------------------//
-//TODO: 關閉PE array信號設定
-logic close_f; //用來關閉PE array的信號
-logic [2:0] close_8_cnt;
-
-wire [2:0] close_sub1 = close_8_cnt - 3'd1;
-
-//0 - 4 - 8 - 12 - 16 - 20 - 24 - 28(總共8次)
-wire [4:0] close_start_num = close_sub1 << 2; //關閉PE array的ROW起始位子
-wire [5:0] close_num = (row_en << 1) - (close_start_num << 1) - 6'd1;
-
-always_ff @(posedge clk) begin
-    if(reset)
-        close_f <= 1'b0;
-    else if(cs == IDLE && ns == IPSUM_LOAD)
-        close_f <= 1'b1; //當進入WEIGHT_LOAD的時候，代表已經完成第一個8個cycle的weight load
-    else if(cs == OPSUM_OUT && ns == IDLE && (close_sub1 == 3'd7))//等最後一次做完才放下
-        close_f <= 1'b0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
+        dw_open_cnt <= dw_open_cnt + 4'd1;
 end
 
-always_ff @(posedge clk) begin
-    if(reset || (cs == WEIGHT_LOAD))
-        close_8_cnt <= 3'd0;
-    else if(cs == IDLE && ns == IPSUM_LOAD)
-        close_8_cnt <= close_8_cnt + 3'd1;
-end
-//----------------------------------------------------------------//
+
+
+//TODO: dw的ifmap從哪一個ROW開始擺放
+//設ROW_en = 30
+//ifmap dw_start_num起始位子為27 - 24 - 21 - 18 - 15 - 12 - 9 - 6 - 3 - 0
+wire [4:0] dw_time_3 = (dw_open_cnt + 4'd1) * 3; //用來判斷多久要換狀態
+wire [4:0] dw_start_num = row_en - dw_time_3; 
+
+
+
+
 
 always_ff @(posedge clk) begin
     if(reset)
@@ -161,14 +201,14 @@ always_comb begin
                     ns = IPSUM_LOAD;
                 end
                 1'd1: begin //PW
-                    if(first_f) begin //第一個8個cycle的weight load
-                        if(cnt[6:0] == time_8_cnt) //time_8_cnt = (first_8_cnt + 3'd1) << 3 - 7'd1
+                    if(pw_open_f) begin //第一個8個cycle的weight load
+                        if(cnt[6:0] == pw_time_8) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
                             ns = COMPUTE;
                         else 
                             ns = IPSUM_LOAD;
                     end
-                    else if(close_f) begin //關閉PE array
-                        if(cnt[5:0] == close_num)
+                    else if(pw_close_f) begin //關閉PE array
+                        if(cnt[5:0] == pw_close_num)
                             ns = COMPUTE;
                         else 
                             ns = IPSUM_LOAD;
@@ -202,14 +242,14 @@ always_comb begin
                     ns = IDLE;
                 end
                 1'd1: begin //PW
-                    if(first_f) begin
-                        if(cnt[6:0] == time_8_cnt) //time_8_cnt = (first_8_cnt + 3'd1) << 3 - 7'd1
+                    if(pw_open_f) begin
+                        if(cnt[6:0] == pw_time_8) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
                             ns = IDLE; //代表這32個channel做完，已經
                         else 
                             ns = OPSUM_OUT;
                     end
-                    else if(close_f) begin //關閉PE array
-                        if(cnt[5:0] == close_num)
+                    else if(pw_close_f) begin //關閉PE array
+                        if(cnt[5:0] == pw_close_num)
                             ns = IDLE; //代表這32個channel做完，已經
                         else 
                             ns = OPSUM_OUT;
@@ -235,19 +275,19 @@ always_ff @(posedge clk) begin
                 cnt <= 8'd0; //DW的話，cnt永遠歸0
             end
             1'd1: begin//PW
-                if(first_f) begin
+                if(pw_open_f) begin
                     if(((cs == WEIGHT_LOAD) && (cnt == weight_load_time)) || 
                     ((cs == IFMAP_LOAD) && (cnt[5:0] == ifmap_load_time)) ||
-                    ((cs == IPSUM_LOAD) && (cnt[6:0] == time_8_cnt)) || 
-                    ((cs == OPSUM_OUT) && (cnt[6:0] == time_8_cnt))  || 
+                    ((cs == IPSUM_LOAD) && (cnt[6:0] == pw_time_8)) || 
+                    ((cs == OPSUM_OUT) && (cnt[6:0] == pw_time_8))  || 
                     ((cs == COMPUTE) && (cnt == 8'd3)))
                         cnt <= 8'd0;
                     else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
                         cnt <= cnt + 8'd1;
                 end
-                else if(close_f) begin
-                    if(((cs == IPSUM_LOAD) && (cnt[5:0] == close_num)) || 
-                    ((cs == OPSUM_OUT) && (cnt[5:0] == close_num))  || 
+                else if(pw_close_f) begin
+                    if(((cs == IPSUM_LOAD) && (cnt[5:0] == pw_close_num)) || 
+                    ((cs == OPSUM_OUT) && (cnt[5:0] == pw_close_num))  || 
                     ((cs == COMPUTE) && (cnt == 8'd3)))
                         cnt <= 8'd0;
                     else if((valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
@@ -299,9 +339,20 @@ Horizontal_Buffer Horizontal_Buffer(
 //--------------------------------------------------------------//
 //vertical buffer
 //TODO: 需要拉5個cycle，因為需要先花一個cycle從FIFO取出，再花四個cycle來pipeline 計算&取出
-wire ifmap_out_f;
+logic ifmap_out_f;
 logic [255:0] ifmap_out; //32個ROW，每個ROW 8bit，總共256bit
-assign ifmap_out_f = /*((cs == IPSUM_LOAD) && (ns == COMPUTE)) || */((cs == COMPUTE) && (cnt < 8'd4));//在compute的時候開始拉為1，總共維持四個cycle
+
+always_comb begin
+    case(DW_PW_sel)
+        1'd0: begin //DW
+            ifmap_out_f = ((cs == COMPUTE) && (cnt < 8'd3)); //在compute的時候開始拉為1，總共維持三個cycle
+        end
+        1'd1: begin //PW
+            ifmap_out_f = ((cs == COMPUTE) && (cnt < 8'd4)); //在compute的時候開始拉為1，總共維持四個cycle
+        end
+    endcase
+end
+
 
 always_comb begin
     if(cs == IFMAP_LOAD)
@@ -359,11 +410,11 @@ Ipsum_buffer Ipsum_buffer(
     .ready_ip(ready_ip),
     .valid_ip(valid_ip),
     //剛開始啟動PE array
-    .ip_time_4(time_4_cnt),//用來決定有幾個ROW要使用
-    .first_f(first_f), //用來決定是否是第一個8個cycle的weight load
+    .ip_time_4(pw_time_4),//用來決定有幾個ROW要使用
+    .first_f(pw_open_f), //用來決定是否是第一個8個cycle的weight load
     //要關閉PE array
-    .close_start_num(close_start_num), //用來決定關閉PE array的ROW起始位子
-    .close_f(close_f), //用來關閉PE array的信號
+    .close_start_num(pw_close_start_num), //用來決定關閉PE array的ROW起始位子
+    .close_f(pw_close_f), //用來關閉PE array的信號
     
     .row_en(row_en), //用來決定有幾個ROW要使用
     .ipsum_out_f(ipsum_out_f),
@@ -414,11 +465,11 @@ Opsum_buffer Opsum_buffer(
     .ready_op(ready_op),
     .valid_op(valid_op),
     //first 8 cycle
-    .first_f(first_f),
-    .ip_time_4(time_4_cnt), //用來決定有幾個ROW要使用
+    .first_f(pw_open_f),
+    .ip_time_4(pw_time_4), //用來決定有幾個ROW要使用
 
-    .close_start_num(close_start_num), //用來決定關閉PE array的ROW起始位子
-    .close_f(close_f), //用來關閉PE array的信號
+    .close_start_num(pw_close_start_num), //用來決定關閉PE array的ROW起始位子
+    .close_f(pw_close_f), //用來關閉PE array的信號
     .row_en(row_en), //用來決定有幾個ROW要使用
     .store_opsum_f(store_opsum_f),
     .opsum_in(reducer2opsum),
@@ -433,6 +484,7 @@ Opsum_buffer Opsum_buffer(
 //--------------------------------------------------------------//
 //PE array
 //TODO: 增加DW的pass功能，讓他可以把所有ifmap擺定位再開始動作
+//可能需要改成三個ROW為一組的prod_out_en，因為在conv的時候，第一次都會需要等待他三個cycle就定位才能輸出
 wire prod_out_en;
 wire [511:0] array_opsum;
 assign prod_out_en = (cs == COMPUTE) && (cnt < 8'd4); //在compute的時候開始輸出給Reducer，維持四個cycle
