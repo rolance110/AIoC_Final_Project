@@ -4200,3 +4200,452 @@ wvZoomIn -win $_nWave1
 wvZoomIn -win $_nWave1
 wvZoomIn -win $_nWave1
 wvScrollDown -win $_nWave1 1
+wvSelectSignal -win $_nWave1 {( "G2" 1 )} 
+wvZoomIn -win $_nWave1
+wvScrollUp -win $_nWave1 1
+wvZoomOut -win $_nWave1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 12895097.615964 -snap {("G1" 12)}
+wvSelectSignal -win $_nWave1 {( "G1" 12 )} 
+wvSetMarker -win $_nWave1 -keepViewRange -name "M2" 12905033.118
+wvSetMarker -win $_nWave1 -keepViewRange -name "M2" 12905000
+wvSetCursor -win $_nWave1 12904900.644975 -snap {("G1" 9)}
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 1108537.118433 -snap {("G1" 9)}
+wvSelectUserMarker -win $_nWave1 -name "M1"
+wvSelectUserMarker -win $_nWave1 -name "M1"
+wvSelectUserMarker -win $_nWave1 -name "M1"
+wvSetMarker -win $_nWave1 -keepViewRange -name "M1" 1115000 ID_GREEN5 long_dashed \
+           -newname "tile2"
+wvSetCursor -win $_nWave1 93261.248970 -snap {("G1" 12)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetOptions -win $_nWave1 -cursorCenter off
+wvSetOptions -win $_nWave1 -cursorCenter on
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 54049.132926 -snap {("G1" 12)}
+wvSetMarker -win $_nWave1 -keepViewRange -name "M3" 54843.973
+wvSetMarker -win $_nWave1 -keepViewRange -name "M3" 55000
+wvSelectUserMarker -win $_nWave1 -name "M3"
+wvSelectUserMarker -win $_nWave1 -name "M3"
+wvSelectUserMarker -win $_nWave1 -name "M3"
+wvSetMarker -win $_nWave1 -keepViewRange -name "M3" 55000 ID_GREEN5 long_dashed \
+           -newname "tile1"
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 2399357.587125 -snap {("G1" 11)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 2716448.359264 -snap {("G7" 8)}
+wvSetOptions -win $_nWave1 -cursorCenter off
+wvSetOptions -win $_nWave1 -cursorCenter on
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 2743680.483525 -snap {("G1" 12)}
+wvSetMarker -win $_nWave1 -keepViewRange -name "M4" 2744740.270
+wvSetMarker -win $_nWave1 -keepViewRange -name "M4" 2745000
+wvSelectUserMarker -win $_nWave1 -name "M4"
+wvSelectUserMarker -win $_nWave1 -name "M4"
+wvSelectUserMarker -win $_nWave1 -name "M4"
+wvSetMarker -win $_nWave1 -keepViewRange -name "M4" 2745000 ID_GREEN5 long_dashed \
+           -newname "tile3"
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 4005086.648008 -snap {("G7" 6)}
+wvSetOptions -win $_nWave1 -cursorCenter off
+wvSetOptions -win $_nWave1 -cursorCenter on
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 5244950.696527 -snap {("G7" 8)}
+wvSetOptions -win $_nWave1 -cursorCenter off
+wvSetOptions -win $_nWave1 -cursorCenter on
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 5316131.240778 -snap {("G1" 12)}
+wvSetMarker -win $_nWave1 -keepViewRange -name "M5" 5315601.347
+wvSetMarker -win $_nWave1 -keepViewRange -name "M5" 5315000
+wvSelectUserMarker -win $_nWave1 -name "M5"
+wvSelectUserMarker -win $_nWave1 -name "M5"
+wvSelectUserMarker -win $_nWave1 -name "M5"
+wvSetMarker -win $_nWave1 -keepViewRange -name "M5" 5315000 ID_GREEN5 long_dashed \
+           -newname "tile4"
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 8444382.179424 -snap {("G7" 8)}
+wvScrollUp -win $_nWave1 1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 9972726.169341 -snap {("G1" 12)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetOptions -win $_nWave1 -cursorCenter off
+wvSetOptions -win $_nWave1 -cursorCenter on
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 10336387.339757 -snap {("G7" 8)}
+wvSetOptions -win $_nWave1 -cursorCenter off
+wvSetOptions -win $_nWave1 -cursorCenter on
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 10373150.590064 -snap {("G1" 12)}
+wvSetMarker -win $_nWave1 -keepViewRange -name "M6" 10375005.217
+wvSetMarker -win $_nWave1 -keepViewRange -name "M6" 10375000
+wvSelectUserMarker -win $_nWave1 -name "M6"
+wvSelectUserMarker -win $_nWave1 -name "M6"
+wvSelectUserMarker -win $_nWave1 -name "M6"
+wvSetMarker -win $_nWave1 -keepViewRange -name "M6" 10375000 ID_GREEN5 \
+           long_dashed -newname "tile5"
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 12887008.948518 -snap {("G1" 11)}
+wvSetCursor -win $_nWave1 12988748.492849 -snap {("G7" 8)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSelectUserMarker -win $_nWave1 -name "M2"
+wvSelectUserMarker -win $_nWave1 -name "M2"
+wvSelectUserMarker -win $_nWave1 -name "M2"
+wvSetMarker -win $_nWave1 -keepViewRange -name "M2" 12905000 ID_GREEN5 \
+           long_dashed -newname "tile6"
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 6663940.153642 -snap {("G7" 8)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 7814488.778807 -snap {("G7" 8)}
+wvSetOptions -win $_nWave1 -cursorCenter off
+wvSetOptions -win $_nWave1 -cursorCenter on
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 7844276.613668 -snap {("G1" 12)}
+wvSetMarker -win $_nWave1 -keepViewRange -name "M7" 7845601.347
+wvSetMarker -win $_nWave1 -keepViewRange -name "M7" 7845000
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 1085221.806191 -snap {("G1" 12)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSelectUserMarker -win $_nWave1 -name "tile2"
+wvSelectUserMarker -win $_nWave1 -name "tile2"
+wvSelectUserMarker -win $_nWave1 -name "tile2"
+wvDeleteMarker -win $_nWave1 "tile2"
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 4374800.406208 -snap {("G1" 16)}
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 15260931.649561 -snap {("G7" 8)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 15434011.666935 -snap {("G1" 12)}
+wvSetMarker -win $_nWave1 -keepViewRange -name "M8" 15436131.241
+wvSetMarker -win $_nWave1 -keepViewRange -name "M8" 15435000
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvScrollUp -win $_nWave1 1
+wvSelectSignal -win $_nWave1 {( "G2" 1 )} 
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 9368779.669299 -snap {("G4" 2)}
+wvSetCursor -win $_nWave1 2628271.561869 -snap {("G7" 8)}
+wvSetCursor -win $_nWave1 12895487.243879 -snap {("G7" 8)}
+wvZoomOut -win $_nWave1
+wvSelectSignal -win $_nWave1 {( "G2" 1 )} 
+wvSelectSignal -win $_nWave1 {( "G2" 2 )} 
+wvSelectSignal -win $_nWave1 {( "G2" 1 )} 
+wvScrollDown -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvSelectSignal -win $_nWave1 {( "G2" 2 )} 
+wvSelectSignal -win $_nWave1 {( "G2" 3 )} 
+wvScrollDown -win $_nWave1 4
+wvSelectSignal -win $_nWave1 {( "G3" 1 )} 
+wvSelectSignal -win $_nWave1 {( "G3" 1 2 )} 
+wvSelectSignal -win $_nWave1 {( "G3" 1 2 3 )} 
+wvSelectSignal -win $_nWave1 {( "G2" 1 )} 
+wvScrollDown -win $_nWave1 2
+wvSetCursor -win $_nWave1 169565.907217 -snap {("G4" 4)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvSelectSignal -win $_nWave1 {( "G4" 4 )} 
+wvSetCursor -win $_nWave1 27289.513193 -snap {("G2" 2)}
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvSelectSignal -win $_nWave1 {( "G3" 1 )} 
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvSetCursor -win $_nWave1 10389333.247955 -snap {("G3" 1)}
+wvSetCursor -win $_nWave1 17214688.100171 -snap {("G7" 6)}
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 15305619.347733 -snap {("G2" 1)}
+wvSetCursor -win $_nWave1 15426435.056626 -snap {("G2" 2)}
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 15837455.734105 -snap {("G2" 1)}
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetOptions -win $_nWave1 -cursorCenter off
+wvSetOptions -win $_nWave1 -cursorCenter on
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1

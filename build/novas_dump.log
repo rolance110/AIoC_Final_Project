@@ -158,7 +158,7 @@ LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd
 LD_LIBRARY_PATH=/usr/cad/synopsys/vcs/2024.09-sp2/lib:/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib::::::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/2024.09-sp2/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/::/usr/cad/synopsys/verdi/cur/share/PLI/VCS/LINUX64::/lib64:/usr/lib64:/usr/local/lib64
 HOSTTYPE=x86_64-linux
 SNPS_INTERNAL_VCS_LINUX_OS=linux
-SNPS_VCS_INTERNAL_ROOT_START_TIME=1749482373.725131737
+SNPS_VCS_INTERNAL_ROOT_START_TIME=1749485212.336276596
 XDG_MENU_PREFIX=gnome-
 LANG=en_US.UTF-8
 GDM_LANG=en_US.UTF-8
@@ -170,7 +170,7 @@ SCRNAME=vcs
 ORIGINAL_XDG_CURRENT_DESKTOP=GNOME
 OLDPWD=/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch
 VCS_INTERNAL_CONVERTEDLIBS=
-SNPS_VCS_INTERNAL_CURR_PID=1819630
+SNPS_VCS_INTERNAL_CURR_PID=1826933
 TOOL_HOME=/usr/cad/synopsys/vcs/2024.09-sp2/linux64
 COLORTERM=truecolor
 SNPS_VCS_INTERNAL_MAKE_OPT=
@@ -219,14 +219,14 @@ MAIL=/var/spool/mail/n26130126
 VSCODE_GIT_ASKPASS_MAIN=/usr/share/code/resources/app/extensions/git/dist/askpass-main.js
 SHELL=/bin/bash
 TERM=xterm
-SNPS_VCS_INTERNAL_ROOT_PID=1819630
+SNPS_VCS_INTERNAL_ROOT_PID=1826933
 MAKEOVERRIDES=${-*-command-variables-*-}
 SCRIPT_NAME=vcs
 QT_IM_MODULE=ibus
 XMODIFIERS=@im=ibus
 SNPS_VCS_INTERNAL_MEMPRELOAD_USE_LIBC=1
 LM_LICENSE_FILE=5280@lstn:26585@lstn:
-SNPS_VCS_TMPDIR=/tmp/vcs_20250609151933_1819630
+SNPS_VCS_TMPDIR=/tmp/vcs_20250609160652_1826933
 XDG_CURRENT_DESKTOP=GNOME
 XLOCALEDIR=/usr/cad/synopsys/icc2/2024.09-sp2//etc/locale
 MAKELEVEL=1
@@ -274,8 +274,8 @@ argv[0]=simv
 argv[1]=+notimingcheck
 argv[2]=+define++FSDB_ALL
 273 profile - 100
-          CPU/Mem usage: 0.020 sys,  0.120 user,  229.16M mem
-274 Elapsed time:    0:00:00    Mon Jun  9 23:19:35 2025
+          CPU/Mem usage: 0.050 sys,  0.130 user,  229.17M mem
+274 Elapsed time:    0:00:02    Tue Jun 10 00:07:01 2025
 275 User CPU time used: 0 seconds
 276 System CPU time used: 0 seconds
 277 pliAppInit
@@ -315,57 +315,57 @@ argv[2]=+define++FSDB_ALL
 311 *Verdi* : Enable +struct and +mda dumping.
 312 *Verdi* : End of traversing.
 313 pliAppHDL_DumpVarComplete traverse var: profile - 
-          CPU/Mem usage: 0.030 sys,  0.130 user,  327.65M mem
-                   incr: 0.000 sys,  0.000 user,  8.00M mem
-                   accu: 0.000 sys,  0.000 user,  8.00M mem
-              accu incr: 0.000 sys,  0.000 user,  8.00M mem
+          CPU/Mem usage: 0.060 sys,  0.140 user,  327.66M mem
+                   incr: 0.010 sys,  0.000 user,  8.00M mem
+                   accu: 0.010 sys,  0.000 user,  8.00M mem
+              accu incr: 0.010 sys,  0.000 user,  8.00M mem
 
-          Count usage: 138 var,  138 idcode,  79 callback
-                 incr: 138 var,  138 idcode,  79 callback
-                 accu: 138 var,  138 idcode,  79 callback
-            accu incr: 138 var,  138 idcode,  79 callback
+          Count usage: 139 var,  139 idcode,  79 callback
+                 incr: 139 var,  139 idcode,  79 callback
+                 accu: 139 var,  139 idcode,  79 callback
+            accu incr: 139 var,  139 idcode,  79 callback
 314 Idcode  0 - bc1:0  mda:0
-315 Elapsed time:    0:00:01    Mon Jun  9 23:19:36 2025
+315 Elapsed time:    0:00:05    Tue Jun 10 00:07:04 2025
 316 User CPU time used: 0 seconds
 317 System CPU time used: 0 seconds
 318 pliAppHDL_DumpVarComplete: profile - 
-          CPU/Mem usage: 0.030 sys,  0.130 user,  327.65M mem
+          CPU/Mem usage: 0.060 sys,  0.140 user,  327.66M mem
                    incr: 0.000 sys,  0.000 user,  0.00M mem
-                   accu: 0.000 sys,  0.000 user,  8.00M mem
+                   accu: 0.010 sys,  0.000 user,  8.00M mem
               accu incr: 0.000 sys,  0.000 user,  0.00M mem
 
-          Count usage: 138 var,  138 idcode,  79 callback
+          Count usage: 139 var,  139 idcode,  79 callback
                  incr: 0 var,  0 idcode,  0 callback
-                 accu: 138 var,  138 idcode,  79 callback
+                 accu: 139 var,  139 idcode,  79 callback
             accu incr: 0 var,  0 idcode,  0 callback
 319 Idcode  0 - bc1:0  mda:0
-320 Elapsed time:    0:00:01    Mon Jun  9 23:19:36 2025
+320 Elapsed time:    0:00:05    Tue Jun 10 00:07:04 2025
 321 User CPU time used: 0 seconds
 322 System CPU time used: 0 seconds
 323 End of simulation at 1000000000
-324 Memory usage: 404.201 M
-325 Maximum resident set size: 121 MB
-326 Hard page faults: 0
-327 Soft page faults: 16154
-328 Elapsed time:    0:00:01    Mon Jun  9 23:19:36 2025
+324 Memory usage: 404.214 M
+325 Maximum resident set size: 123 MB
+326 Hard page faults: 77
+327 Soft page faults: 17032
+328 Elapsed time:    0:00:05    Tue Jun 10 00:07:04 2025
 329 User CPU time used: 0 seconds
 330 System CPU time used: 0 seconds
 331 Begin FSDB profile info:
-332 FSDB Writer : bc1(300061) bcn(101628) mtf/stf(0/0)
-FSDB Writer elapsed time : flush(0.089412) io wait(0.000000) theadpool wait(0.000000)
+332 FSDB Writer : bc1(300065) bcn(101635) mtf/stf(0/0)
+FSDB Writer elapsed time : flush(0.222139) io wait(0.000000) theadpool wait(0.000000)
 FSDB Writer cpu time : MT Compression : 0
 333 End FSDB profile info
-334 FSDB closed. Name: ../wave/top.fsdb Size: 18307
+334 FSDB closed. Name: ../wave/top.fsdb Size: 18485
 335 Parallel profile     - ProducerThread:1 ConsumerThread:1 Buffer:64MB
-336                      - BlockUsed:5 Acquire:0 BufferUsed:8128406
+336                      - BlockUsed:5 Acquire:0 BufferUsed:8128589
 337                      - Flush:3 Expand:0 ProducerWait:0 ConsumerWait:3
-338                      - MainProducerTime:0.231646974 TotalConsumerTime:0.022183042
-339                      - ElapsedTime:0.954207000
-340 Producer   0 profile - BlockUsed:5 Acquire:0 BufferUsed:8128406
-341 Consumer   0 profile - Affinity:-1 CPUTime:0.022183042 LifeTime:0.045966500 (0.48%)
-342                      - BlockUsed:5 Acquire:0 BufferUsed:8128406
+338                      - MainProducerTime:0.272670254 TotalConsumerTime:0.022295872
+339                      - ElapsedTime:3.464846000
+340 Producer   0 profile - BlockUsed:5 Acquire:0 BufferUsed:8128589
+341 Consumer   0 profile - Affinity:-1 CPUTime:0.022295872 LifeTime:0.047716577 (0.47%)
+342                      - BlockUsed:5 Acquire:0 BufferUsed:8128589
 343 SimExit
-344 Elapsed time:    0:00:01    Mon Jun  9 23:19:36 2025
+344 Elapsed time:    0:00:05    Tue Jun 10 00:07:04 2025
 345 User CPU time used: 0 seconds
 346 System CPU time used: 0 seconds
 347 Sim process exit
