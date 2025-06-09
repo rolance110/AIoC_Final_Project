@@ -41,7 +41,8 @@ module dma_address_generator (
     // Output size of data to transfer
     output logic [31:0]     dma_len_o,    //dma_len_o
     output logic            DMA_ifmap_finish,
-    output logic            DMA_opsum_finish
+    output logic            DMA_opsum_finish,
+    output logic            DMA_ipsum_finish
     // output logic            DMA_filter_finish, //!new
     // output logic            DMA_ifmap_finish,  //!new
     // output logic            DMA_bias_finish,    //!new
@@ -54,8 +55,8 @@ module dma_address_generator (
     logic [31:0] bias_offset;
     logic [31:0] ipsum_offset; //TODO ipsum
     logic [31:0] opsum_offset;
-    logic [6:0]  ifmap_tile_cnt,ofmap_tile_cnt;   //計算同一張ifmap的第幾次tile_n_i
-    logic [6:0]  ifmap_channel_cnt,ofmap_channel_cnt;
+    logic [6:0]  ifmap_tile_cnt,ofmap_tile_cnt,ipsum_tile_cnt;   //計算同一張ifmap的第幾次tile_n_i
+    logic [6:0]  ifmap_channel_cnt,ofmap_channel_cnt,ipsum_channel_cnt;
     logic [13:0] bias_offset_tmp;
    
    
@@ -108,7 +109,7 @@ module dma_address_generator (
                 bias_offset   =  bias_offset_tmp + bias_offset_tmp;// 2byte
                 //DW tile_n_i=1 meaning one row 
                 opsum_offset  = ( ofmap_channel_cnt * out_R_i *out_C_i) + ofmap_tile_cnt * (tile_n_i * in_C_i) +  (d_idx * in_R_i * in_C_i * tile_K_i );
-                
+                                
  
                 case(input_type)　// 0=filter, 1=ifmap, 2=bias, 3=opsum, 4=ipsum 5=ofmap
                     3'd0: dma_base_addr_o = base_weight_i + weight_offset;
@@ -182,6 +183,23 @@ module dma_address_generator (
                         ofmap_tile_cnt <= ofmap_tile_cnt + 1;
                     else if(pass_done_i) // tile_D個且完整的ifmap算完
                         ofmap_tile_cnt <= 0;
+                end
+                2'd4:begin // opsum PW || DW 
+                    if(dma_interrupt_i)begin
+                        ipsum_channel_cnt <= ipsum_channel_cnt + 1; //單次tile channel cnt
+                    end
+                    else if(ipsum_channel_cnt == tile_K_i -1)begin
+                        ipsum_channel_cnt <= 0;
+                        DMA_ipsum_finish <=1'b1;
+                    end
+                    else begin
+                        ipsum_channel_cnt <= ipsum_channel_cnt;
+                        DMA_ipsum_finish <= 0;
+                    end
+                    if(ipsum_channel_cnt== tile_K_i - 1) 
+                        ipsum_tile_cnt <= ipsum_tile_cnt + 1;
+                    else if(pass_done_i) // tile_D個且完整的ifmap算完
+                        ipsum_tile_cnt <= 0;
                 end
                 default: begin
                     

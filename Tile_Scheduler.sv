@@ -142,10 +142,10 @@ typedef enum logic [3:0] {
 state_e cs_ts, ns_ts;
 
 assign DMA_filter_finish = 1'b1; //fixme
-assign DMA_ifmap_finish = 1'b1; //fixme
-assign DMA_ipsum_finish = 1'b1; //fixme
+//assign DMA_ifmap_finish = 1'b1; //fixme
+//assign DMA_ipsum_finish = 1'b1; //fixme
 assign DMA_bias_finish = 1'b1; //fixme
-assign DMA_opsum_finish = 1'b1; //fixme
+//assign DMA_opsum_finish = 1'b1; //fixme
 
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
@@ -360,8 +360,6 @@ always_ff@(posedge clk or negedge rst_n) begin
         On_idx <= On_idx + 7'd1; // 處理下一個 On tile
     end
 end
-
-
 //* completed_IC_cnt: 計數目前已完成的 input channel 數量
 always_ff@(posedge clk or negedge rst_n) begin
     if(!rst_n)begin
@@ -441,13 +439,13 @@ always_comb begin
 end
 
 // Gen_DMA_addr
-logic [2:0]input_type; // 0=filter, 1=ifmap, 2=bias, 3=opsum ,4=ipsum
+logic [2:0]input_type; // 0=filter, 1=ifmap, 2=bias, 3=opsum ,4=ipsum,5=ofmap
 always_comb begin
     case (cs_ts)
         GEN_ADDR_filter:input_type = 3'd0;
         GEN_ADDR_ifmap :input_type = 3'd1;
         GEN_ADDR_bias  :input_type = 3'd2;
-        GEN_ADDR_opsum :input_type = 3'd3;
+        GEN_ADDR_opsum :input_type =(reach_last_D_tile)?3'd5: 3'd3;
         GEN_ADDR_ipsum :input_type = 3'd4;
     endcase
 end
@@ -480,6 +478,10 @@ dma_address_generator(
     .d_idx(d_idx),
     .pass_done_i(pass_done_i),
     .dma_base_addr_o(dma_addr_o), //base address
-    .dma_len_o(dma_len_o)
+    .dma_len_o(dma_len_o),
+    .DMA_opsum_finish(DMA_opsum_finish),
+    .DMA_ifmap_finish(DMA_ifmap_finish),
+    .DMA_ipsum_finish(DMA_ipsum_finish)
+    
 );
 endmodule
