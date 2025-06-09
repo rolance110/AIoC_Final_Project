@@ -196,11 +196,11 @@ end
         pad_B_i = 0;
         pad_L_i = 0;
         pad_R_i = 0;
-        in_R_i = 12;
+        in_R_i = 12; // input total pixel 144
         in_C_i = 12;
-        in_D_i = 80;
-        out_K_i = 100;
-        out_R_i = 12;
+        in_D_i = 80; // input channel total
+        out_K_i = 100; // output channel total
+        out_R_i = 12; // output total pixel 144
         out_C_i = 12;
         base_ifmap_i = 32'h1000_0000;
         base_weight_i = 32'h2000_0000;
@@ -281,7 +281,7 @@ end
   end
 
   initial begin
-  #100000;
+  #1000000;
     $display("Finish Simulation.");
     $finish;
   end

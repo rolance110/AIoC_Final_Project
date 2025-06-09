@@ -7,7 +7,7 @@
 
 `include "../include/define.svh"
 
-module Tile_Scheduler #(
+module Tile_Scheduler_old #(
     parameter int BYTES_I = `BYTES_I,    // activation bytes
     parameter int BYTES_W = `BYTES_W,    // weight bytes
     parameter int BYTES_P = `BYTES_P     // psum/ofmap bytes

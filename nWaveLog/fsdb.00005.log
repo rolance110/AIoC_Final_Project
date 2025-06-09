@@ -9,13 +9,13 @@
 Async open disabled.
 [THREAD]The MTR thread count is 6
 [THREAD]Secondary thread count: 2
-[PERF]VC decompress count : 1
+[PERF]VC decompress count : 2
 [PERF]VCChain decompress count : 1
-[PERF]VC decompress count : 1
+[PERF]VC decompress count : 2
 [PERF]VCChain decompress count : 1
-[PERF]VC decompress count : 1
+[PERF]VC decompress count : 2
 [PERF]VCChain decompress count : 1
-[PERF]VC decompress count : 1
+[PERF]VC decompress count : 2
 [PERF]VCChain decompress count : 1
 [PERF]VC decompress count : 1
 [PERF]VCChain decompress count : 1
@@ -25,8 +25,8 @@ Async open disabled.
 [READSCOPE]Scope read count is 3
 [READSCOPE]Decompressed blk is 1
 [MAXCHAIN]Decompressed cnt 6
-[PERF]VC decompress count : 1
+[PERF]VC decompress count : 3
 [PERF]VCChain decompress count : 1
 [FSDBGate Info] start
-[FSDBGate Info] Total fhdb_compute_count = 574
+[FSDBGate Info] Total fhdb_compute_count = 305
 [FSDBGate Info] end

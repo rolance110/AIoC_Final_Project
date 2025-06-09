@@ -96,7 +96,9 @@ logic DMA_opsum_finish;
 
 logic [6:0] On_idx; // 計數目前正在處理第幾個 On tile
 logic layer_first_tile; // 是否為第一個 tile
-
+logic DMA_ifmap_finish_buf;
+logic DMA_opsum_finish_buf;
+logic DMA_ipsum_finish_buf;
 
 assign layer_first_tile = ((On_idx == 7'b1111111)||(On_idx == 7'd0)) && d_idx == 7'd0 && k_idx == 7'd0; // 第一個 tile
 always_comb begin
@@ -142,10 +144,10 @@ typedef enum logic [3:0] {
 state_e cs_ts, ns_ts;
 
 assign DMA_filter_finish = 1'b1; //fixme
-assign DMA_ifmap_finish = 1'b1; //fixme
-assign DMA_ipsum_finish = 1'b1; //fixme
+// assign DMA_ifmap_finish = 1'b1; //fixme
+// assign DMA_ipsum_finish = 1'b1; //fixme
 assign DMA_bias_finish = 1'b1; //fixme
-assign DMA_opsum_finish = 1'b1; //fixme
+// assign DMA_opsum_finish = 1'b1; //fixme
 
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
@@ -186,7 +188,7 @@ always_comb begin
             ns_ts = DMA_ifmap;
         end
         DMA_ifmap:begin
-            if (DMA_ifmap_finish && dma_interrupt_i)begin
+            if (DMA_ifmap_finish_buf && dma_interrupt_i)begin
                 if(ipsum_en) // need read ipsum
                     ns_ts = GEN_ADDR_ipsum;
                 else if(bias_en) // don't need read ipsum, need read bias
@@ -203,7 +205,7 @@ always_comb begin
             ns_ts = DMA_ipsum;
         end
         DMA_ipsum:begin
-            if (DMA_ipsum_finish && dma_interrupt_i)
+            if (DMA_ipsum_finish_buf && dma_interrupt_i)
                 if(bias_en) // need read bias
                     ns_ts = GEN_ADDR_bias;
                 else
@@ -237,7 +239,7 @@ always_comb begin
             ns_ts = DMA_opsum;
         end
         DMA_opsum:begin
-            if (DMA_opsum_finish && dma_interrupt_i)
+            if (DMA_opsum_finish_buf && dma_interrupt_i)
                 ns_ts = TILE_IDX_GEN;
             else if (dma_interrupt_i)
                 ns_ts = GEN_ADDR_opsum;
@@ -319,21 +321,21 @@ end
 
 //reach_last_On_tile: 是否正在處理 最後一個 On tile
 always_comb  begin
-    if ((cs_ts == TILE_IDX_GEN) && (remain_On == 7'd0))
+    if ((cs_ts == TILE_IDX_GEN) && (remain_On < (tile_n_i+1)))
         reach_last_On_tile = 1'b1; // reach last output channel tile
     else
         reach_last_On_tile = 1'b0;
 end
 //reach_last_D_tile: 是否正在處理 最後一個 D tile
 always_comb begin
-    if ((cs_ts == TILE_IDX_GEN) && (remain_IC == 7'd0))
+    if ((cs_ts == TILE_IDX_GEN) && (remain_IC < (tile_D_i+1))) //0 ~ 32 代表最後一次
         reach_last_D_tile = 1'b1; // reach last input channel tile
     else
         reach_last_D_tile = 1'b0;
 end
 //reach_last_K_tile: 是否正在處理 最後一個 K tile
 always_comb begin
-    if ((cs_ts == TILE_IDX_GEN) && (remain_OC == 7'd0))
+    if ((cs_ts == TILE_IDX_GEN) && (remain_OC < (tile_K_i+1))) //0 ~ 32 代表最後一次
         reach_last_K_tile = 1'b1; // reach last output channel tile
     else
         reach_last_K_tile = 1'b0; 
@@ -360,6 +362,8 @@ always_ff@(posedge clk or negedge rst_n) begin
         On_idx <= On_idx + 7'd1; // 處理下一個 On tile
     end
 end
+
+
 //* completed_IC_cnt: 計數目前已完成的 input channel 數量
 always_ff@(posedge clk or negedge rst_n) begin
     if(!rst_n)begin
@@ -439,5 +443,82 @@ always_comb begin
 end
 
 // Gen_DMA_addr
+logic [2:0]input_type; // 0=filter, 1=ifmap, 2=bias, 3=opsum ,4=ipsum
+always_comb begin
+    case (cs_ts)
+        GEN_ADDR_filter:input_type = 3'd0;
+        GEN_ADDR_ifmap :input_type = 3'd1;
+        GEN_ADDR_bias  :input_type = 3'd2;
+        GEN_ADDR_opsum :input_type = 3'd3;
+        GEN_ADDR_ipsum :input_type = 3'd4;
+    endcase
+end
+dma_address_generator(
+    .clk(clk),
+    .rst_n(rst_n),
+    
+    .tile_D_i(IC_real),         //!ic_real 
+    .tile_K_i(OC_real),
+    .tile_n_i(On_real),         //!On_real 
+    .tile_D_f_i(tile_D_f_i),       // input channels per tile (filter)
+    .tile_K_f_i(tile_K_f_i),       // output channels per tile (filter)
+
+    .in_R_i(in_R_i),           // ifmap/ofmap height
+    .in_C_i(in_C_i),           // ifmap/ofmap width
+    .in_D_i(in_D_i),           // input channel total
+    .out_K_i(out_K_i),          // ifmap/ofmap height
+    .out_R_i(out_R_i),          // ofmap height
+    .out_C_i(out_C_i),          // ofmap width
+    .base_ifmap_i(base_ifmap_i),
+    .base_weight_i(base_weight_i),
+    .base_bias_i(base_bias_i),
+    .base_ofmap_i(base_ofmap_i),
+    .layer_type_i(layer_type_i),     // 0=PW, 1=DW, 2=STD, 3=LIN
+    .input_type(input_type),       // 0=filter, 1=ifmap, 2=bias, 3=opsum
+    .dma_interrupt_i(dma_interrupt_i),
+    .stride_i(stride_i),
+   
+    .k_idx(k_idx),
+    .d_idx(d_idx),
+    .pass_done_i(pass_done_i),
+    .dma_base_addr_o(dma_addr_o), //base address
+    .dma_len_o(dma_len_o),
+
+    //last DMA signal
+    .DMA_ifmap_finish(DMA_ifmap_finish),
+    .DMA_opsum_finish(DMA_opsum_finish),
+    // .DMA_filter_finish(DMA_filter_finish),
+    .DMA_ipsum_finish(DMA_ipsum_finish) 
+    // .DMA_bias_finish(DMA_bias_finish)   
+);
+//DMA_ifmap_finish_buf
+
+always_ff@(posedge clk or negedge rst_n) begin
+    if(!rst_n)
+        DMA_ifmap_finish_buf <= 1'b0;
+    else if (cs_ts == PASS_START) // reset
+        DMA_ifmap_finish_buf <= 1'b0;
+    else if (DMA_ifmap_finish)
+        DMA_ifmap_finish_buf <= 1'b1; // Ifmap DMA finish
+end
+//DMA_opsum_finish_buf
+
+
+always_ff@(posedge clk or negedge rst_n) begin
+    if(!rst_n)
+        DMA_opsum_finish_buf <= 1'b0;
+    else if (cs_ts == PASS_START) // reset
+        DMA_opsum_finish_buf <= 1'b0;
+    else if (DMA_opsum_finish)
+        DMA_opsum_finish_buf <= 1'b1; // Opsum DMA finish
+end
+always_ff@(posedge clk or negedge rst_n) begin
+    if(!rst_n)
+        DMA_ipsum_finish_buf <= 1'b0;
+    else if (cs_ts == PASS_START) // reset
+        DMA_ipsum_finish_buf <= 1'b0;
+    else if (DMA_ipsum_finish)
+        DMA_ipsum_finish_buf <= 1'b1; // Ipsum DMA finish
+end
 
 endmodule

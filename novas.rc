@@ -202,8 +202,8 @@ StickSet-TextColor = ID_BLACK
 [FSM_Dlg-Print]
 Orientation = Landscape
 [FileBrowser]
-nWaveOpenFsdbDirHistory = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb\""
 nWaveRestoreRCDirHistory = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc\""
+nWaveOpenFsdbDirHistory = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb\""
 [Form]
 version = Verdi_W-2024.09-SP2
 [General]
@@ -214,7 +214,7 @@ SyncBrowserDir = TRUE
 ColorTheme = classic
 prevColorTheme = classic
 version = Verdi_W-2024.09-SP2
-recent_commands_nWave = saveSignal,changeSignalHeight,selectAll,getSignal,editCut,leftFullPage,keepCursorAtCenter,reread,wvEventSequenceAllSigs,rightFullPage
+recent_commands_nWave = editCut,getSignal,selectAll,reread,openFile,saveSignal,changeSignalHeight,leftFullPage,keepCursorAtCenter,wvEventSequenceAllSigs
 SignalCaseInSensitive = FALSE
 [GlobalProp]
 ErrWindow_Font = Helvetica_M_R_12
@@ -328,15 +328,15 @@ FileName = test.ps
 PaperSize = A4 - 210x297 (mm)
 ColorPrint = FALSE
 [QtDialog]
-openFileDlg = 659,280,602,483
 QwWarnMsgDlg = 650,412,600,250
-unknownSave = 80,115,461,245
 restoreSigDlg = 684,302,551,438
 SigCPLDialog = 848,360,223,323
-qWaveSignalDialog = 376,169,1167,630
 SignalHeightDialog = 774,445,371,79
 QwUserAskDlg = 680,498,560,121
 saveSigDlg = 684,365,551,386
+openFileDlg = 659,317,602,483
+unknownSave = 80,152,461,245
+qWaveSignalDialog = 376,169,1167,630
 [Session Cache]
 1 = string (session file name)
 2 = string (session file name)
@@ -764,8 +764,8 @@ printBasic = 1 0 0 FALSE FALSE
 printDest = -printer {}
 printSignature = {%f %h %t} {}
 curveWindow_Drag&Drop_Mode = TRUE
-RecentFile1 = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc\""
-RecentFile2 = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb\""
+RecentFile1 = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb\""
+RecentFile2 = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc\""
 open_file_time_range = FALSE
 legend_window_font = -f COURIER12 -c ID_CYAN5
 value_window_font = -f COURIER12 -c ID_CYAN5
