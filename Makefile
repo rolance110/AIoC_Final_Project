@@ -40,13 +40,18 @@ rtl1: | $(bld_dir) $(wave_dir)
 	+define+$(FSDB_DEF)
 
 
+rtl2_o: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/Tile_Scheduler_old_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF)
 rtl2: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/Tile_Scheduler_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
 	+define+$(FSDB_DEF)
-
 rtl3: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/TS_AXI_wrapper_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
