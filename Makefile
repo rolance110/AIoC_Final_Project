@@ -27,7 +27,7 @@ rtl_all: rtl0 rtl1
 
 rtl0: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
-	vcs -R -sverilog $(root_dir)/$(sim_dir)/calc_tile_R_max_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/calc_tile_n_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
 	+define+$(FSDB_DEF) \

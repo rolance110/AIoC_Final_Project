@@ -1,2 +1,3 @@
 Command Line: /usr/cad/synopsys/verdi/2024.09-sp2/platform/LINUXAMD64/bin/Novas -nWave -ssf ../wave/top.fsdb
-uname(Linux icdeslab19.ee.ncku.edu.tw 4.18.0-553.51.1.el8_10.x86_64 #1 SMP Wed Apr 30 20:24:04 UTC 2025 x86_64)
+uname(Linux mypc.local 4.18.0-553.51.1.el8_10.x86_64 #1 SMP Wed Apr 30 20:24:04 UTC 2025 x86_64)
+au time 455.236594 10.827339 0.801088 delta 203718656 203718656 total 1228460032 1228460032

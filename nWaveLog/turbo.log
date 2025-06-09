@@ -1,3 +1,2 @@
 Command Line: /usr/cad/synopsys/verdi/2024.09-sp2/platform/LINUXAMD64/bin/Novas -nWave
-uname(Linux icdeslab19.ee.ncku.edu.tw 4.18.0-553.51.1.el8_10.x86_64 #1 SMP Wed Apr 30 20:24:04 UTC 2025 x86_64)
-au time 12667.586954 110.635013 17.163831 delta 493142016 493142016 total 1515081728 1515081728
+uname(Linux mypc.local 4.18.0-553.51.1.el8_10.x86_64 #1 SMP Wed Apr 30 20:24:04 UTC 2025 x86_64)

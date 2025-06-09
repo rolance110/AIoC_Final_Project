@@ -11,6 +11,8 @@ module tb_TS_AXI_wrapper;
     logic [31:0] DMA_dest;
     logic [31:0] DMA_len;
     logic DMA_en;
+
+    
     logic DMA_interrupt;
 
     // AXI Master interface signals

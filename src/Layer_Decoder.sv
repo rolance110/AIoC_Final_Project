@@ -111,13 +111,13 @@ always_comb begin
 end
 
 //* M
-logic [6:0] M;
+logic [6:0] M1, M2, M3;
 always_comb begin
     unique case (layer_type_i)
-        2'd0: M = 7'd1; // Pointwise
-        2'd1: M = 2*in_C_i; // Depthwise
-        2'd2: M = 2*in_C_i; // Standard
-        default: M = 7'd1; // Linear
+        `POINTWISE: begin M1 = 7'd1; M2 = 7'd0; M3 = 7'd1; end // Pointwise
+        `DEPTHWISE: begin M1 = in_C_i; M2 = 7'd2; M3 = out_C; end // Depthwise
+        `STANDARD: begin M1 = 7'd1; M2 = 7'd0; M3 = 7'd1; end // Standard
+        default: begin M1 = 7'd1; M2 = 7'd0; M3 = 7'd1; end // Linear
     endcase
 end
 
@@ -144,7 +144,9 @@ calc_tile_n #(
     .tile_K(tile_K),
     .tile_D_f(tile_D_f),
     .tile_K_f(tile_K_f),
-    .M(M), // Global SRAM capacity in bytes
+    .M1(M1), // Global SRAM capacity in bytes
+    .M2(M2), // Global SRAM capacity in bytes
+    .M3(M3), // Global SRAM capacity in bytes
 //* output
     .tile_n(tile_n)
 );
