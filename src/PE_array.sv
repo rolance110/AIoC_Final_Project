@@ -4,6 +4,7 @@
 module PE_array(
     input clk,
     input reset,
+    input [4:0] pe_pass_if, //用來決定有幾個PE會動作，從0開始算
     input prod_out_en,//只有在cs == Compute的時候會輸出給Reducer，維持四個cycle
     input [`COL_NUM*8 - 1 : 0] array_ifmap_in,//input由左到右 pe0(0~7bit) -> pe1(8~15bit) ... pe31(248~255bit)
     input [`ROW_NUM*`COL_NUM*8 - 1 : 0] array_weight_in,// ROW1=0~255, ROW2=256~511 ... ROW32=7936~8191
@@ -60,6 +61,7 @@ module PE_array(
         PE u_pe (
           .clk        (clk),
           .reset      (reset),
+          .pe_pass_if (pe_pass_if[r]),
           .prod_out_en(prod_out_en),
           .ifmap_in   (this_ifmap_in),
           .weight_in  (weight_wire[r][c]),

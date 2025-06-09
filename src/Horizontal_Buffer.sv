@@ -64,15 +64,9 @@ always_ff @(posedge clk) begin
     end 
 end
 
-always_ff @(posedge clk) begin
-    if(reset) 
-        change_f_reg <= 1'd0;
-    else
-        change_f_reg <= change_weight_f;
-end
 
 always_ff @(posedge clk) begin
-   if(reset || (change_f_reg == 1'd0 && change_weight_f == 1'd1)) begin
+   if(reset || change_weight_f) begin
      for(int i=0;i<32;i=i+1) begin
        for(int j=0;j<8;j=j+1) begin
          weight_mem[i][j] <= 32'd0;
