@@ -164,7 +164,7 @@ module dma_address_generator (
 
                     if(ifmap_channel_cnt == tile_D_i - 1)  // 改正這行：使用 ifmap_channel_cnt
                         ifmap_tile_cnt <= ifmap_tile_cnt + 1;
-                    else if(pass_done_i) // tile_D個且完整的ifmap算完
+                    else if(ifmap_end) // tile_D個且完整的ifmap算完
                         ifmap_tile_cnt <= 0;
                 end
                 2'd3:begin // opsum PW || DW 
@@ -181,14 +181,14 @@ module dma_address_generator (
                     end
                     if(ofmap_channel_cnt== tile_K_i - 1) 
                         ofmap_tile_cnt <= ofmap_tile_cnt + 1;
-                    else if(pass_done_i) // tile_D個且完整的ifmap算完
+                    else if(opsum_end) 
                         ofmap_tile_cnt <= 0;
                 end
                 2'd4:begin // opsum PW || DW 
                     if(dma_interrupt_i)begin
                         ipsum_channel_cnt <= ipsum_channel_cnt + 1; //單次tile channel cnt
                     end
-                    else if(ipsum_channel_cnt == tile_K_i -1)begin
+                    else if(ipsum_channel_cnt == tile_D_i -1)begin
                         ipsum_channel_cnt <= 0;
                         DMA_ipsum_finish <=1'b1;
                     end
@@ -196,9 +196,9 @@ module dma_address_generator (
                         ipsum_channel_cnt <= ipsum_channel_cnt;
                         DMA_ipsum_finish <= 0;
                     end
-                    if(ipsum_channel_cnt== tile_K_i - 1) 
+                    if(ipsum_channel_cnt== tile_D_i - 1) 
                         ipsum_tile_cnt <= ipsum_tile_cnt + 1;
-                    else if(pass_done_i) // tile_D個且完整的ifmap算完
+                    else if(ipsum_end) // tile_D個且完整的ifmap算完
                         ipsum_tile_cnt <= 0;
                 end
                 default: begin
@@ -207,5 +207,63 @@ module dma_address_generator (
             endcase
         end
     end
+    logic [32:0] ifmap_size_cnt;
+    logic [32:0] size = in_R_i*in_C_i;
+    logic ifmap_end;
+    always_ff@(posedge)begin
+        if(!rst_n)begin
+            ifmap_size_cnt <=0;
+            ifmap_end <=1'b0;
+        end
+        else begin
+            if(ifmap_size_cnt == size)begin
+                ifmap_end <=1'b1;
+                ifmap_size_cnt <=1'b0;
+            end
+            else begin
+                if(ipsum_channel_cnt== tile_D_i - 1)
+                    ifmap_size_cnt <= ifmap_size_cnt+tile_n_i
+            end
+        end
+    end
 
+    logic [32:0] opsum_size_cnt;
+    logic [32:0] opsum_size = out_C_i*out_R_i;
+    logic opsum_end;
+    always_ff@(posedge)begin
+        if(!rst_n)begin
+            opsum_size_cnt <=0;
+            opsum_end <=1'b0;
+        end
+        else begin
+            if(opsum_size_cnt == opsum_size)begin
+                opsum_end <=1'b1;
+                opsum_size_cnt <=1'b0;
+            end
+            else begin
+                if(ipsum_channel_cnt== tile_D_i - 1)
+                    opsum_size_cnt <= opsum_size_cnt+tile_n_i
+            end
+        end
+    end
+
+    logic [32:0] ipsum_size_cnt;
+    logic [32:0] ipsum_size = out_C_i*out_R_i;
+    logic ipsum_end;
+    always_ff@(posedge)begin
+        if(!rst_n)begin
+            ipsum_size_cnt <=0;
+            ipsum_end <=1'b0;
+        end
+        else begin
+            if(ipsum_size_cnt == ipsum_size)begin
+                ipsum_end <=1'b1;
+                ipsum_size_cnt <=1'b0;
+            end
+            else begin
+                if(ipsum_channel_cnt== tile_D_i - 1)
+                    ipsum_size_cnt <= ipsum_size_cnt+tile_n_i
+            end
+        end
+    end
 endmodule
