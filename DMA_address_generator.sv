@@ -27,9 +27,9 @@ module dma_address_generator (
     input  logic [31:0]     base_ofmap_i,
 
     input  logic [1:0]      layer_type_i,     // 0=PW, 1=DW, 2=STD, 3=LIN
-    input  logic [1:0]      input_type,       // 0=filter, 1=ifmap, 2=bias, 3=opsum
+    input  logic [2:0]      input_type,       // 0=filter, 1=ifmap, 2=bias, 3=opsum, 4=ipsum
     input  logic            dma_interrupt_i,  // from DMA
-   
+    input  logic [1:0]      stride_i,
    //from tile scheduler
     input  logic [6:0]      k_idx,      // output||filter 方向的tile數
     input  logic [6:0]      d_idx,      // channel方向的tile數
@@ -47,13 +47,20 @@ module dma_address_generator (
     
 );
 
-    logic [31:0] offset,ifmap_offset,weight_offset,bias_offset,opsum_offset;
+    logic [31:0] offset;
+    logic [31:0] ifmap_offset;
+    logic [31:0] weight_offset;
+    logic [31:0] bias_offset;
+    logic [31:0] ipsum_offset; //TODO ipsum
+    logic [31:0] opsum_offset;
     logic [6:0]  ifmap_tile_cnt,ofmap_tile_cnt;   //計算同一張ifmap的第幾次tile_n_i
     logic [6:0]  ifmap_channel_cnt,ofmap_channel_cnt;
     logic [13:0] bias_offset_tmp;
+   
+   
     //!預設input的base address 不會自動更新
-
-    //d_idx:which channel ifmap_tile_cnt=  第幾次
+    // d_idx:which channel 
+    // ifmap_tile_cnt= 第幾次(same ifmap)
     always_comb begin
     
         unique case (layer_type_i)
@@ -65,23 +72,28 @@ module dma_address_generator (
                 ifmap_offset  = ( ifmap_channel_cnt * in_R_i *in_C_i) + ifmap_tile_cnt * tile_n_i +  (d_idx * in_R_i * in_C_i * tile_D_i);
     
                 bias_offset_tmp = k_idx * tile_K_i;
-                bias_offset   =  bias_offset_tmp + bias_offset_tmp; // 2byte
+                bias_offset   =  bias_offset_tmp + bias_offset_tmp; //! 2byte  bias
 
                 opsum_offset  = ( ofmap_channel_cnt * out_R_i *out_C_i) + ofmap_tile_cnt * tile_n_i +  (d_idx * in_R_i * in_C_i * tile_K_i );
-    
- 
-                case(input_type)
-                    2'd0: dma_base_addr_o = base_weight_i + weight_offset;
-                    2'd1: dma_base_addr_o = base_ifmap_i  + ifmap_offset;
-                    2'd2: dma_base_addr_o = base_bias_i   + bias_offset_tmp ;
-                    2'd3: dma_base_addr_o = base_ofmap_i  + opsum_offset;
-                endcase
 
-                case(input_type)
-                    2'd0: dma_len_o = tile_D_i * tile_K_i;   //! last round may not be tile_n_i
-                    2'd1: dma_len_o = tile_n_i;                       //! last round may not be tile_D_i
-                    2'd2: dma_len_o = tile_K_i + tile_K_i;  //2byte
-                    2'd3: dma_len_o = tile_n_i;                       //! 應該要拆成opsum與ofmap 兩種狀況
+                //TODO ispum
+                ipsum_offset  = ( ofmap_channel_cnt * out_R_i *out_C_i) + ofmap_tile_cnt * tile_n_i +  (d_idx * in_R_i * in_C_i * tile_K_i );
+ 
+                case(input_type)// 0=filter, 1=ifmap, 2=bias, 3=opsum, 4=ipsum 5=ofmap
+                    3'd0: dma_base_addr_o = base_weight_i + weight_offset;
+                    3'd1: dma_base_addr_o = base_ifmap_i  + ifmap_offset;
+                    3'd2: dma_base_addr_o = base_bias_i   + bias_offset_tmp;
+                    3'd3: dma_base_addr_o = base_ofmap_i  + opsum_offset + opsum_offset; //2byte add twice
+                    3'd4: dma_base_addr_o = base_ofmap_i  + ipsum_offset + ipsum_offset;
+                    3'd5: dma_base_addr_o = base_ifmap_i  + opsum_offset;               //!這邊base_ifmap_i 是下一層layer的 不確定用甚麼判斷ofmap
+                 endcase
+
+                case(input_type) 
+                    3'd0: dma_len_o = tile_D_i * tile_K_i;   
+                    3'd1: dma_len_o = tile_n_i;              
+                    3'd2: dma_len_o = tile_K_i + tile_K_i;  //2byte
+                    3'd3,3'd4: dma_len_o = tile_n_i + tile_n_i;  
+                    3'd5: dma_len_o = tile_n_i;// PW時會與ifmap數量一樣 (1*1filter)          
                 endcase
             end
 
@@ -95,20 +107,23 @@ module dma_address_generator (
                 bias_offset   =  bias_offset_tmp + bias_offset_tmp;// 2byte
 
                 opsum_offset  = ( ofmap_channel_cnt * out_R_i *out_C_i) + ofmap_tile_cnt * tile_n_i +  (d_idx * in_R_i * in_C_i * tile_K_i );
-    
+                
  
-                case(input_type)
-                    2'd0: dma_base_addr_o = base_weight_i + weight_offset;
-                    2'd1: dma_base_addr_o = base_ifmap_i  + ifmap_offset;
-                    2'd2: dma_base_addr_o = base_bias_i   + bias_offset_tmp;
-                    2'd3: dma_base_addr_o = base_ofmap_i  + opsum_offset;
+                case(input_type)　// 0=filter, 1=ifmap, 2=bias, 3=opsum, 4=ipsum 5=ofmap
+                    3'd0: dma_base_addr_o = base_weight_i + weight_offset;
+                    3'd1: dma_base_addr_o = base_ifmap_i  + ifmap_offset;
+                    3'd2: dma_base_addr_o = base_bias_i   + bias_offset_tmp;
+                    3'd3: dma_base_addr_o = base_ofmap_i  + opsum_offset + opsum_offset;
+                    3'd4: dma_base_addr_o = base_ofmap_i  + opsum_offset + opsum_offset; 
+                    3'd5: dma_base_addr_o = base_ifmap_i  + opsum_offset;  
                 endcase
 
                 case(input_type)
-                    2'd0: dma_len_o = tile_D_i * 9;             //! last round may not be tile_n_i
+                    2'd0: dma_len_o = tile_D_i * 9;             
                     2'd1: dma_len_o = tile_n_i;                        //! last round may not be tile_D_i
-                    2'd2: dma_len_o = tile_K_i + tile_K_i;  //2byte
-                    2'd3: dma_len_o = tile_n_i;
+                    2'd2: dma_len_o = tile_K_i + tile_K_i;  
+                    2'd3,2'd4: dma_len_o = (stride_i==2'd1)? (tile_n_i+tile_n_i):tile_n;   //!: stride=1 = tile_n_i*2 stride2 = tile_n_i  (2byte)
+                    3'd5: dma_len_o = (stride_i==2'd1)? (tile_n_i):tile_n>>1;
                 endcase
             end
 
