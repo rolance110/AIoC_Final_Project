@@ -360,6 +360,8 @@ always_ff@(posedge clk or negedge rst_n) begin
         On_idx <= On_idx + 7'd1; // 處理下一個 On tile
     end
 end
+
+
 //* completed_IC_cnt: 計數目前已完成的 input channel 數量
 always_ff@(posedge clk or negedge rst_n) begin
     if(!rst_n)begin

@@ -101,12 +101,12 @@ module dma_address_generator (
                 weight_offset = (k_idx * tile_K_i * 9 );
             
                                     // 同一tile 更新channel              下一次tile的讀取               channel tile if in_D_i> 32
-                ifmap_offset  = ( ifmap_channel_cnt * in_R_i *in_C_i) + ifmap_tile_cnt * tile_n_i +  (d_idx * in_R_i * in_C_i * tile_D_i);
+                ifmap_offset  = ( ifmap_channel_cnt * in_R_i *in_C_i) + ifmap_tile_cnt * (tile_n_i * in_C_i)+  (d_idx * in_R_i * in_C_i * tile_D_i);
     
                 bias_offset_tmp = k_idx * tile_K_i;
                 bias_offset   =  bias_offset_tmp + bias_offset_tmp;// 2byte
-
-                opsum_offset  = ( ofmap_channel_cnt * out_R_i *out_C_i) + ofmap_tile_cnt * tile_n_i +  (d_idx * in_R_i * in_C_i * tile_K_i );
+                //DW tile_n_i=1 meaning one row 
+                opsum_offset  = ( ofmap_channel_cnt * out_R_i *out_C_i) + ofmap_tile_cnt * (tile_n_i * in_C_i) +  (d_idx * in_R_i * in_C_i * tile_K_i );
                 
  
                 case(input_type)　// 0=filter, 1=ifmap, 2=bias, 3=opsum, 4=ipsum 5=ofmap
