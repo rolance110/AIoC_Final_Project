@@ -4649,3 +4649,84 @@ wvScrollDown -win $_nWave1 1
 wvScrollDown -win $_nWave1 1
 wvScrollDown -win $_nWave1 1
 wvScrollDown -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollDown -win $_nWave1 0
+wvScrollDown -win $_nWave1 0
+wvScrollDown -win $_nWave1 0
+wvSelectSignal -win $_nWave1 {( "G1" 11 )} 
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 15384063.991151 -snap {("G1" 11)}
+wvZoomIn -win $_nWave1
+wvSelectSignal -win $_nWave1 {( "G1" 10 )} 
+wvSetCursor -win $_nWave1 15359598.232258 -snap {("G1" 1)}
+wvSetCursor -win $_nWave1 15364963.403541 -snap {("G1" 1)}
+wvSetCursor -win $_nWave1 15375097.615964 -snap {("G1" 1)}
+wvSetCursor -win $_nWave1 15354961.664482 -snap {("G1" 10)}
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvSetCursor -win $_nWave1 15387593.918532 -snap {("G1" 11)}
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 15395517.863463 -snap {("G1" 1)}
+wvSetCursor -win $_nWave1 15388430.538435 -snap {("G1" 11)}
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1

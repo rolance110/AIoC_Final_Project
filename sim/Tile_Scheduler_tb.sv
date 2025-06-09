@@ -259,6 +259,7 @@ end
       @(posedge clk);
       if (dma_enable_o) begin
         #(CYCLE*2);
+        #0.01;
         dma_interrupt_i = 1;
         #CYCLE;
         dma_interrupt_i = 0;
@@ -273,6 +274,7 @@ end
       @(posedge clk);
       if (pass_start_o) begin
         #(CYCLE*2);
+        #0.01;
         pass_done_i = 1;
         #CYCLE;
         pass_done_i = 0;
