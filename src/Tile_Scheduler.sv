@@ -321,8 +321,8 @@ end
 
 //reach_last_On_tile: 是否正在處理 最後一個 On tile
 always_comb  begin
-    if ((cs_ts == TILE_IDX_GEN) && (remain_On < (tile_n_i+1)))
-        reach_last_On_tile = 1'b1; // reach last output channel tile
+    if ((cs_ts == TILE_IDX_GEN) && (remain_On == 32'd0)) //todo: 因為 complete_On_cnt 會在最一開始多加1
+        reach_last_On_tile = 1'b1; //todo:  So 這邊最後會要多算 1 次 
     else
         reach_last_On_tile = 1'b0;
 end
@@ -357,6 +357,10 @@ always_ff@(posedge clk or negedge rst_n) begin
         completed_On_cnt <= 7'd0; // 
         On_idx <= 7'b0; // 歸 0
     end
+    // else if (layer_first_tile && cs_ts == TILE_IDX_GEN)begin
+    //     completed_On_cnt <= 7'd0;
+    //     On_idx <= 7'd0; // 處理下一個 On tile
+    // end    
     else if (cs_ts == TILE_IDX_GEN)begin
         completed_On_cnt <= completed_On_cnt + On_real;
         On_idx <= On_idx + 7'd1; // 處理下一個 On tile

@@ -16,8 +16,8 @@ signalSpacing 5
 
 ; windowTimeUnit is used for zoom, cursor & marker
 ; waveform viewport range
-zoom 0.000000 220820.312500
-cursor 55000.000000
+zoom 0.000000 27452720.378489
+cursor 2745000.000000
 marker 0.000000
 
 ; user define markers
@@ -25,9 +25,9 @@ marker 0.000000
 userMarker 1115000 M1 ID_GREEN5 long_dashed
 
 ; visible top row signal index
-top 9
+top 22
 ; marker line index
-markerPos 28
+markerPos 26
 
 ; event list
 ; addEvent event_name event_expression
@@ -61,24 +61,33 @@ addSignal -h 25 -UNSIGNED -HEX -holdScope pad_T_i[1:0]
 addSignal -h 25 -holdScope dma_enable_o
 addSignal -h 25 -holdScope dma_interrupt_i
 addSignal -h 25 -UNSIGNED -holdScope cs_ts[3:0]
-addSignal -h 25 -holdScope uLD_en_i
+addSignal -h 15 -holdScope uLD_en_i
 addSignal -h 25 -UNSIGNED -HEX -holdScope flags_i[3:0]
-addSignal -h 25 -holdScope pass_done_i
 addSignal -h 25 -holdScope pass_start_o
+addSignal -h 25 -holdScope pass_done_i
+addGroup "G7"
+addSignal -h 25 /Tile_Scheduler_tb/dut/DMA_bias_finish
+addSignal -h 25 -holdScope DMA_filter_finish
+addSignal -h 25 -holdScope DMA_ifmap_finish
+addSignal -h 25 -holdScope DMA_ipsum_finish
+addSignal -h 25 -holdScope DMA_opsum_finish
+addSignal -h 25 -holdScope DMA_ifmap_finish_buf
+addSignal -h 25 -holdScope DMA_ipsum_finish_buf
+addSignal -h 25 -holdScope DMA_opsum_finish_buf
 addGroup "G2"
 addSignal -h 25 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/On_real[6:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope IC_real[6:0]
+addSignal -c ID_ORANGE5 -ls solid -lw 3 -h 25 -UNSIGNED -UDEC -holdScope IC_real[6:0]
 addSignal -h 25 -UNSIGNED -UDEC -holdScope OC_real[6:0]
 addGroup "G3"
-addSignal -h 25 -UNSIGNED -HEX /Tile_Scheduler_tb/dut/completed_On_cnt[31:0]
+addSignal -h 25 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/completed_On_cnt[31:0]
 addSignal -h 25 -UNSIGNED -UDEC -holdScope completed_IC_cnt[6:0]
 addSignal -h 25 -UNSIGNED -UDEC -holdScope completed_OC_cnt[6:0]
 addGroup "G4"
 addSignal -h 25 -UNSIGNED -HEX /Tile_Scheduler_tb/dut/max_On_cnt[31:0]
 addSignal -h 25 -UNSIGNED -HEX -holdScope max_On_cnt[31:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope remain_On[31:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope completed_On_cnt[31:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope remain_IC[6:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope remain_On[31:0]
+addSignal -h 25 -UNSIGNED -UDEC -holdScope completed_On_cnt[31:0]
+addSignal -c ID_ORANGE5 -ls solid -lw 3 -h 25 -UNSIGNED -UDEC -holdScope remain_IC[6:0]
 addSignal -h 25 -UNSIGNED -UDEC -holdScope remain_OC[6:0]
 addSignal -h 25 -holdScope reach_last_On_tile
 addSignal -h 25 -holdScope reach_last_D_tile
@@ -93,7 +102,7 @@ addSignal -h 25 -UNSIGNED -UDEC -holdScope d_idx[6:0]
 addSignal -h 25 -UNSIGNED -UDEC -holdScope k_idx[6:0]
 addGroup "G6"
 addSignal -h 25 /Tile_Scheduler_tb/dut/tile_reach_max_o
-addGroup "G7"
+addGroup "G8"
 
 ; getSignalForm Scope Hierarchy Status
 ; active file of getSignalForm
@@ -104,10 +113,12 @@ getSignalForm close
 
 "/Tile_Scheduler_tb"
 "/Tile_Scheduler_tb/dut"
+"/Tile_Scheduler_tb/dut/dma_address_generator"
 
 SCOPE_LIST_BEGIN
 "/Tile_Scheduler_tb"
 "/Tile_Scheduler_tb/dut"
+"/Tile_Scheduler_tb/dut/dma_address_generator"
 SCOPE_LIST_END
 
 GETSIGNALFORM_SCOPE_HIERARCHY_END

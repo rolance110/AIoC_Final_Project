@@ -5,5 +5,5 @@ PYTHONPATH=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/pylib27
 export PYTHONPATH
 LD_LIBRARY_PATH=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib:/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/pylib27
 export LD_LIBRARY_PATH
-/usr/cad/synopsys/vcs/2024.09-sp2/linux64/bin/vcsfind_create_index.exe  -z  "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch/./idents_tapi.xml.gz" "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch/./idents_ef6Ibn.xml.gz" -o "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch/fsearch.db_tmp"
+/usr/cad/synopsys/vcs/2024.09-sp2/linux64/bin/vcsfind_create_index.exe  -z  "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch/./idents_9feC8p.xml.gz" "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch/./idents_tapi.xml.gz" -o "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch/fsearch.db_tmp"
 \mv "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch/fsearch.db_tmp" "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/simv.daidir/debug_dump/fsearch/fsearch.db"

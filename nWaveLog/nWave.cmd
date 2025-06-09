@@ -4070,3 +4070,133 @@ wvSelectSignal -win $_nWave1 {( "G2" 3 )}
 wvSelectStuckSignals -win $_nWave1
 wvSetCursor -win $_nWave1 2757039.891042 -snap {("G3" 1)}
 wvSelectSignal -win $_nWave1 {( "G7" 8 )} 
+wvSaveSignal -win $_nWave1 \
+           "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc"
+wvSelectSignal -win $_nWave1 {( "G5" 1 )} 
+wvSetCursor -win $_nWave1 2235892.106760 -snap {("G5" 3)}
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 2373922.701043 -snap {("G4" 5)}
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvSetCursor -win $_nWave1 2757039.891042 -snap {("G5" 1)}
+wvZoomIn -win $_nWave1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvSetCursor -win $_nWave1 1395891.250702 -snap {("G4" 5)}
+wvSetCursor -win $_nWave1 78424.232088 -snap {("G4" 4)}
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvScrollDown -win $_nWave1 1
+wvZoomOut -win $_nWave1
+wvSetCursor -win $_nWave1 12920922.129962 -snap {("G4" 4)}
+wvDisplayGridCount -win $_nWave1 -off
+wvResizeWindow -win $_nWave1 0 0 1920 1043
+wvCloseGetStreamsDialog -win $_nWave1
+wvAttrOrderConfigDlg -win $_nWave1 -close
+wvCloseDetailsViewDlg -win $_nWave1
+wvCloseDetailsViewDlg -win $_nWave1 -streamLevel
+wvCloseFilterColorizeDlg -win $_nWave1
+wvGetSignalClose -win $_nWave1
+wvReloadFile -win $_nWave1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvScrollUp -win $_nWave1 1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomOut -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvZoomIn -win $_nWave1
+wvScrollDown -win $_nWave1 1
