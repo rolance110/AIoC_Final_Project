@@ -39,8 +39,9 @@ module dma_address_generator (
     // Output DMA control signals
     output logic [31:0]     dma_base_addr_o, //dma_addr_o
     // Output size of data to transfer
-    output logic [31:0]     dma_len_o    //dma_len_o
-     
+    output logic [31:0]     dma_len_o,    //dma_len_o
+    output logic            DMA_ifmap_finish,
+    output logic            DMA_opsum_finish
     // output logic            DMA_filter_finish, //!new
     // output logic            DMA_ifmap_finish,  //!new
     // output logic            DMA_bias_finish,    //!new
@@ -142,14 +143,23 @@ module dma_address_generator (
             ifmap_channel_cnt <= 0;
             ofmap_tile_cnt <= 0;
             ofmap_channel_cnt <= 0;
+            DMA_ifmap_finish <=0;
+            DMA_opsum_finish <=0;
         end
         else begin
             case(input_type)
                 2'd1: begin // ifmap PW || DW 
-                    if(dma_interrupt_i)
+                    if(dma_interrupt_i)begin
                         ifmap_channel_cnt <= ifmap_channel_cnt + 1; //單次tile channel cnt
-                    else if(ifmap_channel_cnt == tile_D_i - 1)
+                    end
+                    else if(ifmap_channel_cnt == tile_D_i - 1)begin
                         ifmap_channel_cnt <= 0;
+                        DMA_ifmap_finish  <=1'b1;
+                    end
+                    else begin
+                        ifmap_channel_cnt <= ifmap_channel_cnt;
+                        DMA_ifmap_finish  <= 0;
+                    end
 
                     if(ifmap_channel_cnt == tile_D_i - 1)  // 改正這行：使用 ifmap_channel_cnt
                         ifmap_tile_cnt <= ifmap_tile_cnt + 1;
@@ -157,11 +167,17 @@ module dma_address_generator (
                         ifmap_tile_cnt <= 0;
                 end
                 2'd3:begin // opsum PW || DW 
-                    if(dma_interrupt_i)
+                    if(dma_interrupt_i)begin
                         ofmap_channel_cnt <= ofmap_channel_cnt + 1; //單次tile channel cnt
-                    else if(ofmap_channel_cnt == tile_K_i -1)
+                    end
+                    else if(ofmap_channel_cnt == tile_K_i -1)begin
                         ofmap_channel_cnt <= 0;
-
+                        DMA_opsum_finish <=1'b1;
+                    end
+                    else begin
+                        ofmap_channel_cnt <= ofmap_channel_cnt;
+                        DMA_opsum_finish <= 0;
+                    end
                     if(ofmap_channel_cnt== tile_K_i - 1) 
                         ofmap_tile_cnt <= ofmap_tile_cnt + 1;
                     else if(pass_done_i) // tile_D個且完整的ifmap算完
