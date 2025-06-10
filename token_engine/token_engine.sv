@@ -1068,18 +1068,38 @@ always_ff@(posedge clk) begin
         ifmap_addr9 <= BASE_IFMAP + in_C * tile_R * 9;
     end 
     else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
-        ifmap_addr0 <= ifmap_addr0 + n_cnt0 * 3 + (enable0 && n_cnt0 == 0) << 2; // n_cnt0 為 4-Channel Pack 的數量
-        ifmap_addr1 <= ifmap_addr1 + n_cnt1 * 3 + (enable1 && n_cnt1 == 0) << 2;
-        ifmap_addr2 <= ifmap_addr2 + n_cnt2 * 3 + (enable2 && n_cnt2 == 0) << 2;
-        ifmap_addr3 <= ifmap_addr3 + n_cnt3 * 3 + (enable3 && n_cnt3 == 0) << 2;
-        ifmap_addr4 <= ifmap_addr4 + n_cnt4 * 3 + (enable4 && n_cnt4 == 0) << 2;
-        ifmap_addr5 <= ifmap_addr5 + n_cnt5 * 3 + (enable5 && n_cnt5 == 0) << 2;
-        ifmap_addr6 <= ifmap_addr6 + n_cnt6 * 3 + (enable6 && n_cnt6 == 0) << 2;
-        ifmap_addr7 <= ifmap_addr7 + n_cnt7 * 3 + (enable7 && n_cnt7 == 0) << 2;
-        ifmap_addr8 <= ifmap_addr8 + n_cnt8 * 3 + (enable8 && n_cnt8 == 0) << 2;
-        ifmap_addr9 <= ifmap_addr9 + n_cnt9 * 3 + (enable9 && n_cnt9 == 0) << 2;
+        ifmap_addr0 <= ifmap_addr0 + n_cnt0 * 3 + (enable0 && n_cnt0 == 0) << 2 + in_C * c_cnt; // n_cnt0 為 4-Channel Pack 的數量
+        ifmap_addr1 <= ifmap_addr1 + n_cnt1 * 3 + (enable1 && n_cnt1 == 0) << 2 + in_C * c_cnt;
+        ifmap_addr2 <= ifmap_addr2 + n_cnt2 * 3 + (enable2 && n_cnt2 == 0) << 2 + in_C * c_cnt;
+        ifmap_addr3 <= ifmap_addr3 + n_cnt3 * 3 + (enable3 && n_cnt3 == 0) << 2 + in_C * c_cnt;
+        ifmap_addr4 <= ifmap_addr4 + n_cnt4 * 3 + (enable4 && n_cnt4 == 0) << 2 + in_C * c_cnt;
+        ifmap_addr5 <= ifmap_addr5 + n_cnt5 * 3 + (enable5 && n_cnt5 == 0) << 2 + in_C * c_cnt;
+        ifmap_addr6 <= ifmap_addr6 + n_cnt6 * 3 + (enable6 && n_cnt6 == 0) << 2 + in_C * c_cnt;
+        ifmap_addr7 <= ifmap_addr7 + n_cnt7 * 3 + (enable7 && n_cnt7 == 0) << 2 + in_C * c_cnt;
+        ifmap_addr8 <= ifmap_addr8 + n_cnt8 * 3 + (enable8 && n_cnt8 == 0) << 2 + in_C * c_cnt;
+        ifmap_addr9 <= ifmap_addr9 + n_cnt9 * 3 + (enable9 && n_cnt9 == 0) << 2 + in_C * c_cnt;
     end
 end
+
+logic [8:0] c_cnt;
+//depthwise 
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        c_cnt <= 9'd0;
+    end 
+    else if (pass_layer_type == `DEPTHWISE) begin
+        if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+            if (c_cnt == ) begin
+                c_cnt <= 9'd0; // 重置 c_cnt
+            end 
+            else if () begin
+                c_cnt <= c_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+            end
+        end 
+    end
+end
+
+
 
 always_ff@(posedge clk) begin
     if(rst) begin
