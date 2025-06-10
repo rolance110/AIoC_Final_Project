@@ -164,14 +164,14 @@ module dma_address_generator (
                         DMA_ifmap_finish  <= 0;
                     end
 
-                    if(ifmap_channel_cnt == tile_D_i - 1)  // 改正這行：使用 ifmap_channel_cnt
+                    if(ifmap_channel_cnt == tile_D_i - 1)  
                         ifmap_tile_cnt <= ifmap_tile_cnt + 1;
                     else if(ifmap_end) // tile_D個且完整的ifmap算完
                         ifmap_tile_cnt <= 0;
                 end
                 3'd3:begin // opsum PW || DW 
                     if(dma_interrupt_i)begin
-                        ofmap_channel_cnt <= ofmap_channel_cnt + 1; //單次tile channel cnt
+                        ofmap_channel_cnt <= ofmap_channel_cnt + 1;
                     end
                     else if(ofmap_channel_cnt == tile_K_i -1)begin
                         ofmap_channel_cnt <= 0;
@@ -188,7 +188,7 @@ module dma_address_generator (
                 end
                 3'd4:begin // opsum PW || DW 
                     if(dma_interrupt_i)begin
-                        ipsum_channel_cnt <= ipsum_channel_cnt + 1; //單次tile channel cnt
+                        ipsum_channel_cnt <= ipsum_channel_cnt + 1; 
                     end
                     else if(ipsum_channel_cnt == tile_D_i -1)begin
                         ipsum_channel_cnt <= 0;
@@ -200,7 +200,7 @@ module dma_address_generator (
                     end
                     if(ipsum_channel_cnt== tile_D_i - 1) 
                         ipsum_tile_cnt <= ipsum_tile_cnt + 1;
-                    else if(ipsum_end) // tile_D個且完整的ifmap算完
+                    else if(ipsum_end)
                         ipsum_tile_cnt <= 0;
                 end
                 default: begin
