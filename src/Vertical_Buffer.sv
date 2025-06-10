@@ -4,6 +4,12 @@ module Vertical_Buffer(
     input clk,
     input reset,
     input [4:0] col_en,
+    input [4:0] row_en,
+    //TODO: DW signal
+    input stride, // 0 = stride 1, 1 = stride 2
+    input dw_first_f,
+    input [1:0] DW_PW_sel, // 0 = pw, 1 = dw
+    input [4:0] dw_open_start_num, // 5-bit to accommodate values up to 31
     //handshake 
     input ready_if,
     input valid_if,
@@ -11,7 +17,7 @@ module Vertical_Buffer(
     //input [`COL_NUM - 1 : 0] col_en,//用來決定是否要關掉，直到所有PE算完，在切換到下一個layer的ifmap
     input ifmap_out_f,//開始輸出FIFO內容的signal,在compute的時候開始拉為1，總共維持四個cycle
 
-    output logic [`COL_NUM*8 - 1 : 0]  
+    output logic [`COL_NUM*8 - 1 : 0] ifmap_out
 );
 
 // 32 independent FIFOs, each 8-bit wide, depth = 4
@@ -23,11 +29,42 @@ wire handshake_f = ready_if && valid_if;
 always_ff @(posedge clk) begin
   if(reset)
     cnt <= 5'd0;
-  else if(handshake_f) begin
-    if(cnt == col_en)
-      cnt <= 5'd0;
-    else
-      cnt <= cnt + 5'd1;
+  else begin
+    case(DW_PW_sel)
+      1'd0: begin
+          case(stride)
+              1'd0: begin // stride = 1
+                if(handshake_f) begin
+                  if(dw_first_f) begin//每次的第一次
+                    if(cnt == 5'd0)//處理第一次開始cnt = 0
+                      cnt <= dw_open_start_num - 5'd3; // start from the last 3 cycles of the previous layer
+                    else if(cnt == row_en)
+                      cnt <= dw_open_start_num - 5'd3;
+                    else
+                      cnt <= cnt + 5'd1;
+                  end
+                  else begin
+                    if(cnt == col_en)
+                      cnt <= 5'd0;
+                    else
+                      cnt <= cnt + 5'd1;
+                  end
+                end
+              end
+              1'd1:begin
+                cnt <= 5'd0;
+              end
+          endcase
+      end
+      1'd1: begin
+        if(handshake_f) begin
+          if(cnt == col_en)
+            cnt <= 5'd0;
+          else
+            cnt <= cnt + 5'd1;
+        end
+      end
+    endcase
   end
 end
 

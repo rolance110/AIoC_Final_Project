@@ -5,6 +5,7 @@ module PE(
     input [7:0] weight_in,
     input prod_out_en,//只有在cs == Compute的時候會輸出給Reducer，維持四個cycle
     input weight_en,
+    input pe_pass_if,
 
     output logic [7:0] ifmap_out,
     output logic [15:0] prod_out
@@ -25,7 +26,7 @@ end
 always_ff @( posedge clk ) begin
     if(reset)
         ifmap_out <= 8'd0;
-    else if(prod_out_en)
+    else if(prod_out_en || pe_pass_if)
         ifmap_out <= ifmap_in;
 end
 
