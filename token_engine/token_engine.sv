@@ -61,7 +61,7 @@ module token_engine (
     //==============================================================================
     // 6) Padding 控制 (Depthwise 或 空間 Padding)
     //==============================================================================
-    output logic                 control_padding,    // 1 = 有 Padding；0 = 無 Padding
+    // output logic [1:0]                 control_padding,    // 0: up padding, 1: left paadding, 2: right padding, 3: down padding
 
     //==============================================================================
     // 7) PSUM Buffer → Token Engine (Pop)
@@ -94,6 +94,17 @@ module token_engine (
     input logic [6:0] in_C, //輸入特徵圖 Width column
     input logic [6:0] in_R, //輸入特徵圖 Height row
     input [1:0] stride,
+
+    output logic [1:0] compute_num0,
+    output logic [1:0] compute_num1,
+    output logic [1:0] compute_num2,
+    output logic [1:0] compute_num3,
+    output logic [1:0] compute_num4,
+    output logic [1:0] compute_num5,
+    output logic [1:0] compute_num6,
+    output logic [1:0] compute_num7,
+    output logic [1:0] compute_num8,
+    output logic [1:0] compute_num9,
 
     //==============================================================================
     // 8) Pass 完成回報 (送給 Tile Scheduler)
@@ -672,14 +683,14 @@ module token_engine (
                 end
             endcase
         end
+        //FIXME: CONV
+        // else if (pass_layer_type == `STANDARD) begin
 
-        else if (pass_layer_type == `STANDARD) begin
+        // end
 
-        end
-
-        else begin //LINEAR
+        // else begin //LINEAR
             
-        end
+        // end
     end
 
     //---------- ifmap ----------//
@@ -709,9 +720,71 @@ always_comb begin
     end
 end
 
+
+//FIXME:還沒 PADDING 
+/* 0: up padding, 1: left paadding, 2: right padding, 3: down padding
+   4: up left padding, 5: up right padding, 6: down left padding, 7: down right padding
+   8: no padding
+*/
 always_comb begin
-    if(current_state == S_WRITE_WEIGHT || current_state == S_WRITE_IFMAP || current_state == S_WRITE_BIAS) begin
+    if(current_state == S_WRITE_WEIGHT || current_state == S_WRITE_BIAS) begin
         token_data = data_2_pe_reg; // 將讀取到的資料送給 PE
+    end
+    else if(current_state == S_WRITE_IFMAP) begin
+        case(control_padding)
+            4'd0: begin
+                token_data = 32'd0; // 上方 Padding
+            end
+            4'd1: begin
+                token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 左側 Padding (假設是 4-Channel Pack)
+            end
+            4'd2: begin
+                token_data = {16'd0, data_2_pe_reg[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
+            end
+            4'd3: begin
+                token_data = 32'd0; // 下方 Padding
+            end
+            4'd4: begin
+                if (col_en_cnt/3 == 0) begin
+                    token_data = 32'd0;
+                end
+                else begin
+                    token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 上左 Padding (假設是 4-Channel Pack)
+                end
+            end
+            4'd5: begin
+                if (col_en_cnt/3 == 0) begin
+                    token_data = 32'd0;
+                end
+                else begin
+                    token_data = {16'd0, data_2_pe_reg[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
+                end
+            end
+            4'd6: begin
+                if (col_en_cnt/3 == 2) begin
+                    token_data = 32'd0;
+                end
+                else begin
+                    token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 下左 Padding (假設是 4-Channel Pack)
+                end
+            end
+            4'd7: begin
+                if (col_en_cnt/3 == 2) begin
+                    token_data = 32'd0;
+                end
+                else begin
+                    token_data = {16'd0, data_2_pe_reg[15:0]}; // 下右 Padding (假設是 4-Channel Pack)
+                end
+            end
+            4'd8: begin
+                token_data = data_2_pe_reg;
+            end
+
+            default: begin
+                token_data = data_2_pe_reg; // 預設情況下，將資料送給 PE
+            end
+
+        endcase
     end
     else begin
         token_data = '0; // 清除資料
@@ -1093,14 +1166,22 @@ always_ff@(posedge clk) begin
 end
 //----------------------------- enable -------------------------------// FIXME: 未完成
 always_ff @ (posedge clk) begin
-    enable0 <= 1'b1;
+    if(rst) begin
+        enable0 <= 1'b0;
+    end
+    else if (change_row0) begin
+        enable0 <= 1'b0;
+    end
+    else begin
+        enable0 <= 1'b1;
+    end
 end
 
 always_ff @ (posedge clk) begin
     if(rst) begin
         enable1 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row1) begin
         enable1 <= 1'b0;
     end
     else if (col_en_cnt == 9'd3) begin
@@ -1112,7 +1193,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable2 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row2) begin
         enable2 <= 1'b0;
     end
     else if (col_en_cnt == 9'd6) begin
@@ -1124,7 +1205,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable3 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row3) begin
         enable3 <= 1'b0;
     end
     else if (col_en_cnt == 9'd9) begin
@@ -1136,7 +1217,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable4 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row4) begin
         enable4 <= 1'b0;
     end
     else if (col_en_cnt == 9'd12) begin
@@ -1148,7 +1229,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable5 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row5) begin
         enable5 <= 1'b0;
     end
     else if (col_en_cnt == 9'd15) begin
@@ -1160,7 +1241,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable6 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row6) begin
         enable6 <= 1'b0;
     end
     else if (col_en_cnt == 9'd18) begin
@@ -1172,7 +1253,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable7 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row7) begin
         enable7 <= 1'b0;
     end
     else if (col_en_cnt == 9'd21) begin
@@ -1184,7 +1265,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable8 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row8) begin
         enable8 <= 1'b0;
     end
     else if (col_en_cnt == 9'd24) begin
@@ -1196,7 +1277,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable9 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row9) begin
         enable9 <= 1'b0;
     end
     else if (col_en_cnt == 9'd27) begin
@@ -1210,6 +1291,8 @@ end
 logic [9:0] cnt;
 logic [9:0] saturate;
 logic change_row0, change_row1, change_row2, change_row3, change_row4, change_row5, change_row6, change_row7, change_row8, change_row9;
+
+
 
 always_comb begin
     saturate = 2-1+3*n_cnt;
@@ -1243,12 +1326,103 @@ end
 
 
 always_comb begin
-    if(change_row) begin
+    if(change_row) begin// 控制ofmap
         compute_num = in_C - saturate;
     end else begin
         compute_num = 2'd3;
     end
 end
+
+always_comb begin
+    if(change_row0) begin
+        compute_num0 = in_C - (2-1+3*n_cnt0);
+    end 
+    else begin
+        compute_num0 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row1) begin
+        compute_num1 = in_C - (2-1+3*n_cnt1);
+    end 
+    else begin
+        compute_num1 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row2) begin
+        compute_num2 = in_C - (2-1+3*n_cnt2);
+    end 
+    else begin
+        compute_num2 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row3) begin
+        compute_num3 = in_C - (2-1+3*n_cnt3);
+    end 
+    else begin
+        compute_num3 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row4) begin
+        compute_num4 = in_C - (2-1+3*n_cnt4);
+    end 
+    else begin
+        compute_num4 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row5) begin
+        compute_num5 = in_C - (2-1+3*n_cnt5);
+    end 
+    else begin
+        compute_num5 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row6) begin
+        compute_num6 = in_C - (2-1+3*n_cnt6);
+    end 
+    else begin
+        compute_num6 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row7) begin
+        compute_num7 = in_C - (2-1+3*n_cnt7);
+    end 
+    else begin
+        compute_num7 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row8) begin
+        compute_num8 = in_C - (2-1+3*n_cnt8);
+    end 
+    else begin
+        compute_num8 = 2'd3;
+    end
+end
+
+always_comb begin
+    if(change_row9) begin
+        compute_num9 = in_C - (2-1+3*n_cnt9);
+    end 
+    else begin
+        compute_num9 = 2'd3;
+    end
+end
+
 
 
 logic [8:0] c_cnt;
@@ -1830,6 +2004,309 @@ end
 //---------- WEB ----------//
 always_comb begin   
     WEB = (current_state == S_WRITE_OPSUM) ? 1'd0 : 1'd1; 
+end
+
+//-------------------- padding logic --------------------//
+/* 0: up padding, 1: left paadding, 2: right padding, 3: down padding
+   4: up left padding, 5: up right padding, 6: down left padding, 7: down right padding
+   8: no padding
+*/
+logic [2:0] padding_pe_hsk_cnt;
+logic [5:0] padding_pe_hsk_cnt_left;
+
+
+
+logic [3:0] control_padding;
+logic [3:0] control_padding0,   
+            control_padding1, 
+            control_padding2, 
+            control_padding3, 
+            control_padding4, 
+            control_padding5, 
+            control_padding6, 
+            control_padding7, 
+            control_padding8;
+            control_padding9; 
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        padding_pe_hsk_cnt <= 3'd0;
+    end 
+    else if(pe_ifamp_valid && pe_ifmap_ready) begin
+        padding_pe_hsk_cnt <= (padding_pe_hsk_cnt == 3'd2) ? 3'd0 : padding_pe_hsk_cnt + 1; // 每次讀取 IFMAP 都增加計數
+    end 
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        padding_pe_hsk_cnt_left <= 6'd0;
+    end 
+    else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+        padding_pe_hsk_cnt_left <= (padding_pe_hsk_cnt_left == 6'd2) ? 6'd0 : padding_pe_hsk_cnt_left + 1; // 每次讀取 IFMAP 都增加計數
+    end 
+    else if(current_state == S_READ_IFMAP) begin
+        padding_pe_hsk_cnt_left <= padding_pe_hsk_cnt_left;
+    end 
+    else begin
+        padding_pe_hsk_cnt_left <= 6'd0; // 重置計數器
+    end
+end
+
+always_comb begin
+    if(pass_layer_type == `DEPTHWISE) begin 
+        if(y_cnt == 0) begin // up padding 
+
+            if(n_cnt0 == 0) begin
+                control_padding0 = 4'd4;
+            end 
+            else if(change_row0) begin
+                control_padding0 = 4'd5;
+            end
+            else begin
+                control_padding0 = 4'd0;
+            end
+
+            if(n_cnt1 == 0) begin
+                control_padding1 = 4'd4;
+            end 
+            else if(change_row1) begin
+                control_padding1 = 4'd5;
+            end
+            else begin
+                control_padding1 = 4'd0;
+            end
+
+            if(n_cnt2 == 0) begin
+                control_padding2 = 4'd4;
+            end 
+            else if(change_row2) begin
+                control_padding2 = 4'd5;
+            end
+            else begin
+                control_padding2 = 4'd0;
+            end
+
+            if(n_cnt3 == 0) begin
+                control_padding3 = 4'd4;
+            end 
+            else if(change_row3) begin
+                control_padding3 = 4'd5;
+            end
+            else begin
+                control_padding3 = 4'd0;
+            end
+
+            if(n_cnt4 == 0) begin
+                control_padding4 = 4'd4;
+            end 
+            else if(change_row4) begin
+                control_padding4 = 4'd5;
+            end
+            else begin
+                control_padding4 = 4'd0;
+            end
+
+            if(n_cnt5 == 0) begin
+                control_padding5 = 4'd4;
+            end 
+            else if(change_row5) begin
+                control_padding5 = 4'd5;
+            end
+            else begin
+                control_padding5 = 4'd0;
+            end
+
+            if(n_cnt6 == 0) begin
+                control_padding6 = 4'd4;
+            end 
+            else if(change_row6) begin
+                control_padding6 = 4'd5;
+            end
+            else begin
+                control_padding6 = 4'd0;
+            end
+
+            if(n_cnt7 == 0) begin
+                control_padding7 = 4'd4;
+            end 
+            else if(change_row7) begin
+                control_padding7 = 4'd5;
+            end
+            else begin
+                control_padding7 = 4'd0;
+            end
+
+            if(n_cnt8 == 0) begin
+                control_padding8 = 4'd4;
+            end 
+            else if(change_row8) begin
+                control_padding8 = 4'd5;
+            end
+            else begin
+                control_padding8 = 4'd0;
+            end
+
+            if(n_cnt9 == 0) begin
+                control_padding9 = 4'd4;
+            end 
+            else if(change_row9) begin
+                control_padding9 = 4'd5;
+            end
+            else begin
+                control_padding9 = 4'd0;
+            end
+
+        end 
+        else if(y_cnt == in_R - 1) begin // down padding
+            if(n_cnt0 == 0) begin
+                control_padding0 = 4'd6;
+            end 
+            else if(change_row0) begin
+                control_padding0 = 4'd7;
+            end
+            else begin
+                control_padding0 = 4'd3;
+            end
+
+            if(n_cnt1 == 0) begin
+                control_padding1 = 4'd6;
+            end 
+            else if(change_row1) begin
+                control_padding1 = 4'd7;
+            end
+            else begin
+                control_padding1 = 4'd3;
+            end
+
+            if(n_cnt2 == 0) begin
+                control_padding2 = 4'd6;
+            end 
+            else if(change_row2) begin
+                control_padding2 = 4'd7;
+            end
+            else begin
+                control_padding2 = 4'd3;
+            end
+
+            if(n_cnt3 == 0) begin
+                control_padding3 = 4'd6;
+            end 
+            else if(change_row3) begin
+                control_padding3 = 4'd7;
+            end
+            else begin
+                control_padding3 = 4'd3;
+            end
+
+            if(n_cnt4 == 0) begin
+                control_padding4 = 4'd6;
+            end 
+            else if(change_row4) begin
+                control_padding4 = 4'd7;
+            end
+            else begin
+                control_padding4 = 4'd3;
+            end
+
+            if(n_cnt5 == 0) begin
+                control_padding5 = 4'd6;
+            end 
+            else if(change_row5) begin
+                control_padding5 = 4'd7;
+            end
+            else begin
+                control_padding5 = 4'd3;
+            end
+
+            if(n_cnt6 == 0) begin
+                control_padding6 = 4'd6;
+            end 
+            else if(change_row6) begin
+                control_padding6 = 4'd7;
+            end
+            else begin
+                control_padding6 = 4'd3;
+            end
+
+            if(n_cnt7 == 0) begin
+                control_padding7 = 4'd6;
+            end 
+            else if(change_row7) begin
+                control_padding7 = 4'd7;
+            end
+            else begin
+                control_padding7 = 4'd3;
+            end
+
+            if(n_cnt8 == 0) begin
+                control_padding8 = 4'd6;
+            end 
+            else if(change_row8) begin
+                control_padding8 = 4'd7;
+            end
+            else begin
+                control_padding8 = 4'd3;
+            end
+
+            if(n_cnt9 == 0) begin
+                control_padding9 = 4'd6;
+            end 
+            else if(change_row9) begin
+                control_padding9 = 4'd7;
+            end
+            else begin
+                control_padding9 = 4'd3;
+            end
+
+        end
+    end
+    else begin // no padding
+        control_padding0 = 4'd8;
+        control_padding1 = 4'd8;
+        control_padding2 = 4'd8;
+        control_padding3 = 4'd8;
+        control_padding4 = 4'd8;
+        control_padding5 = 4'd8;
+        control_padding6 = 4'd8;
+        control_padding7 = 4'd8;
+        control_padding8 = 4'd8;
+        control_padding9 = 4'd8; 
+    end
+end
+
+
+//control_padding
+always_comb begin
+    if (col_en_cnt >= 8'd27) begin
+        control_padding = control_padding9; // 27-30
+    end
+    else if (col_en_cnt >= 8'd24) begin
+        control_padding = control_padding8; // 24-27
+    end
+    else if (col_en_cnt >= 8'd21) begin
+        control_padding = control_padding7; // 21-24
+    end
+    else if (col_en_cnt >= 8'd18) begin
+        control_padding = control_padding6; // 18-21
+    end
+    else if (col_en_cnt >= 8'd15) begin
+        control_padding = control_padding5; // 15-18
+    end
+    else if (col_en_cnt >= 8'd12) begin
+        control_padding = control_padding4; // 12-15
+    end
+    else if (col_en_cnt >= 8'd9) begin
+        control_padding = control_padding3; // 9-12
+    end
+    else if (col_en_cnt >= 8'd6) begin
+        control_padding = control_padding2; // 6-9
+    end
+    else if (col_en_cnt >= 8'd3) begin
+        control_padding = control_padding1; // 3-6
+    end 
+    else begin 
+        control_padding = control_padding0; // 0-3
+    end
 end
 
 endmodule
