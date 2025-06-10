@@ -43,9 +43,6 @@ module dma_address_generator (
     output logic            DMA_ifmap_finish,
     output logic            DMA_opsum_finish,
     output logic            DMA_ipsum_finish
-    // output logic            DMA_filter_finish, //!new
-    // output logic            DMA_ifmap_finish,  //!new
-    // output logic            DMA_bias_finish,    //!new
     
 );
 
@@ -53,7 +50,7 @@ module dma_address_generator (
     logic [31:0] ifmap_offset;
     logic [31:0] weight_offset;
     logic [31:0] bias_offset;
-    logic [31:0] ipsum_offset; //TODO ipsum
+    logic [31:0] ipsum_offset; 
     logic [31:0] opsum_offset;
     logic [6:0]  ifmap_tile_cnt,ofmap_tile_cnt,ipsum_tile_cnt;   //計算同一張ifmap的第幾次tile_n_i
     logic [6:0]  ifmap_channel_cnt,ofmap_channel_cnt,ipsum_channel_cnt;
@@ -62,8 +59,7 @@ module dma_address_generator (
     logic ipsum_end;
     logic opsum_end;
     logic ifmap_end;
-   
-    //!預設input的base address 不會自動更新
+
     // d_idx:which channel 
     // ifmap_tile_cnt= 第幾次(same ifmap)
     always_comb begin
@@ -101,8 +97,6 @@ module dma_address_generator (
                     3'd5: dma_len_o = tile_n_i;// PW時會與ifmap數量一樣 (1*1filter)          
                 endcase
             end
-
-            //TODO stride=1 , stride =2
             2'd1: begin // Depthwise 
                 weight_offset = (k_idx * tile_K_i * 9 );
             
@@ -121,16 +115,16 @@ module dma_address_generator (
                     3'd1: dma_base_addr_o = base_ifmap_i  + ifmap_offset;
                     3'd2: dma_base_addr_o = base_bias_i   + bias_offset_tmp;
                     3'd3: dma_base_addr_o = base_ofmap_i  + opsum_offset + opsum_offset;
-                    3'd4: dma_base_addr_o = base_ofmap_i  + opsum_offset + opsum_offset; 
+                    3'd4: dma_base_addr_o = base_ofmap_i  + ipsum_offset + ipsum_offset; 
                     3'd5: dma_base_addr_o = base_ifmap_i  + opsum_offset;  
                 endcase
 
                 case(input_type)
                     2'd0: dma_len_o = tile_D_i * 9;             
                     2'd1: dma_len_o = tile_n_i;                       
-                    2'd2: dma_len_o = tile_K_i + tile_K_i;  
-                    2'd3,2'd4: dma_len_o = (stride_i==2'd1)? (tile_n_i+tile_n_i):tile_n_i;   //!: stride=1 = tile_n_i*2 stride2 = tile_n_i  (2byte)
-                    3'd5: dma_len_o = (stride_i==2'd1)? (tile_n_i):tile_n_i>>1;
+                    2'd2: dma_len_o = tile_K_i + tile_K_i;     //tile_n - 2 因為filter 3*3
+                    2'd3,2'd4: dma_len_o = (stride_i==2'd1)? (tile_n_i+tile_n_i-4)*in_C_i:(tile_n_i-2)*in_C_i;   //!: stride=1 = tile_n_i*2 stride2 = tile_n_i  (2byte)
+                    3'd5: dma_len_o = (stride_i==2'd1)? (tile_n_i-2)*in_C_i:((tile_n_i-2)*in_C_i)>>1;
                 endcase
             end
 
