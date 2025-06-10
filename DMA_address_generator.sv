@@ -102,6 +102,7 @@ module dma_address_generator (
                 endcase
             end
 
+            //TODO stride=1 , stride =2
             2'd1: begin // Depthwise 
                 weight_offset = (k_idx * tile_K_i * 9 );
             
@@ -110,9 +111,10 @@ module dma_address_generator (
     
                 bias_offset_tmp = k_idx * tile_K_i;
                 bias_offset   =  bias_offset_tmp + bias_offset_tmp;// 2byte
-                //DW tile_n_i=1 meaning one row 
+                //DW tile_n_i=1 meaning one row / need depart stride 1 ,2 situation 
                 opsum_offset  = ( ofmap_channel_cnt * out_R_i *out_C_i) + ofmap_tile_cnt * (tile_n_i * in_C_i) +  (d_idx * in_R_i * in_C_i * tile_K_i );
-                                
+
+                ipsum_offset  = ( ofmap_channel_cnt * out_R_i *out_C_i) + ofmap_tile_cnt * (tile_n_i * in_C_i) +  (d_idx * in_R_i * in_C_i * tile_K_i );           
  
                 case(input_type)// 0=filter, 1=ifmap, 2=bias, 3=opsum, 4=ipsum 5=ofmap
                     3'd0: dma_base_addr_o = base_weight_i + weight_offset;
@@ -124,10 +126,10 @@ module dma_address_generator (
                 endcase
 
                 case(input_type)
-                    3'd0: dma_len_o = tile_D_i * 9;             
-                    3'd1: dma_len_o = tile_n_i;                       
-                    3'd2: dma_len_o = tile_K_i + tile_K_i;  
-                    3'd3,3'd4: dma_len_o = (stride_i==2'd1)? (tile_n_i+tile_n_i):tile_n_i;   //!: stride=1 = tile_n_i*2 stride2 = tile_n_i  (2byte)
+                    2'd0: dma_len_o = tile_D_i * 9;             
+                    2'd1: dma_len_o = tile_n_i;                       
+                    2'd2: dma_len_o = tile_K_i + tile_K_i;  
+                    2'd3,2'd4: dma_len_o = (stride_i==2'd1)? (tile_n_i+tile_n_i):tile_n_i;   //!: stride=1 = tile_n_i*2 stride2 = tile_n_i  (2byte)
                     3'd5: dma_len_o = (stride_i==2'd1)? (tile_n_i):tile_n_i>>1;
                 endcase
             end
