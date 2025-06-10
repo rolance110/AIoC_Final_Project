@@ -6,7 +6,6 @@ module Vertical_Buffer(
     input [4:0] col_en,
     input [4:0] row_en,
     //TODO: DW signal
-    input stride, // 0 = stride 1, 1 = stride 2
     input dw_first_f,
     input [1:0] DW_PW_sel, // 0 = pw, 1 = dw
     input [4:0] dw_open_start_num, // 5-bit to accommodate values up to 31
@@ -32,29 +31,22 @@ always_ff @(posedge clk) begin
   else begin
     case(DW_PW_sel)
       1'd0: begin
-          case(stride)
-              1'd0: begin // stride = 1
-                if(handshake_f) begin
-                  if(dw_first_f) begin//每次的第一次
-                    if(cnt == 5'd0)//處理第一次開始cnt = 0
-                      cnt <= dw_open_start_num - 5'd3; // start from the last 3 cycles of the previous layer
-                    else if(cnt == row_en)
-                      cnt <= dw_open_start_num - 5'd3;
-                    else
-                      cnt <= cnt + 5'd1;
-                  end
-                  else begin
-                    if(cnt == col_en)
-                      cnt <= 5'd0;
-                    else
-                      cnt <= cnt + 5'd1;
-                  end
-                end
-              end
-              1'd1:begin
-                cnt <= 5'd0;
-              end
-          endcase
+        if(handshake_f) begin
+          if(dw_first_f) begin//每次的第一次
+            if(cnt == 5'd0)//處理第一次開始cnt = 0
+              cnt <= dw_open_start_num; // start from the last 3 cycles of the previous layer
+            else if(cnt == row_en)
+              cnt <= dw_open_start_num - 5'd3;
+            else
+              cnt <= cnt + 5'd1;
+          end
+          else begin
+            if(cnt == col_en)
+              cnt <= 5'd0;
+            else
+              cnt <= cnt + 5'd1;
+          end
+        end
       end
       1'd1: begin
         if(handshake_f) begin

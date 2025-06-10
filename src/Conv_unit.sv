@@ -134,7 +134,7 @@ assign data_out = (cs == OPSUM_OUT) ? opsum2GLB : 32'd0;
             dw_open_f <= 1'd0;
         else if((cs == IDLE && ns == WEIGHT_LOAD) || dw_row_end)//只要拉起來 再來就是準備要做重新開啟
             dw_open_f <= 1'd1;
-        else if((dw_open_cnt == dw_open_num) && (cnt == 8'd2) && (cs == PASS))//等最後一次做完才放下
+        else if((dw_open_cnt == dw_open_num) && (ns == IDLE))//等最後一次做完才放下
             dw_open_f <= 1'd0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
     end
 
@@ -143,6 +143,29 @@ assign data_out = (cs == OPSUM_OUT) ? opsum2GLB : 32'd0;
             dw_open_cnt <= 4'd0;
         else if((cs == IDLE && ns == IFMAP_LOAD) || (cs == WEIGHT_LOAD && ns == IFMAP_LOAD))
             dw_open_cnt <= dw_open_cnt + 4'd1;
+    end
+ 
+    
+
+    //TODO: stride2的設定
+    //前兩次都輸出1筆，後面都是兩筆
+    logic dw_out_2_f;//if flag=1, 輸出兩筆 else 輸出一筆
+    logic [1:0] stride_cnt;
+
+    always_ff @(posedge clk) begin
+        if(reset || (cs == WEIGHT_LOAD) || dw_row_end)
+            stride_cnt <= 2'd0;
+        else if(stride_cnt == 2'd2)
+            stride_cnt <= stride_cnt;
+        else if(dw_open_f && (cs == OPSUM_OUT && ns == IDLE) && dw_stride)
+            stride_cnt <= stride_cnt + 2'd1;
+    end
+
+    always_ff @(posedge clk) begin
+        if(reset || (stride_cnt < 2'd1))//代表只輸出一筆
+            dw_out_2_f <= 1'b0;
+        else if((DW_PW_sel == 1'd0) && (dw_stride == 1'd1) && (cs == COMPUTE) && (cnt[1:0] == (dw_input_num - 2'd1)))
+            dw_out_2_f <= !dw_out_2_f;
     end
 //--------------------------------------------------------------//
 
@@ -219,30 +242,38 @@ always_comb begin
         IPSUM_LOAD: begin
             case(DW_PW_sel)
                 1'd0: begin //DW
-                    case(dw_stride)
-                        1'd0: begin
-                            if(dw_input_num < 2'd3) begin//代表送一筆就夠了
+                    if(dw_open_f) begin//第一次只要抓最多10筆
+                        if(cnt[3:0] == dw_open_num - 4'd1) 
+                            ns = OPSUM_OUT;
+                        else
+                            ns = IPSUM_LOAD;
+                    end
+                    else begin
+                        case(dw_stride)
+                            1'd0: begin
+                                if(dw_input_num < 2'd3) begin//代表送一筆就夠了
+                                    if(cnt[3:0] == dw_open_num - 4'd1) begin//max 10筆
+                                        ns = OPSUM_OUT;
+                                    end
+                                    else
+                                        ns = IPSUM_LOAD;
+                                end
+                                else begin//依舊要送兩筆, max 20筆
+                                    if(cnt[4:0] == dw_ip_num)
+                                        ns = OPSUM_OUT;
+                                    else
+                                        ns = IPSUM_LOAD;
+                                end
+                            end
+                            1'd1:begin//固定存一筆(因為1或2都可以一次傳送進來使用) max 10筆
                                 if(cnt[3:0] == dw_open_num - 4'd1) begin
                                     ns = OPSUM_OUT;
                                 end
                                 else
                                     ns = IPSUM_LOAD;
                             end
-                            else begin//依舊要送兩筆
-                                if(cnt[4:0] == dw_ip_num)
-                                    ns = OPSUM_OUT;
-                                else
-                                    ns = IPSUM_LOAD;
-                            end
-                        end
-                        1'd1:begin//固定存一筆(因為1或2都可以一次傳送進來使用)
-                            if(cnt[3:0] == dw_open_num - 4'd1) begin
-                                ns = OPSUM_OUT;
-                            end
-                            else
-                                ns = IPSUM_LOAD;
-                        end
-                    endcase
+                        endcase
+                    end
                 end
                 1'd1: begin //PW
                     if(pw_first_f) begin //第一個8個cycle的weight load
@@ -267,17 +298,12 @@ always_comb begin
         COMPUTE: begin
             case(DW_PW_sel)
                 1'd0: begin //DW 三個cycle計算
-                    case(dw_stride)
-                        1'd0: begin
-                            if(cnt == (dw_input_num - 2'd1)) //每個PE需要3個cycle來計算
-                                ns = OPSUM_OUT;
-                            else
-                                ns = COMPUTE;
-                        end
-                        1'd1: begin//TODO: 寫不出來，晚點想(因為可能做1-2次)
-
-                        end
-                    endcase
+                    if(dw_open_f)//只需要一個cycle
+                        ns = OPSUM_OUT;
+                    else if(cnt == (dw_input_num - 2'd1)) //每個PE需要3個cycle來計算
+                        ns = OPSUM_OUT;
+                    else
+                        ns = COMPUTE;
                 end
                 1'd1: begin //PW
                     if(cnt == 8'd3) //每個PE需要4個cycle來計算
@@ -290,26 +316,38 @@ always_comb begin
         OPSUM_OUT: begin
             case(DW_PW_sel)
                 1'd0: begin //DW，共10個FIFO
-                    case(dw_stride)
-                        1'd0: begin
-                            if(dw_input_num < 2'd3) begin//一個FIFO送一次
+                    if(dw_open_f) begin//第一次最多只要輸出10筆
+                        if(cnt[3:0] == dw_open_num - 4'd1)//最大10筆
+                            ns = IDLE;
+                        else
+                            ns = OPSUM_OUT;
+                    end
+                    else begin
+                        case(dw_stride)
+                            1'd0: begin
+                                if(dw_input_num < 2'd3) begin//一個FIFO送一次
+                                    if(cnt[3:0] == dw_open_num - 4'd1) begin//最大10筆
+                                        ns = IDLE;
+                                    end
+                                    else
+                                        ns = OPSUM_OUT;
+                                end
+                                else begin//一樣一個FIFO要送兩次
+                                    if(cnt[4:0] == dw_ip_num) //dw_ip_num = (col_en << 1) - 6'd1
+                                        ns = IDLE; 
+                                    else 
+                                        ns = OPSUM_OUT;
+                                end
+                            end
+                            1'd1: begin
                                 if(cnt[3:0] == dw_open_num - 4'd1) begin//最大10筆
                                     ns = IDLE;
                                 end
                                 else
                                     ns = OPSUM_OUT;
                             end
-                            else begin//一樣一個FIFO要送兩次
-                                if(cnt[4:0] == dw_ip_num) //dw_ip_num = (col_en << 1) - 6'd1
-                                    ns = IDLE; 
-                                else 
-                                    ns = OPSUM_OUT;
-                            end
-                        end
-                        1'd1: begin//TODO: 先PASS 太難了
-
-                        end
-                    endcase
+                        endcase
+                    end
                 end
                 1'd1: begin //PW
                     if(pw_first_f) begin
@@ -344,9 +382,13 @@ always_ff @(posedge clk) begin
             1'd0: begin//DW
                 if(dw_open_f) begin
                     if(((cs == PASS) && (cnt == 8'd2)) ||
-                    (cs == IFMAP_LOAD && (cnt == dw_time_3)))
+                    (cs == WEIGHT_LOAD && (cnt == row_en - 6'd1)) ||
+                    (cs == IFMAP_LOAD && (cnt == dw_time_3)) ||
+                    (cs == IPSUM_LOAD && (cnt[3:0] == dw_open_num - 4'd1)) ||
+                    (cs == COMPUTE) ||
+                    (cs == OPSUM_OUT && (cnt[3:0] == dw_open_num - 4'd1)))
                         cnt <= 8'd0;
-                    else
+                    else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == PASS))
                         cnt <= cnt + 8'd1; //每次都+1
                 end
                 else begin //TODO: stride 2 可能會有問題
@@ -356,14 +398,15 @@ always_ff @(posedge clk) begin
                     ((cs == IPSUM_LOAD) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num)) ||
                     ((cs == COMPUTE) && (cnt == (dw_input_num - 2'd1))) ||
                     ((cs == OPSUM_OUT) && (dw_input_num < 2'd3) && (cnt[3:0] == dw_open_num - 4'd1)) ||
-                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num))
+                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num) && (dw_stride == 1'd0)) ||
+                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (dw_stride == 1'd1))
                     )
                         cnt <= 8'd0;
                     else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
                         cnt <= cnt + 8'd1;
                 end
             end
-            1'd1: begin//PW
+            1'd1: begin//PW FIXME: OKAY
                 if(pw_first_f) begin
                     if(((cs == WEIGHT_LOAD) && (cnt == weight_load_time)) || 
                     ((cs == IFMAP_LOAD) && (cnt[4:0] == ifmap_load_time)) ||
@@ -461,7 +504,6 @@ Vertical_Buffer Vertical_Buffer(
     .reset(reset),
     //DW
     .DW_PW_sel(DW_PW_sel), //用來決定是DW還是PW，PW = 1, DW = 0
-    .stride(dw_stride),
     .dw_first_f(dw_open_f), //用來決定是否是第一個8個cycle的weight load
     .dw_open_start_num(dw_open_start_num), //用來決定有幾個ROW要使用
     //PW
@@ -482,6 +524,22 @@ Vertical_Buffer Vertical_Buffer(
 //
 logic ipsum_out_f;
 logic [511:0] ipsum_out;
+logic ip_out_dw_f;;
+
+//一開始為1，後面0 - 1 - 0的交換
+always_ff @(posedge clk) begin
+    if(reset)
+        ip_out_dw_f <= 1'd0;
+    else if(dw_stride) begin
+        if(stride_cnt == 2'd0)
+            if(ns == OPSUM_OUT)
+                ip_out_dw_f <= 1'd0; //當進入OPSUM_OUT的時候，代表已經完成第一個8個cycle的weight load
+            else if(ns == COMPUTE)
+                ip_out_dw_f <= 1'd1;
+        else if(cs == COMPUTE)
+            ip_out_dw_f <= !ip_out_dw_f; 
+    end
+end
 
 //if pass signal=1，則不動作 不輸出data
 always_comb begin
@@ -492,7 +550,8 @@ always_comb begin
                     ipsum_out_f = ((cs == COMPUTE) && (cnt[1:0] < dw_input_num));
                 end
                 1'd1: begin // stride = 2
-                    ipsum_out_f = ((cs == COMPUTE) && (cnt[1:0] < dw_input_num));
+                    if((cs == COMPUTE) && (cnt[1:0] < dw_input_num))
+                    ipsum_out_f = ip_out_dw_f;
                 end
             endcase
         end
@@ -503,7 +562,7 @@ always_comb begin
 end
 
 always_comb begin
-    if(cs == IPSUM_LOAD)
+    if(cs == IPSUM_LOAD) 
         ready_ip = 1'b1; //在IPSUM_LOAD的時候，ready_ip = 1
     else
         ready_ip = 1'b0; //其他狀態不需要ready_ip
@@ -551,7 +610,7 @@ always_ff @(posedge clk) begin
         valid_op <= 1'd0; //其他狀態不需要valid_op
 end
 
-always_ff @(posedge clk) begin
+always_ff @(posedge clk) begin//TODO: 考慮DW
     if(reset)
         store_opsum_f <= 1'b0;
     else if(cs == COMPUTE)
@@ -566,12 +625,17 @@ Opsum_buffer Opsum_buffer(
     //handshake
     .ready_op(ready_op),
     .valid_op(valid_op),
-    //first 8 cycle
+    //DW
+    .DW_PW_sel(DW_PW_sel), 
+    .dw_stride(dw_stride), 
+    .dw_input_num(dw_input_num), 
+    .dw_out_2_f(dw_out_2_f), //TODO: 還沒寫
+    //PW, first 8 cycle
     .first_f(pw_first_f),
     .ip_time_4(pw_time_4), //用來決定有幾個ROW要使用
-
     .pw_close_start_num(pw_close_start_num), //用來決定關閉PE array的ROW起始位子
     .close_f(pw_close_f), //用來關閉PE array的信號
+
     .row_en(row_en), //用來決定有幾個ROW要使用
     .store_opsum_f(store_opsum_f),
     .opsum_in(reducer2opsum),
@@ -586,13 +650,13 @@ Opsum_buffer Opsum_buffer(
 //可能需要改成三個ROW為一組的prod_out_en，因為在conv的時候，第一次都會需要等待他三個cycle就定位才能輸出
 wire prod_out_en;
 wire [511:0] array_opsum;
-logic [4:0] pe_pass_if;//哪幾個ROW要pass不做運算
+logic pe_pass_if;//哪幾個ROW要pass不做運算
 
 always_comb begin
-    if((cs == PASS) && dw_open_f)
-        pe_pass_if = 5'b11111;//TODO: 測試有沒有剛好pass 10 次
+    if(((cs == PASS) && dw_open_f)/* || (cs == COMPUTE && (!ip_out_dw_f))*/)
+        pe_pass_if = 1'd1;//TODO: 測試有沒有剛好pass 10 次
     else
-        pe_pass_if = 5'd0;//給CONV用
+        pe_pass_if = 1'd0;//給CONV用
 end
 
 assign prod_out_en = (cs == COMPUTE) && (cnt < 8'd4); //在compute的時候開始輸出給Reducer，維持四個cycle

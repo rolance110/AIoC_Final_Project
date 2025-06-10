@@ -30,6 +30,9 @@ module tb_dw_conv_uint;
     .clk            (clk),
     .reset          (reset),
 
+    .data_in        (data_in),
+    .data_out       (data_out),
+
     .ready_w        (ready_w),
     .valid_w        (valid_w),
 
@@ -42,14 +45,11 @@ module tb_dw_conv_uint;
     .valid_op       (valid_op),
     .ready_op       (ready_op),
 
-    .DW_PW_sel      (DW_PW_sel),
-    .change_weight_f(change_weight_f),
     .dw_input_num   (dw_input_num),
     .dw_row_end     (dw_row_end),
     .dw_stride      (dw_stride),
 
-    .data_in        (data_in),
-    .data_out       (data_out),
+    .DW_PW_sel      (DW_PW_sel),
     .col_en         (col_en),
     .row_en         (row_en)
   );
@@ -72,7 +72,6 @@ module tb_dw_conv_uint;
         valid_ip = 0;
         ready_op = 0;
         DW_PW_sel = 1; // 假設使用PW模式
-        change_weight_f = 0; // 假設不改變權重
         data_in = 32'h00000000; // 初始數據輸入
 
         dw_stride = 0; // 假設使用stride 1
@@ -86,14 +85,12 @@ module tb_dw_conv_uint;
         reset = 0; // 解除復位
 
         #(`CYCLE * 2); // 等待一段時間以觀察行為
-        change_weight_f = 1; // 假設不改變權重
         valid_w = 1;
 
         #(`CYCLE); // 等待一個時鐘週期
         data_in = 32'h00123456;
 
         #(`CYCLE * 32); // 等待一個時鐘週期
-        change_weight_f = 0; // 假設不改變權重
         valid_w = 0; // 停止寫入數據
         
 
