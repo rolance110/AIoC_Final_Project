@@ -12,6 +12,10 @@ module Ipsum_buffer(
     //要關閉PE array
     input [4:0] close_start_num,//用來決定關閉PE array的ROW起始位子
     input close_f,//用來決定是否要關閉PE array
+    input DW_PW_sel,//用來決定是DW還是PW
+    input dw_stride,
+    input [1:0] dw_input_num,
+    input [3:0] dw_open_num,
 
     input [5:0] row_en,//用來決定有幾個ROW要使用，從0開始算
     input [`ROW_NUM - 1:0] ipsum_in,//from GLB
@@ -42,36 +46,68 @@ always_ff @(posedge clk) begin
         depth_cnt <= 1'd0;
         FIFO_cnt <= 5'd0;
     end
-    else if(first_f) begin
-        if(handshake_f) begin
-            depth_cnt <= !depth_cnt;
-            if(depth_cnt == 1'd1) begin
-                if(FIFO_cnt == (ip_time_4_cnt))
-                    FIFO_cnt <= 5'd0;
-                else
-                    FIFO_cnt <= FIFO_cnt + 5'd1;
+    else begin
+        case(DW_PW_sel)
+            1'd0:begin
+                if(handshake_f) begin
+                    case(dw_stride)
+                        1'd0:begin
+                            if(dw_input_num > 2'd2) begin
+                                depth_cnt <= !depth_cnt;
+                                if(depth_cnt == 1'd1) begin
+                                    if(FIFO_cnt == (row_en[4:0] - 5'd3))
+                                        FIFO_cnt <= 5'd0;
+                                    else
+                                        FIFO_cnt <= FIFO_cnt + 5'd3;
+                                end
+                            end
+                            else begin
+                                if(FIFO_cnt == (row_en[4:0] - 5'd3))
+                                    FIFO_cnt <= 5'd0;
+                                else
+                                    FIFO_cnt <= FIFO_cnt + 5'd3;
+                            end
+                        end
+                        1'd1:begin
+
+                        end
+                    endcase
+                end
             end
-        end
-    end
-    else if(close_f) begin
-        if(handshake_f) begin
-            depth_cnt <= !depth_cnt;
-            if(depth_cnt == 1'd1) begin
-                if(FIFO_cnt == row_num)
-                    FIFO_cnt <= close_start_num + 5'd4;
-                else
-                    FIFO_cnt <= FIFO_cnt + 5'd1;
+            1'd1:begin
+                if(first_f) begin
+                    if(handshake_f) begin
+                        depth_cnt <= !depth_cnt;
+                        if(depth_cnt == 1'd1) begin
+                            if(FIFO_cnt == (ip_time_4_cnt))
+                                FIFO_cnt <= 5'd0;
+                            else
+                                FIFO_cnt <= FIFO_cnt + 5'd1;
+                        end
+                    end
+                end
+                else if(close_f) begin
+                    if(handshake_f) begin
+                        depth_cnt <= !depth_cnt;
+                        if(depth_cnt == 1'd1) begin
+                            if(FIFO_cnt == row_num)
+                                FIFO_cnt <= close_start_num + 5'd4;
+                            else
+                                FIFO_cnt <= FIFO_cnt + 5'd1;
+                        end
+                    end
+                end
+                else if(handshake_f) begin
+                    depth_cnt <= !depth_cnt;
+                    if(depth_cnt == 1'd1) begin
+                        if(FIFO_cnt == row_num)
+                            FIFO_cnt <= 5'd0;
+                        else
+                            FIFO_cnt <= FIFO_cnt + 5'd1;
+                    end
+                end
             end
-        end
-    end
-    else if(handshake_f) begin
-        depth_cnt <= !depth_cnt;
-        if(depth_cnt == 1'd1) begin
-            if(FIFO_cnt == row_num)
-                FIFO_cnt <= 5'd0;
-            else
-                FIFO_cnt <= FIFO_cnt + 5'd1;
-      end
+        endcase
     end
 end
 
@@ -87,10 +123,36 @@ generate
         end 
         else if(handshake_f && (FIFO_cnt == r)) begin
         //TODO: 按照第一次輸入的16bit為第一個的psum，後16bit為第二個，然後下一組相同
-          fifo[r][0] <= ipsum_in[31:16];
-          fifo[r][1] <= ipsum_in[15:0];
-          fifo[r][2] <= fifo[r][0];
-          fifo[r][3] <= fifo[r][1];
+            case(DW_PW_sel)
+              1'd0:begin
+                case(dw_stride)
+                    1'd0:begin
+                        if(dw_input_num > 2'd2) begin
+                            fifo[r][0] <= ipsum_in[31:16];
+                            fifo[r][1] <= ipsum_in[15:0];
+                            fifo[r][2] <= fifo[r][0];
+                            fifo[r][3] <= fifo[r][1];
+                        end
+                        else begin
+                            fifo[r][0] <= 16'd0;
+                            fifo[r][1] <= 16'd0;
+                            fifo[r][2] <= ipsum_in[31:16];
+                            fifo[r][3] <= ipsum_in[15:0];
+                        end
+                    end
+                    1'd1:begin//TODO: 根據做1次or做2次來判斷傳幾筆
+
+                    end
+                endcase
+              end
+              1'd1:begin
+                // PW模式，將psum_in的前16bit和後16bit分別存入fifo的兩個位置
+                fifo[r][0] <= ipsum_in[31:16];
+                fifo[r][1] <= ipsum_in[15:0];
+                fifo[r][2] <= fifo[r][0];
+                fifo[r][3] <= fifo[r][1];
+              end
+            endcase
         end
         else if(ipsum_out_f)begin
           // push new ipsum_in into stage 0 each cycle

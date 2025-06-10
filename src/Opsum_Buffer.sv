@@ -12,6 +12,10 @@ module Opsum_buffer(
     //close PE array
     input [4:0] close_start_num,//用來決定關閉PE array的ROW起始位子
     input close_f,//用來決定是否要關閉PE array
+    //DW
+    input DW_PW_sel,//用來決定是DW還是PW
+    input dw_stride,
+    input [1:0] dw_input_num,
 
     input store_opsum_f,//告知存計算結果
     input [`ROW_NUM*16 - 1:0] opsum_in,//from Reducer
@@ -34,33 +38,80 @@ module Opsum_buffer(
 
   wire handshake_f = ready_op && valid_op;
   wire [5:0] first_8_cnt = (ip_time_4 << 1) - 6'd1;
+  logic depth_cnt;
 
   always_ff @(posedge clk) begin
-    if(reset)
+    if(reset) begin
       cnt <= 6'd0;
-    else if(first_f) begin//前8個cycle的執行
-      if(handshake_f) begin
-        if(cnt == (first_8_cnt))//7 - 15 - 23 - 31 - 39 - 47 - 55 - 63
-          cnt <= 6'd0;
-        else
-          cnt <= cnt + 6'd1;
-      end
+      depth_cnt <= 1'd0;
     end
-    else if(close_f) begin//關閉PE array
-      if(handshake_f) begin
-        if(cnt == row_num)//row_en從0開始算，所以要減1
-          cnt <= close_num + 6'd8;//0 - 8 - 16 - 24 - 32 - 40 - 48 - 56
-        else
-          cnt <= cnt + 6'd1;
-      end
-    end
-    else if(handshake_f) begin
-      if(cnt == row_num)
-        cnt <= 6'd0;
-      else
-        cnt <= cnt + 6'd1;
+    else begin
+      case(DW_PW_sel)
+        1'd0:begin
+          if(handshake_f) begin
+            depth_cnt <= !depth_cnt;
+            case(dw_stride)
+              1'd0:begin//stride = 1
+                if(depth_cnt) begin
+                  if(dw_input_num > 2'd2) begin
+                    if(cnt == ((row_en << 1) - 6'd3))//row_en從0開始算，所以要減3
+                      cnt <= 6'd0;
+                    else
+                      cnt <= cnt + 6'd1;
+                  end
+                  else begin
+                    if(cnt == ((row_en << 1) - 6'd6))//row_en從0開始算，所以要減1
+                      cnt <= 6'd0;
+                    else
+                      cnt <= cnt + 6'd6;
+                  end
+                end
+                else begin
+                  if(dw_input_num > 2'd2) begin
+                    cnt <= cnt + 6'd5;
+                  end
+                  else begin
+                    if(cnt == ((row_en << 1) - 6'd6))//row_en從0開始算，所以要減1
+                      cnt <= 6'd0;
+                    else
+                      cnt <= cnt + 6'd6;
+                  end
+                end
+              end
+              1'd1:begin//TODO: stride = 2
+                cnt <= 6'd0;
+              end
+            endcase
+          end
+        end
+        1'd1:begin
+          if(first_f) begin//前8個cycle的執行
+            if(handshake_f) begin
+              if(cnt == (first_8_cnt))//7 - 15 - 23 - 31 - 39 - 47 - 55 - 63
+                cnt <= 6'd0;
+              else
+                cnt <= cnt + 6'd1;
+            end
+          end
+          else if(close_f) begin//關閉PE array
+            if(handshake_f) begin
+              if(cnt == row_num)//row_en從0開始算，所以要減1
+                cnt <= close_num + 6'd8;//0 - 8 - 16 - 24 - 32 - 40 - 48 - 56
+              else
+                cnt <= cnt + 6'd1;
+            end
+          end
+          else if(handshake_f) begin
+            if(cnt == row_num)
+              cnt <= 6'd0;
+            else
+              cnt <= cnt + 6'd1;
+          end
+        end
+      endcase
     end
   end
+
 
   genvar r;
   generate
@@ -69,30 +120,41 @@ module Opsum_buffer(
       always_ff @(posedge clk) begin
         if (reset) begin
           fifo[r][0] <= 16'd0;
-          fifo[r][1] <= 16'd0;          fifo[r][2] <= 16'd0;
+          fifo[r][1] <= 16'd0;          
+          fifo[r][2] <= 16'd0;
           fifo[r][3] <= 16'd0;
         end 
-        else if(store_opsum_f)begin
-          fifo[r][0] <= opsum_in[r*16 +: 16];
-          // shift down
-          fifo[r][1] <= fifo[r][0];
-          fifo[r][2] <= fifo[r][1];
-          fifo[r][3] <= fifo[r][2];
+        else if(store_opsum_f)begin//OKAY
+          case(DW_PW_sel)
+            1'd0:begin
+              if(dw_input_num > 2'd2) begin
+                fifo[r][0] <= 16'd0;
+                fifo[r][1] <= opsum_in[r*16 +: 16];
+                fifo[r][2] <= fifo[r][1];
+                fifo[r][3] <= fifo[r][2];
+              end
+              else if(dw_input_num == 2'd2) begin
+                fifo[r][0] <= 16'd0;
+                fifo[r][1] <= 16'd0;  
+                fifo[r][2] <= opsum_in[r*16 +: 16];
+                fifo[r][3] <= fifo[r][2];
+              end
+              else begin
+                fifo[r][0] <= 16'd0;
+                fifo[r][1] <= 16'd0;  
+                fifo[r][2] <= 16'd0;
+                fifo[r][3] <= opsum_in[r*16 +: 16];
+              end
+            end
+            1'd1:begin
+              fifo[r][0] <= opsum_in[r*16 +: 16];
+              // shift down
+              fifo[r][1] <= fifo[r][0];
+              fifo[r][2] <= fifo[r][1];
+              fifo[r][3] <= fifo[r][2];
+            end
+          endcase
         end
-        // else if(first_f) begin
-        //   if(handshake_f && (cnt == first_8_cnt)) begin //第一個8個cycle的weight load
-        //     fifo[r][0] <= 16'd0;
-        //     fifo[r][1] <= fifo[r][0];
-        //     fifo[r][2] <= fifo[r][1];
-        //     fifo[r][3] <= fifo[r][2];
-        //   end
-        // end
-        // else if(handshake_f && (cnt == 4'd15)) begin//開始輸出，每16個cycle往前推進一次
-        //   fifo[r][0] <= 16'd0;
-        //   fifo[r][1] <= fifo[r][0];
-        //   fifo[r][2] <= fifo[r][1];
-        //   fifo[r][3] <= fifo[r][2];
-        // end
       end
     end
   endgenerate

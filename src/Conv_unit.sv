@@ -23,10 +23,6 @@ module conv_unit(
     input dw_row_end,//用來說明要換ROW，所以需要關閉PE array(觸發一個cycle))
     input dw_stride,//用來決定是DW還是PW，0 = stride 1, 1 = stride 2
 
-    //DW
-    input DW_row_f,//說明DW要換下一個ROW使用，所以要先關閉
-    input [1:0] DW_num,//說明這次有幾筆data_in(1~3)，幫助ifmap決定輸出幾筆
-
     //control signal
     input DW_PW_sel,//用來決定是DW還是PW，PW = 1, DW = 0
     input [5:0] col_en,//控制這次有幾個col會動作(因為不是每次都會把Vertical buffer塞滿)
@@ -138,7 +134,7 @@ assign data_out = (cs == OPSUM_OUT) ? opsum2GLB : 32'd0;
             dw_open_f <= 1'd0;
         else if((cs == IDLE && ns == WEIGHT_LOAD) || dw_row_end)//只要拉起來 再來就是準備要做重新開啟
             dw_open_f <= 1'd1;
-        else if((dw_open_cnt == dw_open_num) && cnt == 8'd2)//等最後一次做完才放下
+        else if((dw_open_cnt == dw_open_num) && (cnt == 8'd2) && (cs == PASS))//等最後一次做完才放下
             dw_open_f <= 1'd0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
     end
 
@@ -148,29 +144,7 @@ assign data_out = (cs == OPSUM_OUT) ? opsum2GLB : 32'd0;
         else if((cs == IDLE && ns == IFMAP_LOAD) || (cs == WEIGHT_LOAD && ns == IFMAP_LOAD))
             dw_open_cnt <= dw_open_cnt + 4'd1;
     end
-
-    //--------------------------------------------------------------//
-        // //TODO: DW close signal
-        // logic dw_close_f; //用來關閉PE array的信號
-        // logic [3:0] dw_close_cnt;
-
-        // always_ff @(posedge clk) begin
-        //     if(reset)
-        //         dw_close_f <= 1'b0;
-        //     else if(cs == IDLE && ns == IPSUM_LOAD)
-        //         dw_close_f <= 1'b1; //當進入WEIGHT_LOAD的時候，代表已經完成第一個8個cycle的weight load
-        //     else if(cs == OPSUM_OUT && ns == IDLE && (dw_close_cnt == dw_open_num))//等最後一次做完才放下
-        //         dw_close_f <= 1'b0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
-        // end
-
-        // always_ff @(posedge clk) begin
-        //     if(reset || (cs == WEIGHT_LOAD))
-        //         dw_close_cnt <= 4'd0;
-        //     else if(cs == IDLE && ns == IPSUM_LOAD)
-        //         dw_close_cnt <= dw_close_cnt + 4'd1;
-        // end
-    //--------------------------------------------------------------//
-
+//--------------------------------------------------------------//
 
 always_ff @(posedge clk) begin
     if(reset)
@@ -467,7 +441,7 @@ logic [255:0] ifmap_out; //32個ROW，每個ROW 8bit，總共256bit
 always_comb begin
     case(DW_PW_sel)
         1'd0: begin //DW
-            ifmap_out_f = ((cs == COMPUTE) && (cnt < {6'd0, dw_input_num}));
+            ifmap_out_f = (((cs == COMPUTE) || (cs == PASS)) && (cnt < {6'd0, dw_input_num}));
         end
         1'd1: begin //PW
             ifmap_out_f = ((cs == COMPUTE) && (cnt < 8'd4));
@@ -509,15 +483,16 @@ Vertical_Buffer Vertical_Buffer(
 logic ipsum_out_f;
 logic [511:0] ipsum_out;
 
+//if pass signal=1，則不動作 不輸出data
 always_comb begin
     case(DW_PW_sel)
         1'd0: begin //DW
             case(dw_stride)
                 1'd0: begin // stride = 1
-                    ipsum_out_f = ((cs == COMPUTE) && (cnt < {6'd0, dw_input_num}));
+                    ipsum_out_f = ((cs == COMPUTE) && (cnt[1:0] < dw_input_num));
                 end
                 1'd1: begin // stride = 2
-                    ipsum_out_f = ((cs == COMPUTE) && (cnt < {6'd0, dw_input_num}));
+                    ipsum_out_f = ((cs == COMPUTE) && (cnt[1:0] < dw_input_num));
                 end
             endcase
         end
@@ -546,7 +521,12 @@ Ipsum_buffer Ipsum_buffer(
     //要關閉PE array
     .pw_close_start_num(pw_close_start_num), //用來決定關閉PE array的ROW起始位子
     .close_f(pw_close_f), //用來關閉PE array的信號
-    
+    //DW
+    .DW_PW_sel(DW_PW_sel), //用來決定是DW還是PW，PW = 1, DW = 0
+    .dw_stride(dw_stride), //用來決定是DW還是PW，0 = stride 1, 1 = stride 2
+    .dw_input_num(dw_input_num), //決定輸入幾筆ifmap(1-3筆)
+    .dw_open_num(dw_open_num), //用來決定有幾個ROW要使用
+
     .row_en(row_en), //用來決定有幾個ROW要使用
     .ipsum_out_f(ipsum_out_f),
     .ipsum_in(ipsum_in),
