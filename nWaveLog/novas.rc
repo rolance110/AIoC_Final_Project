@@ -202,8 +202,8 @@ StickSet-TextColor = ID_BLACK
 [FSM_Dlg-Print]
 Orientation = Landscape
 [FileBrowser]
-nWaveRestoreRCDirHistory = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc\""
 nWaveOpenFsdbDirHistory = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb\""
+nWaveRestoreRCDirHistory = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc\""
 [Form]
 version = Verdi_W-2024.09-SP2
 [General]
@@ -214,7 +214,7 @@ SyncBrowserDir = TRUE
 ColorTheme = classic
 prevColorTheme = classic
 version = Verdi_W-2024.09-SP2
-recent_commands_nWave = editCut,getSignal,selectAll,reread,openFile,saveSignal,changeSignalHeight,leftFullPage,keepCursorAtCenter,wvEventSequenceAllSigs
+recent_commands_nWave = saveSignal,reread,keepCursorAtCenter,leftFullPage,createMarker,selectStuckSignals,editCut,getSignal,digitalFUDec,changeColor
 SignalCaseInSensitive = FALSE
 [GlobalProp]
 ErrWindow_Font = Helvetica_M_R_12
@@ -329,14 +329,15 @@ PaperSize = A4 - 210x297 (mm)
 ColorPrint = FALSE
 [QtDialog]
 QwWarnMsgDlg = 650,412,600,250
-restoreSigDlg = 684,302,551,438
-SigCPLDialog = 848,360,223,323
-SignalHeightDialog = 774,445,371,79
-QwUserAskDlg = 680,498,560,121
-saveSigDlg = 684,365,551,386
-openFileDlg = 659,317,602,483
 unknownSave = 80,152,461,245
+openFileDlg = 659,280,602,483
+restoreSigDlg = 684,339,551,438
+SignalHeightDialog = 774,482,371,79
+SigCPLDialog = 848,360,223,323
 qWaveSignalDialog = 376,169,1167,630
+sglUsrMarkerDialog = 785,274,350,420
+QwUserAskDlg = 680,498,560,121
+saveSigDlg = 684,291,551,386
 [Session Cache]
 1 = string (session file name)
 2 = string (session file name)
@@ -597,7 +598,7 @@ AutoApplySeverityColor = TRUE
 scope_to_save_with_macro
 open_file_dir
 open_rc_file_dir
-getSignalForm = 376 169 1167 630 334 538 737 262
+getSignalForm = 376 206 1167 630 334 538 737 262
 viewPort = 0 0 1920 1043 212 63
 legendBackground = -c ID_BLACK
 valueBackground = -c ID_BLACK
@@ -764,8 +765,8 @@ printBasic = 1 0 0 FALSE FALSE
 printDest = -printer {}
 printSignature = {%f %h %t} {}
 curveWindow_Drag&Drop_Mode = TRUE
-RecentFile1 = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb\""
-RecentFile2 = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc\""
+RecentFile1 = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/signal.rc\""
+RecentFile2 = "\"/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb\""
 open_file_time_range = FALSE
 legend_window_font = -f COURIER12 -c ID_CYAN5
 value_window_font = -f COURIER12 -c ID_CYAN5

@@ -214,7 +214,7 @@ SyncBrowserDir = TRUE
 ColorTheme = classic
 prevColorTheme = classic
 version = Verdi_W-2024.09-SP2
-recent_commands_nWave = editCut,getSignal,selectAll,reread,openFile,saveSignal,changeSignalHeight,leftFullPage,keepCursorAtCenter,wvEventSequenceAllSigs
+recent_commands_nWave = changeSignalHeight,selectAll,reread,getSignal,openFile,saveSignal,keepCursorAtCenter,leftFullPage,createMarker,selectStuckSignals
 SignalCaseInSensitive = FALSE
 [GlobalProp]
 ErrWindow_Font = Helvetica_M_R_12
@@ -329,14 +329,15 @@ PaperSize = A4 - 210x297 (mm)
 ColorPrint = FALSE
 [QtDialog]
 QwWarnMsgDlg = 650,412,600,250
-restoreSigDlg = 684,302,551,438
-SigCPLDialog = 848,360,223,323
-SignalHeightDialog = 774,445,371,79
-QwUserAskDlg = 680,498,560,121
-saveSigDlg = 684,365,551,386
-openFileDlg = 659,317,602,483
 unknownSave = 80,152,461,245
-qWaveSignalDialog = 376,169,1167,630
+restoreSigDlg = 684,339,551,438
+SigCPLDialog = 848,360,223,323
+sglUsrMarkerDialog = 785,274,350,420
+QwUserAskDlg = 680,498,560,121
+saveSigDlg = 684,291,551,386
+openFileDlg = 659,317,602,483
+qWaveSignalDialog = 376,206,1167,630
+SignalHeightDialog = 774,519,371,79
 [Session Cache]
 1 = string (session file name)
 2 = string (session file name)

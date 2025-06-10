@@ -59,6 +59,20 @@ rtl3: | $(bld_dir) $(wave_dir)
 	+notimingcheck \
 	+define+$(FSDB_DEF)
 
+ifmap_fifo_bank_tb: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/ifmap_fifo_bank_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF)
+
+reducer_tb: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/reducer_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF)
+
 # Utilities
 nWave: | $(wave_dir)
 	cd $(wave_dir); \

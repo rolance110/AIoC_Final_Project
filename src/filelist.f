@@ -1,6 +1,9 @@
-../src/calc_tile_n.sv
-../src/TS_AXI_wrapper.sv
-../src/Layer_Decoder.sv
-../src/DMA_address_generator.sv
-../src/Tile_Scheduler.sv
-../src/Tile_Scheduler_old.sv
+../src/CONV_unit/ifmap_fifo.sv
+../src/CONV_unit/ifmap_fifo_bank.sv
+../src/CONV_unit/reducer.sv
+../src/controller/calc_tile_n.sv
+../src/controller/TS_AXI_wrapper.sv
+../src/controller/Layer_Decoder.sv
+../src/controller/DMA_address_generator.sv
+../src/controller/Tile_Scheduler.sv
+../src/controller/Tile_Scheduler_old.sv
