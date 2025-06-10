@@ -613,7 +613,7 @@ module token_engine_fsm (
 
                 //FIXME:可能改
                 S_WRITE_BIAS: begin
-                    if ((cnt_bias == 2*tile_K_o) && pe_bias_valid && pe_bias_ready) begin 
+                    if ((cnt_bias == 2*(tile_K_o-1)) && pe_bias_valid && pe_bias_ready) begin 
                         next_state = S_WAIT_OPSUM;
                     end 
                     else if (pe_bias_valid && pe_bias_ready) begin
@@ -789,8 +789,7 @@ always_ff@(posedge clk) begin
        d_cnt <= 0; // d_cnt 用於計算 Ifmap 的 Channel Pack 數量
     end 
     else if (pass_layer_type == `POINTWISE) begin
-        if(current_state == S_WRITE_IFMAP || current_state == S_WRITE_BIAS) && 
-            (pe_ifamp_valid && pe_ifmap_ready) begin
+        if(current_state == S_WRITE_IFMAP&& (pe_ifamp_valid && pe_ifmap_ready)) begin
             d_cnt <= (d_cnt == tile_D) ? 0 : d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
         end
         else if (pe_bias_valid && pe_bias_ready) begin
@@ -811,6 +810,24 @@ always_ff@(posedge clk) begin
                 if(ifmap_hsk_cnt == 9'd3) begin
                     d_cnt <= d_cnt + 6'd1;
                 end
+            end
+        end
+        else if (current_state == S_WRITE_BIAS) begin
+            if(d_cnt == tile_D) begin
+                d_cnt <= 6'd0;
+            end
+            else begin
+                if(cnt_bias[0] && (pe_bias_valid && pe_bias_ready)) begin
+                    d_cnt <= d_cnt + 6'd1;
+                end
+            end
+        end
+        else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+            if(d_cnt == tile_D) begin
+                d_cnt <= 6'd0;
+            end
+            else begin
+                d_cnt <= d_cnt + 6'd1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
     end
@@ -992,30 +1009,6 @@ always_ff@(posedge clk) begin
     end
 end
 
-
-// //n_cnt
-// always_ff@(posedge clk) begin
-//     if (rst) begin
-//         n_cnt0 <= 8'd0;
-//     end
-//     else if (change_row) begin
-//         n_cnt0 <= 8'd0;
-//     end
-//     else if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready)begin
-//         if(y_cnt == 8'd0 || y_cnt == in_R - 1) begin
-//             if(col_en_cnt == 9'd2) begin
-//                 n_cnt0 <= n_cnt0 + 8'd1;
-//             end
-//         end
-//         else if(col_en_cnt == 9'd3)begin
-//             n_cnt0 <= n_cnt0 + 8'd1;
-//         end
-//     end
-// end
-
-
-
-
 //k_cnt
 always_ff@(posedge clk) begin
     if(rst) begin
@@ -1120,11 +1113,12 @@ always_ff@(posedge clk) begin
     end
 end
 
+//---------------------------------------------------
 // bias_addr
 always_ff@(posedge clk) begin
     if(rst) begin
         bias_addr <= 0;
-    end 
+    end
     else if (pass_layer_type == `POINTWISE) begin
         if(current_state == IDLE) begin
             bias_addr <= BASE_BIAS;
@@ -1140,7 +1134,13 @@ always_ff@(posedge clk) begin
         end 
         else if(current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
             if(stride == 2'd1) begin
-                bias_addr <= bias_addr + 3;
+                if (pe_bias_valid && pe_bias_ready && n_cnt9 == 1) begin
+                    bias_addr <= bias_addr + 1 + channel_base; // 每次搬入 4-Channel Pack (32-bit)
+                end
+                else if(cnt_bias[0] && pe_bias_valid && pe_bias_ready)
+                    bias_addr <= bias_addr + 3 + channel_base;
+                else 
+                    bias_addr <= bias_addr
             end 
             else if(stride == 2'd2) begin
     
@@ -1158,9 +1158,8 @@ always_comb begin
         channel_base = pass_tile_n * d_cnt;
     end
     else if (pass_layer_type == `DEPTHWISE) begin
-
+        channel_base = tile_R * in_C * d_cnt; // 每個 Channel Pack 的偏移量
     end
-
 end
 
 // cnt_modify  //FIXME: 只有 POINTWISE 才有用到
@@ -1196,9 +1195,9 @@ always_comb begin
     if (pass_layer_type == `POINTWISE) begin
         opsum_num =  k_cnt * pass_tile_n;
     end
-    else if (pass_layer_type == `DEPTHWISE) begin
+    // else if (pass_layer_type == `DEPTHWISE) begin
 
-    end
+    // end
 end
 
 // FIXME: 只有POINTWISE有   不改
@@ -1465,8 +1464,6 @@ always_ff @ (posedge clk) begin
     end
 end
 
-
-
 //---------------------------------------------------
 // FIXME: 
 //---------------------------------------------------
@@ -1510,8 +1507,18 @@ always_comb begin
         endcase
     end
     else if (pass_layer_type == `DEPTHWISE) begin
-    
-    
+        if(stride == 2'd1) begin
+            if (pe_psum_valid && pe_psum_ready && n_cnt9 == 1) begin
+                opsum_addr <= opsum_addr + 1 + channel_base; // 每次搬入 4-Channel Pack (32-bit)
+            end
+            else if(cnt_bias[0] && pe_psum_valid && pe_psum_ready)
+                opsum_addr <= opsum_addr + 3 + channel_base;
+            else 
+                opsum_addr <= opsum_addr;
+        end 
+        else if(stride == 2'd2) begin
+
+        end
     end
 end
 //---------------------------------------------------
@@ -1555,6 +1562,24 @@ always_ff @(posedge clk) begin
         if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
             total_opsum_num_cnt <= total_opsum_num_cnt + 2; // 每次寫回 OPSUM 都增加計數
         end 
+    end
+
+    //FIXME:
+    else if (pass_layer_type == `DEPTHWISE) begin
+        if (stride == 2'd1) begin
+            if ((n_cnt9 == 1) && current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+                total_opsum_num_cnt <= total_opsum_num_cnt + 1; // 每次寫回 OPSUM 都增加計數
+            end
+            else if (cnt_bias[0] && current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+                total_opsum_num_cnt <= total_opsum_num_cnt + 3; // 每次寫回 OPSUM 都增加計數
+            end
+        end
+        else if (stride == 2'd2) begin
+
+        end
+        else begin
+            total_opsum_num_cnt <= 0; // 預設為 0
+        end
     end
 end
 
