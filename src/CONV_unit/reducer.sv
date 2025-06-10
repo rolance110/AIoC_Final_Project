@@ -1,4 +1,4 @@
-`include "../../include/define.svh" //fixme 模擬時需要註解掉
+// `include "../../include/define.svh" //fixme 模擬時需要註解掉
 module adder_tree_32 (
     input  logic [15:0] in [31:0],
     output logic [31:0] sum

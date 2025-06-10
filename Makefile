@@ -72,7 +72,25 @@ reducer_tb: | $(bld_dir) $(wave_dir)
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
 	+define+$(FSDB_DEF)
+opsum_fifo_tb: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/opsum_fifo_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF)
+opsum_fifo_bank_tb: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/opsum_fifo_bank_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF)
 
+conv_unit_tb: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/conv_unit_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF)
 # Utilities
 nWave: | $(wave_dir)
 	cd $(wave_dir); \
