@@ -215,11 +215,14 @@ module token_engine (
     logic [`ADDR_WIDTH-1:0] opsum_addr30;
     logic [`ADDR_WIDTH-1:0] opsum_addr31;
     logic [31:0] opsum_num;
+    logic [31:0] pe_opsum_cnt;
 
     logic [8:0] c_cnt;
     logic change_row0, change_row1, change_row2, change_row3, change_row4, change_row5, change_row6, change_row7, change_row8, change_row9;
     logic [9:0] d2_opsum_num; // depthwise stride 2 opsum number 
     logic [3:0] control_padding;
+    logic [31:0] cnt_modify_cnt;
+
 
     //==========================================================================
     //CNT : 數總共送了幾筆，方便轉換狀態
@@ -228,13 +231,14 @@ module token_engine (
         if(rst) begin
             cnt_weight <= 0;
         end
+
         else if (current_state == S_WRITE_WEIGHT && pe_weight_valid && pe_weight_ready) begin
-            if (cnt_weight == tile_K_o) begin // 假設每次搬入 32 個 Weight Pack
+            if (cnt_weight == tile_K_o-1) begin // 假設每次搬入 32 個 Weight Pack
                 cnt_weight <= 0; // 重置計數器
             end 
-            else begin
+            else 
                 cnt_weight <= cnt_weight + 1; // 每次搬入 4-Channel Pack (32-bit)
-            end
+            
         end
     end
 
@@ -244,12 +248,11 @@ module token_engine (
             cnt_ifmap <= 0;
         end
         else if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
-            if (cnt_ifmap == col_en) begin // 假設每次搬入 32 個 Ifmap Pack
+            if (cnt_ifmap == col_en-1) begin // 假設每次搬入 32 個 Ifmap Pack
                 cnt_ifmap <= 0; // 重置計數器
             end 
-            else begin
+            else
                 cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
-            end
         end
     end
     // bias 
@@ -260,12 +263,11 @@ module token_engine (
         end
         else if (pass_layer_type == `POINTWISE) begin
             if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
-                if (cnt_bias == 2*col_en) begin // 假設每次搬入 32 個 Bias Pack
+                if (cnt_bias == 2*col_en-1) begin // 假設每次搬入 32 個 Bias Pack
                     cnt_bias <= 0; // 重置計數器
-                end 
-                else begin
-                    cnt_bias <= cnt_bias + 1; // 每次搬入 4-Channel Pack (32-bit)
                 end
+                else  
+                    cnt_bias <= cnt_bias + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
         else if (pass_layer_type == `DEPTHWISE) begin
@@ -286,13 +288,11 @@ module token_engine (
             cnt_psum <= 0;
         end
         else if(pass_layer_type == `POINTWISE) begin
-            if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-                if (cnt_psum == 2*tile_K_o) begin 
-                    cnt_psum <= 0; // 重置計數器
-                end 
-                else begin
-                    cnt_psum <= cnt_psum + 1; // 每次搬入 4-Channel Pack (32-bit)
-                end
+            if (cnt_psum == 2*tile_K_o-1) begin 
+                cnt_psum <= 0; // 重置計數器
+            end 
+            else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+                cnt_psum <= cnt_psum + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
         else if (pass_layer_type == `DEPTHWISE) begin
@@ -306,7 +306,7 @@ module token_engine (
                     end
                 end
                 else if(stride == 2'd2) begin
-                    if (cnt_psum == d2_opsum_num*2) begin // FIXME: 還沒想好
+                    if (cnt_psum == d2_opsum_num*2-1) begin // FIXME: 還沒想好
                         cnt_psum <= 0; // 重置計數器
                     end 
                     else begin
@@ -462,7 +462,7 @@ module token_engine (
                 //FIXME: 可能改
                 S_WRITE_WEIGHT: begin
                     // 把 glb_read_data (Weight Pack) 推送到內部 pe，或做後續處理
-                    if (cnt_weight == 6'd31 && pe_weight_ready && pe_weight_valid) begin // FIXME: check 32?
+                    if (cnt_weight == tile_K_o-1 && pe_weight_ready && pe_weight_valid) begin // FIXME: check 32?
                         next_state = S_READ_IFMAP;
                     end 
                     else if(pe_weight_ready && pe_weight_valid) begin
@@ -484,7 +484,7 @@ module token_engine (
 
                 //FIXME:可能改
                 S_WRITE_IFMAP: begin
-                    if (cnt_ifmap == 6'd31 && pe_ifamp_valid && pe_ifmap_ready) begin  //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
+                    if (cnt_ifmap == tile_D-1 && pe_ifamp_valid && pe_ifmap_ready) begin  //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
                         next_state = S_READ_BIAS;
                     end 
                     else if(pe_ifamp_valid && pe_ifmap_ready) begin
@@ -508,7 +508,7 @@ module token_engine (
                 //FIXME:可能改
                 S_WRITE_BIAS: begin
                     
-                    if ((cnt_bias == 6'd63) && pe_bias_valid && pe_bias_ready) begin //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
+                    if ((cnt_bias == (2*tile_D)-1) && pe_bias_valid && pe_bias_ready) begin //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
                         next_state = S_WAIT_OPSUM;
                     end 
                     else if (pe_bias_valid && pe_bias_ready) begin
@@ -536,7 +536,7 @@ module token_engine (
                         if (total_opsum_num_cnt == (pass_tile_n * tile_K_o)) begin //整個算完
                             next_state = S_PASS_DONE;
                         end
-                        else if (cnt_psum == 2*tile_K_o) begin
+                        else if (cnt_psum == 2*tile_K_o-1) begin
                             next_state = S_READ_IFMAP; // FIXME: 這裡的條件要根據實際情況調整
                         end
                         else begin
@@ -581,7 +581,7 @@ module token_engine (
 
                 //FIXME:
                 S_WRITE_WEIGHT: begin
-                    if (cnt_weight == 6'd29 && pe_weight_ready && pe_weight_valid) begin // FIXME: check 32?
+                    if (cnt_weight == 6'd30 && pe_weight_ready && pe_weight_valid) begin // FIXME: check 32?
                         next_state = S_READ_IFMAP;
                     end 
                     else if(pe_weight_ready && pe_weight_valid) begin
@@ -883,16 +883,19 @@ always_ff@(posedge clk) begin
        d_cnt <= 0; // d_cnt 用於計算 Ifmap 的 Channel Pack 數量
     end 
     else if (pass_layer_type == `POINTWISE) begin
-        if(current_state == S_WRITE_IFMAP&& (pe_ifamp_valid && pe_ifmap_ready)) begin
-            d_cnt <= (d_cnt == tile_D) ? 0 : d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1) begin
+            d_cnt <= 6'd0;
         end
-        else if (pe_bias_valid && pe_bias_ready) begin
-            d_cnt <= (d_cnt == 2*tile_D) ? 0 : d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        else if(current_state == S_READ_IFMAP&& (glb_read_ready && glb_read_valid)) begin
+            d_cnt <=  d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        end
+        else if (current_state == S_READ_BIAS && glb_read_ready && glb_read_valid && cnt_bias[0]) begin
+            d_cnt <= d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
         end
     end
     else if (pass_layer_type == `DEPTHWISE) begin   
         if(current_state == S_WRITE_IFMAP) begin
-            if(d_cnt == tile_D) begin
+            if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1) begin
                 d_cnt <= 6'd0;
             end
             else if(y_cnt == 8'd0 || y_cnt == in_R - 1) begin
@@ -907,7 +910,7 @@ always_ff@(posedge clk) begin
             end
         end
         else if (current_state == S_WRITE_BIAS) begin
-            if(d_cnt == tile_D) begin
+            if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1) begin
                 d_cnt <= 6'd0;
             end
             else begin
@@ -917,7 +920,7 @@ always_ff@(posedge clk) begin
             end
         end
         else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-            if(d_cnt == tile_D) begin
+            if(d_cnt == tile_D-1) begin
                 d_cnt <= 6'd0;
             end
             else begin
@@ -954,17 +957,10 @@ always_ff@(posedge clk) begin
     end
     //
     else if (pass_layer_type == `POINTWISE) begin
-        if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
-            if(d_cnt == tile_D)
-                n_cnt <= ((n_cnt << 2) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-        end
-        else if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
-            if(d_cnt == tile_D)
-                n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-        end
-        else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+
+        if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
             //FIXME:
-            if(d_cnt == tile_D)
+            if(d_cnt == tile_D-1 && cnt_psum[0])
                 n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
         end
     end
@@ -1103,26 +1099,36 @@ always_ff@(posedge clk) begin
     end
 end
 
+// pe_opsum_cnt
+always_ff@(posedge clk) begin
+    if(rst) begin
+        pe_opsum_cnt <= 32'd0;
+    end
+    else if(current_state == S_READ_IFMAP) begin
+        pe_opsum_cnt <= 32'd0;
+    end
+    else if(current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        pe_opsum_cnt <= pe_opsum_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    end
+end
+
 //k_cnt
 always_ff@(posedge clk) begin
     if(rst) begin
         k_cnt <= 0; // k_cnt 用於計算 Weight 的 Channel Pack 數量
     end 
     else if (pass_layer_type == `POINTWISE) begin
-        if(current_state == S_WRITE_OPSUM && pe_weight_valid && pe_weight_ready) begin
-            if(k_cnt == (tile_K_o - 1)) begin
+        if (current_state == S_WRITE_OPSUM && glb_write_ready && glb_write_valid) begin
+            if(k_cnt == (tile_K_o - 1) || (cnt_modify_cnt == (((cnt_modify + 1) << 3)-1))) begin
                 k_cnt <= 0; // 重置 k_cnt
             end 
-            //原本是3
-            else if (current_state == S_WRITE_OPSUM && (opsum_hsk_cnt == (cnt_modify + 1) << 3)) begin
-                k_cnt <= 0;
-            end
-            else begin
-                if (opsum_hsk_cnt[0] && glb_write_ready && glb_write_valid) begin
-                    k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-                end
+            else if (opsum_hsk_cnt[0]) begin
+                k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
+        // else if(pe_opsum_cnt[0] && pe_psum_valid && pe_psum_ready) begin
+        //     k_cnt <= k_cnt + 1; 
+        // end
     end
     else if (pass_layer_type == `DEPTHWISE) begin
         if (k_cnt == (tile_K_o - 1)) begin
@@ -1468,7 +1474,7 @@ always_ff@(posedge clk) begin
             ifmap_addr <= BASE_IFMAP;
         end 
         else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
-            ifmap_addr <= ifmap_addr + (n_cnt << 2) + channel_base; // n_cnt 為 4-Channel Pack 的數量        
+            ifmap_addr <= BASE_IFMAP + (n_cnt << 2) + channel_base; // n_cnt 為 4-Channel Pack 的數量        
         end
     end
     else if (pass_layer_type == `DEPTHWISE) begin
@@ -1516,9 +1522,12 @@ always_ff@(posedge clk) begin
         if(current_state == S_IDLE) begin
             bias_addr <= BASE_BIAS;
         end 
+        else if(~cnt_bias[0] && pe_bias_valid && pe_bias_ready) begin
+            bias_addr <= bias_addr + 4;
+        end
         else if(current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin // FIXME: 檢查hsk次數
             //FIXME:
-            bias_addr <= bias_addr + (n_cnt << 1 + channel_base) << 1; // n_cnt 為 4-Channel Pack 的數量
+            bias_addr <= BASE_BIAS + (((n_cnt << 1) + channel_base) << 1); // n_cnt 為 4-Channel Pack 的數量///FIXME
         end
     end
     else if (pass_layer_type == `DEPTHWISE) begin
@@ -1568,6 +1577,16 @@ always_comb begin
     end
 end
 
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        cnt_modify_cnt <= 0;
+    end
+    else if(current_state == S_WRITE_OPSUM && glb_write_ready && glb_write_valid) begin
+        cnt_modify_cnt <= (cnt_modify_cnt == (((cnt_modify + 1) << 3)-1)) ? 0 : cnt_modify_cnt + 1; // 每次寫回 OPSUM 都增加計數
+    end
+end
+
 // cnt_modify  //FIXME: 只有 POINTWISE 才有用到
 always_ff@(posedge clk) begin
     if(rst) begin
@@ -1579,7 +1598,7 @@ always_ff@(posedge clk) begin
     else if (cnt_modify == 4'd8) begin
         cnt_modify <= 4'd8;
     end
-    else if(current_state == S_WRITE_OPSUM && (opsum_hsk_cnt == ((cnt_modify + 1) << 3)<<1)) begin
+    else if(current_state == S_WRITE_OPSUM && (cnt_modify_cnt == (((cnt_modify + 1) << 3)-1))) begin
         cnt_modify <= cnt_modify + 1; // 每次寫回 OPSUM 都增加計數
     end 
 end
@@ -1599,7 +1618,7 @@ end
 
 always_comb begin
     if (pass_layer_type == `POINTWISE) begin
-        opsum_num =  k_cnt * pass_tile_n;
+        opsum_num =  (k_cnt) * pass_tile_n;//+1為了用魔法打敗魔法
     end
     else begin
         opsum_num = 32'd0;
@@ -1610,268 +1629,736 @@ always_comb begin
 end
 
 // FIXME: 只有POINTWISE有   不改
-//---------------------------------------------------
-// opsum_addr 0~3
-//---------------------------------------------------
-always_ff @ (posedge clk) begin
-    if (rst) begin
-        opsum_addr0 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr1 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr2 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr3 <= {`ADDR_WIDTH{1'd0}};
+// //---------------------------------------------------
+// // opsum_addr 0~3
+// //---------------------------------------------------
+// always_ff @ (posedge clk) begin
+//     if (rst) begin
+//         opsum_addr0 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr1 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr2 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr3 <= {`ADDR_WIDTH{1'd0}};
+//     end
+//     else if (current_state == S_IDLE) begin
+//         opsum_addr0 <= BASE_OPSUM;
+//         opsum_addr1 <= BASE_OPSUM;
+//         opsum_addr2 <= BASE_OPSUM;
+//         opsum_addr3 <= BASE_OPSUM;
+//     end
+//     //FIXME: ERROR CHECK
+//     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+//         if(~cnt_psum[0]) begin
+//             if ((cnt_modify == 4'd0)) begin
+//                 opsum_addr0 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1) + 4;
+//                 opsum_addr1 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1) + 4;
+//                 opsum_addr2 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1) + 4;
+//                 opsum_addr3 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1) + 4;
+//             end
+//             else begin
+//                 opsum_addr0 <= opsum_addr0 + 4;
+//                 opsum_addr1 <= opsum_addr1 + 4;
+//                 opsum_addr2 <= opsum_addr2 + 4;
+//                 opsum_addr3 <= opsum_addr3 + 4;
+//             end
+//         end
+//         else if (cnt_modify == 4'd0) begin // 已經修改完
+//             opsum_addr0 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr1 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr2 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr3 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//         end
+//     end
+// end
+
+
+// // always_ff @ (posedge clk) begin
+// //     if (rst) begin
+// //         opsum_addr1 <= {`ADDR_WIDTH{1'd0}};
+// //     end
+// //     else if (current_state == S_IDLE) begin
+// //         opsum_addr1 <= BASE_OPSUM;
+// //     end
+// //     //FIXME: ERROR CHECK
+// //     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+// //         if(~cnt_psum[0]) begin
+// //             opsum_addr1 <= opsum_addr1 + 4;
+// //         end
+
+// //         else if (cnt_modify == 4'd0)  begin // 已經修改完
+// //             opsum_addr1 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+// //         end
+// //         else begin 
+// //             opsum_addr1 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 1) << 1);
+// //         end 
+// //     end
+// // end
+// //---------------------------------------------------
+// // opsum_addr 4~7
+// //---------------------------------------------------
+// always_ff @ (posedge clk) begin
+//     if (rst) begin
+//         opsum_addr4 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr5 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr6 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr7 <= {`ADDR_WIDTH{1'd0}};
+//     end
+//     else if (current_state == S_IDLE) begin
+//         opsum_addr4 <= BASE_OPSUM;
+//         opsum_addr5 <= BASE_OPSUM;
+//         opsum_addr6 <= BASE_OPSUM;
+//         opsum_addr7 <= BASE_OPSUM;
+//     end
+//     //FIXME: ERROR CHECK
+//     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+//         if (cnt_modify == 4'd1)  begin // 已經修改完
+//             opsum_addr4 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr5 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr6 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr7 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//         end
+//         else begin 
+//             if (cnt_psum[0]) begin
+//                 opsum_addr4 <= opsum_addr4 + 4;
+//                 opsum_addr5 <= opsum_addr5 + 4;
+//                 opsum_addr6 <= opsum_addr6 + 4;
+//                 opsum_addr7 <= opsum_addr7 + 4;
+//             end
+//             else begin
+//                 opsum_addr4 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 4) << 1);
+//                 opsum_addr5 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 5) << 1);
+//                 opsum_addr6 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 6) << 1);
+//                 opsum_addr7 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 7) << 1);
+//             end
+//         end 
+//     end
+// end
+
+// //---------------------------------------------------
+// // opsum_addr 8-11
+// //---------------------------------------------------
+// always_ff @ (posedge clk) begin
+//     if (rst) begin
+//         opsum_addr8  <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr9  <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr10 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr11 <= {`ADDR_WIDTH{1'd0}};
+//     end
+//     else if (current_state == S_IDLE) begin
+//         opsum_addr8  <= BASE_OPSUM;
+//         opsum_addr9  <= BASE_OPSUM;
+//         opsum_addr10 <= BASE_OPSUM;
+//         opsum_addr11 <= BASE_OPSUM;
+//     end
+//     //FIXME: ERROR CHECK
+//     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+//         if(~cnt_psum[0]) begin
+//             opsum_addr8  <= opsum_addr8  + 4;
+//             opsum_addr9  <= opsum_addr9  + 4;
+//             opsum_addr10 <= opsum_addr10 + 4;
+//             opsum_addr11 <= opsum_addr11 + 4;
+//         end
+
+//         else if (cnt_modify == 4'd2)  begin // 已經修改完
+//             opsum_addr8  <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr9  <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr10 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr11 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//         end
+//         else begin 
+//             opsum_addr8  <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 8 ) << 1);
+//             opsum_addr9  <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 9 ) << 1);
+//             opsum_addr10 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 10) << 1);
+//             opsum_addr11 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 11) << 1);
+//         end 
+//     end
+// end
+
+// //---------------------------------------------------
+// // opsum_addr 12-15
+// //---------------------------------------------------
+// always_ff @ (posedge clk) begin
+//     if (rst) begin
+//         opsum_addr12 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr13 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr14 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr15 <= {`ADDR_WIDTH{1'd0}};
+//     end
+//     else if (current_state == S_IDLE) begin
+//         opsum_addr12 <= BASE_OPSUM;
+//         opsum_addr13 <= BASE_OPSUM;
+//         opsum_addr14 <= BASE_OPSUM;
+//         opsum_addr15 <= BASE_OPSUM;
+//     end
+//     //FIXME: ERROR CHECK
+//     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+//         if(~cnt_psum[0]) begin
+//             opsum_addr12 <= opsum_addr12 + 4;
+//             opsum_addr13 <= opsum_addr13 + 4;
+//             opsum_addr14 <= opsum_addr14 + 4;
+//             opsum_addr15 <= opsum_addr15 + 4;
+//         end
+
+//         else if (cnt_modify == 4'd3)  begin // 已經修改完
+//             opsum_addr12 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr13 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr14 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr15 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//         end
+//         else begin 
+//             opsum_addr12 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 12) << 1);
+//             opsum_addr13 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 13) << 1);
+//             opsum_addr14 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 14) << 1);
+//             opsum_addr15 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 15) << 1);
+//         end 
+//     end
+// end
+
+// //---------------------------------------------------
+// // opsum_addr 16-19
+// //---------------------------------------------------
+// always_ff @ (posedge clk) begin
+//     if (rst) begin
+//         opsum_addr16 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr17 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr18 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr19 <= {`ADDR_WIDTH{1'd0}};
+//     end
+//     else if (current_state == S_IDLE) begin
+//         opsum_addr16 <= BASE_OPSUM;
+//         opsum_addr17 <= BASE_OPSUM;
+//         opsum_addr18 <= BASE_OPSUM;
+//         opsum_addr19 <= BASE_OPSUM;
+//     end
+//     //FIXME: ERROR CHECK
+//     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+//         if(~cnt_psum[0]) begin
+//             opsum_addr16 <= opsum_addr16 + 4;
+//             opsum_addr17 <= opsum_addr17 + 4;
+//             opsum_addr18 <= opsum_addr18 + 4;
+//             opsum_addr19 <= opsum_addr19 + 4;
+//         end
+
+//         else if (cnt_modify == 4'd4)  begin // 已經修改完
+//             opsum_addr16 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr17 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr18 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr19 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//         end
+//         else begin 
+//             opsum_addr16 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 16) << 1);
+//             opsum_addr17 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 17) << 1);
+//             opsum_addr18 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 18) << 1);
+//             opsum_addr19 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 19) << 1);
+//         end 
+//     end
+// end
+
+// //---------------------------------------------------
+// // opsum_addr 20-23
+// //---------------------------------------------------
+// always_ff @ (posedge clk) begin
+//     if (rst) begin
+//         opsum_addr20 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr21 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr22 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr23 <= {`ADDR_WIDTH{1'd0}};
+//     end
+//     else if (current_state == S_IDLE) begin
+//         opsum_addr20 <= BASE_OPSUM;
+//         opsum_addr21 <= BASE_OPSUM;
+//         opsum_addr22 <= BASE_OPSUM;
+//         opsum_addr23 <= BASE_OPSUM;
+//     end
+//     //FIXME: ERROR CHECK
+//     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+//         if(~cnt_psum[0]) begin
+//             opsum_addr20 <= opsum_addr20 + 4;
+//             opsum_addr21 <= opsum_addr21 + 4;
+//             opsum_addr22 <= opsum_addr22 + 4;
+//             opsum_addr23 <= opsum_addr23 + 4;
+//         end
+
+//         else if (cnt_modify == 4'd5)  begin // 已經修改完
+//             opsum_addr20 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr21 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr22 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr23 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//         end
+//         else begin 
+//             opsum_addr20 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 20) << 1);
+//             opsum_addr21 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 21) << 1);
+//             opsum_addr22 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 22) << 1);
+//             opsum_addr23 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 23) << 1);
+//         end 
+//     end
+// end
+
+// //---------------------------------------------------
+// // opsum_addr 24-27
+// //---------------------------------------------------
+// always_ff @ (posedge clk) begin
+//     if (rst) begin
+//         opsum_addr24 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr25 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr26 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr27 <= {`ADDR_WIDTH{1'd0}};
+//     end
+//     else if (current_state == S_IDLE) begin
+//         opsum_addr24 <= BASE_OPSUM;
+//         opsum_addr25 <= BASE_OPSUM;
+//         opsum_addr26 <= BASE_OPSUM;
+//         opsum_addr27 <= BASE_OPSUM;
+//     end
+//     //FIXME: ERROR CHECK
+//     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+//         if(~cnt_psum[0]) begin
+//             opsum_addr24 <= opsum_addr24 + 4;
+//             opsum_addr25 <= opsum_addr25 + 4;
+//             opsum_addr26 <= opsum_addr26 + 4;
+//             opsum_addr27 <= opsum_addr27 + 4;
+//         end
+
+//         else if (cnt_modify == 4'd6)  begin // 已經修改完
+//             opsum_addr24 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr25 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr26 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr27 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//         end
+//         else begin 
+//             opsum_addr24 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 24) << 1);
+//             opsum_addr25 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 25) << 1);
+//             opsum_addr26 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 26) << 1);
+//             opsum_addr27 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 27) << 1);
+//         end 
+//     end
+// end
+
+// //---------------------------------------------------
+// // opsum_addr 28-31
+// //---------------------------------------------------
+// always_ff @ (posedge clk) begin
+//     if (rst) begin
+//         opsum_addr28 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr29 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr30 <= {`ADDR_WIDTH{1'd0}};
+//         opsum_addr31 <= {`ADDR_WIDTH{1'd0}};
+//     end
+//     else if (current_state == S_IDLE) begin
+//         opsum_addr28 <= BASE_OPSUM;
+//         opsum_addr29 <= BASE_OPSUM;
+//         opsum_addr30 <= BASE_OPSUM;
+//         opsum_addr31 <= BASE_OPSUM;
+//     end
+//     //FIXME: ERROR CHECK
+//     else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+//         if(~cnt_psum[0]) begin
+//             opsum_addr28 <= opsum_addr28 + 4;
+//             opsum_addr29 <= opsum_addr29 + 4;
+//             opsum_addr30 <= opsum_addr30 + 4;
+//             opsum_addr31 <= opsum_addr31 + 4;
+//         end
+
+//         else if (cnt_modify == 4'd7)  begin // 已經修改完
+//             opsum_addr28 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr29 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr30 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//             opsum_addr31 <= opsum_addr0 + (((n_cnt << 2) + opsum_num) << 1);
+//         end
+//         else begin 
+//             opsum_addr28 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 28) << 1);
+//             opsum_addr29 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 29) << 1);
+//             opsum_addr30 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 30) << 1);
+//             opsum_addr31 <= opsum_addr0 + (((n_cnt << 2) + opsum_num - 31) << 1);
+//         end 
+//     end
+// end
+
+//------------- opsum_addr -------------------//
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr0 <= 32'd0;
     end
-    else if (current_state == S_IDLE) begin
+    else if(current_state == S_IDLE) begin
         opsum_addr0 <= BASE_OPSUM;
-        opsum_addr1 <= BASE_OPSUM;
-        opsum_addr2 <= BASE_OPSUM;
-        opsum_addr3 <= BASE_OPSUM;
     end
-    //FIXME: ERROR CHECK
-    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
-        if (cnt_modify == 4'd0)  begin // 已經修改完
-            opsum_addr0 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr1 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr2 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr3 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-        end
-        else begin 
-            opsum_addr0 <= opsum_addr0 + ((n_cnt << 2) + opsum_num    ) << 1;
-            opsum_addr1 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 1) << 1;
-            opsum_addr2 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 2) << 1;
-            opsum_addr3 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 3) << 1;
-        end 
-    end
+    else if(k_cnt == 6'd0 && glb_write_ready && glb_write_valid) begin
+        opsum_addr0 <= opsum_addr0 + 32'd4;
+   end
 end
-//---------------------------------------------------
-// opsum_addr 4~7
-//---------------------------------------------------
-always_ff @ (posedge clk) begin
-    if (rst) begin
-        opsum_addr4 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr5 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr6 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr7 <= {`ADDR_WIDTH{1'd0}};
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr1 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr1 <= BASE_OPSUM + pass_tile_n * 2;
     end
-    else if (current_state == S_IDLE) begin
-        opsum_addr4 <= BASE_OPSUM;
-        opsum_addr5 <= BASE_OPSUM;
-        opsum_addr6 <= BASE_OPSUM;
-        opsum_addr7 <= BASE_OPSUM;
-    end
-    //FIXME: ERROR CHECK
-    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
-        if (cnt_modify == 4'd1)  begin // 已經修改完
-            opsum_addr4 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr5 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr6 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr7 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-        end
-        else begin 
-            opsum_addr4 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 4) << 1;
-            opsum_addr5 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 5) << 1;
-            opsum_addr6 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 6) << 1;
-            opsum_addr7 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 7) << 1;
-        end 
+    else if(k_cnt == 6'd1 && glb_write_ready && glb_write_valid) begin
+        opsum_addr1 <= opsum_addr1 + 32'd4;
     end
 end
 
-//---------------------------------------------------
-// opsum_addr 8-11
-//---------------------------------------------------
-always_ff @ (posedge clk) begin
-    if (rst) begin
-        opsum_addr8  <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr9  <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr10 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr11 <= {`ADDR_WIDTH{1'd0}};
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr2 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr2 <= BASE_OPSUM + (pass_tile_n * 2) * 2;
     end
-    else if (current_state == S_IDLE) begin
-        opsum_addr8  <= BASE_OPSUM;
-        opsum_addr9  <= BASE_OPSUM;
-        opsum_addr10 <= BASE_OPSUM;
-        opsum_addr11 <= BASE_OPSUM;
-    end
-    //FIXME: ERROR CHECK
-    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
-        if (cnt_modify == 4'd2)  begin // 已經修改完
-            opsum_addr8  <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr9  <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr10 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr11 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-        end
-        else begin 
-            opsum_addr8  <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 8 ) << 1;
-            opsum_addr9  <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 9 ) << 1;
-            opsum_addr10 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 10) << 1;
-            opsum_addr11 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 11) << 1;
-        end 
+    else if(k_cnt == 6'd2 && glb_write_ready && glb_write_valid) begin
+        opsum_addr2 <= opsum_addr2 + 32'd4;
     end
 end
 
-//---------------------------------------------------
-// opsum_addr 12-15
-//---------------------------------------------------
-always_ff @ (posedge clk) begin
-    if (rst) begin
-        opsum_addr12 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr13 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr14 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr15 <= {`ADDR_WIDTH{1'd0}};
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr3 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr3 <= BASE_OPSUM + (pass_tile_n * 2) * 3;
     end
-    else if (current_state == S_IDLE) begin
-        opsum_addr12 <= BASE_OPSUM;
-        opsum_addr13 <= BASE_OPSUM;
-        opsum_addr14 <= BASE_OPSUM;
-        opsum_addr15 <= BASE_OPSUM;
-    end
-    //FIXME: ERROR CHECK
-    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
-        if (cnt_modify == 4'd3)  begin // 已經修改完
-            opsum_addr12 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr13 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr14 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr15 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-        end
-        else begin 
-            opsum_addr12 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 12) << 1;
-            opsum_addr13 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 13) << 1;
-            opsum_addr14 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 14) << 1;
-            opsum_addr15 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 15) << 1;
-        end 
+    else if(k_cnt == 6'd3 && glb_write_ready && glb_write_valid) begin
+        opsum_addr3 <= opsum_addr3 + 32'd4;
     end
 end
 
-//---------------------------------------------------
-// opsum_addr 16-19
-//---------------------------------------------------
-always_ff @ (posedge clk) begin
-    if (rst) begin
-        opsum_addr16 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr17 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr18 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr19 <= {`ADDR_WIDTH{1'd0}};
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr4 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr4 <= BASE_OPSUM + (pass_tile_n * 2) * 4;
     end
-    else if (current_state == S_IDLE) begin
-        opsum_addr16 <= BASE_OPSUM;
-        opsum_addr17 <= BASE_OPSUM;
-        opsum_addr18 <= BASE_OPSUM;
-        opsum_addr19 <= BASE_OPSUM;
-    end
-    //FIXME: ERROR CHECK
-    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
-        if (cnt_modify == 4'd4)  begin // 已經修改完
-            opsum_addr16 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr17 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr18 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr19 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-        end
-        else begin 
-            opsum_addr16 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 16) << 1;
-            opsum_addr17 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 17) << 1;
-            opsum_addr18 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 18) << 1;
-            opsum_addr19 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 19) << 1;
-        end 
+    else if(k_cnt == 6'd4 && glb_write_ready && glb_write_valid) begin
+        opsum_addr4 <= opsum_addr4 + 32'd4;
     end
 end
 
-//---------------------------------------------------
-// opsum_addr 20-23
-//---------------------------------------------------
-always_ff @ (posedge clk) begin
-    if (rst) begin
-        opsum_addr20 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr21 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr22 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr23 <= {`ADDR_WIDTH{1'd0}};
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr5 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr5 <= BASE_OPSUM + (pass_tile_n * 2) * 5;
     end
-    else if (current_state == S_IDLE) begin
-        opsum_addr20 <= BASE_OPSUM;
-        opsum_addr21 <= BASE_OPSUM;
-        opsum_addr22 <= BASE_OPSUM;
-        opsum_addr23 <= BASE_OPSUM;
-    end
-    //FIXME: ERROR CHECK
-    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
-        if (cnt_modify == 4'd5)  begin // 已經修改完
-            opsum_addr20 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr21 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr22 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr23 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-        end
-        else begin 
-            opsum_addr20 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 20) << 1;
-            opsum_addr21 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 21) << 1;
-            opsum_addr22 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 22) << 1;
-            opsum_addr23 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 23) << 1;
-        end 
+    else if(k_cnt == 6'd5 && glb_write_ready && glb_write_valid) begin
+        opsum_addr5 <= opsum_addr5 + 32'd4;
     end
 end
 
-//---------------------------------------------------
-// opsum_addr 24-27
-//---------------------------------------------------
-always_ff @ (posedge clk) begin
-    if (rst) begin
-        opsum_addr24 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr25 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr26 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr27 <= {`ADDR_WIDTH{1'd0}};
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr6 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr6 <= BASE_OPSUM + (pass_tile_n * 2) * 6;
     end
-    else if (current_state == S_IDLE) begin
-        opsum_addr24 <= BASE_OPSUM;
-        opsum_addr25 <= BASE_OPSUM;
-        opsum_addr26 <= BASE_OPSUM;
-        opsum_addr27 <= BASE_OPSUM;
-    end
-    //FIXME: ERROR CHECK
-    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
-        if (cnt_modify == 4'd6)  begin // 已經修改完
-            opsum_addr24 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr25 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr26 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr27 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-        end
-        else begin 
-            opsum_addr24 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 24) << 1;
-            opsum_addr25 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 25) << 1;
-            opsum_addr26 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 26) << 1;
-            opsum_addr27 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 27) << 1;
-        end 
+    else if(k_cnt == 6'd6 && glb_write_ready && glb_write_valid) begin
+        opsum_addr6 <= opsum_addr6 + 32'd4;
     end
 end
 
-//---------------------------------------------------
-// opsum_addr 28-31
-//---------------------------------------------------
-always_ff @ (posedge clk) begin
-    if (rst) begin
-        opsum_addr28 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr29 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr30 <= {`ADDR_WIDTH{1'd0}};
-        opsum_addr31 <= {`ADDR_WIDTH{1'd0}};
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr7 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr7 <= BASE_OPSUM + (pass_tile_n * 2) * 7;
     end
-    else if (current_state == S_IDLE) begin
-        opsum_addr28 <= BASE_OPSUM;
-        opsum_addr29 <= BASE_OPSUM;
-        opsum_addr30 <= BASE_OPSUM;
-        opsum_addr31 <= BASE_OPSUM;
-    end
-    //FIXME: ERROR CHECK
-    else if (current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
-        if (cnt_modify == 4'd7)  begin // 已經修改完
-            opsum_addr28 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr29 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr30 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-            opsum_addr31 <= opsum_addr0 + ((n_cnt << 2) + opsum_num) << 1;
-        end
-        else begin 
-            opsum_addr28 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 28) << 1;
-            opsum_addr29 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 29) << 1;
-            opsum_addr30 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 30) << 1;
-            opsum_addr31 <= opsum_addr0 + ((n_cnt << 2) + opsum_num - 31) << 1;
-        end 
+    else if(k_cnt == 6'd7 && glb_write_ready && glb_write_valid) begin
+        opsum_addr7 <= opsum_addr7 + 32'd4;
     end
 end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr8 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr8 <= BASE_OPSUM + (pass_tile_n * 2) * 8;
+    end
+    else if(k_cnt == 6'd8 && glb_write_ready && glb_write_valid) begin
+        opsum_addr8 <= opsum_addr8 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr9 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr9 <= BASE_OPSUM + (pass_tile_n * 2) * 9;
+    end
+    else if(k_cnt == 6'd9 && glb_write_ready && glb_write_valid) begin
+        opsum_addr9 <= opsum_addr9 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr10 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr10 <= BASE_OPSUM + (pass_tile_n * 2) * 10;
+    end
+    else if(k_cnt == 6'd10 && glb_write_ready && glb_write_valid) begin
+        opsum_addr10 <= opsum_addr10 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr11 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr11 <= BASE_OPSUM + (pass_tile_n * 2) * 11;
+    end
+    else if(k_cnt == 6'd11 && glb_write_ready && glb_write_valid) begin
+        opsum_addr11 <= opsum_addr11 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr12 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr12 <= BASE_OPSUM + (pass_tile_n * 2) * 12;
+    end
+    else if(k_cnt == 6'd12 && glb_write_ready && glb_write_valid) begin
+        opsum_addr12 <= opsum_addr12 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr13 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr13 <= BASE_OPSUM + (pass_tile_n * 2) * 13;
+    end
+    else if(k_cnt == 6'd13 && glb_write_ready && glb_write_valid) begin
+        opsum_addr13 <= opsum_addr13 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr14 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr14 <= BASE_OPSUM + (pass_tile_n * 2) * 14;
+    end
+    else if(k_cnt == 6'd14 && glb_write_ready && glb_write_valid) begin
+        opsum_addr14 <= opsum_addr14 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr15 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr15 <= BASE_OPSUM + (pass_tile_n * 2) * 15;
+    end
+    else if(k_cnt == 6'd15 && glb_write_ready && glb_write_valid) begin
+        opsum_addr15 <= opsum_addr15 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr16 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr16 <= BASE_OPSUM + (pass_tile_n * 2) * 16;
+    end
+    else if(k_cnt == 6'd16 && glb_write_ready && glb_write_valid) begin
+        opsum_addr16 <= opsum_addr16 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr17 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr17 <= BASE_OPSUM + (pass_tile_n * 2) * 17;
+    end
+    else if(k_cnt == 6'd17 && glb_write_ready && glb_write_valid) begin
+        opsum_addr17 <= opsum_addr17 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr18 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr18 <= BASE_OPSUM + (pass_tile_n * 2) * 18;
+    end
+    else if(k_cnt == 6'd18 && glb_write_ready && glb_write_valid) begin
+        opsum_addr18 <= opsum_addr18 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr19 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr19 <= BASE_OPSUM + (pass_tile_n * 2) * 19;
+    end
+    else if(k_cnt == 6'd19 && glb_write_ready && glb_write_valid) begin
+        opsum_addr19 <= opsum_addr19 + 32'd4;
+    end
+end 
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr20 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr20 <= BASE_OPSUM + (pass_tile_n * 2) * 20;
+    end
+    else if(k_cnt == 6'd20 && glb_write_ready && glb_write_valid) begin
+        opsum_addr20 <= opsum_addr20 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr21 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr21 <= BASE_OPSUM + (pass_tile_n * 2) * 21;
+    end
+    else if(k_cnt == 6'd21 && glb_write_ready && glb_write_valid) begin
+        opsum_addr21 <= opsum_addr21 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr22 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr22 <= BASE_OPSUM + (pass_tile_n * 2) * 22;
+    end
+    else if(k_cnt == 6'd22 && glb_write_ready && glb_write_valid) begin
+        opsum_addr22 <= opsum_addr22 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr23 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr23 <= BASE_OPSUM + (pass_tile_n * 2) * 23;
+    end
+    else if(k_cnt == 6'd23 && glb_write_ready && glb_write_valid) begin
+        opsum_addr23 <= opsum_addr23 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr24 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr24 <= BASE_OPSUM + (pass_tile_n * 2) * 24;
+    end
+    else if(k_cnt == 6'd24 && glb_write_ready && glb_write_valid) begin
+        opsum_addr24 <= opsum_addr24 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr25 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr25 <= BASE_OPSUM + (pass_tile_n * 2) * 25;
+    end
+    else if(k_cnt == 6'd25 && glb_write_ready && glb_write_valid) begin
+        opsum_addr25 <= opsum_addr25 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr26 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr26 <= BASE_OPSUM + (pass_tile_n * 2) * 26;
+    end
+    else if(k_cnt == 6'd26 && glb_write_ready && glb_write_valid) begin
+        opsum_addr26 <= opsum_addr26 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr27 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr27 <= BASE_OPSUM + (pass_tile_n * 2) * 27;
+    end
+    else if(k_cnt == 6'd27 && glb_write_ready && glb_write_valid) begin
+        opsum_addr27 <= opsum_addr27 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr28 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr28 <= BASE_OPSUM + (pass_tile_n * 2) * 28;
+    end
+    else if(k_cnt == 6'd28 && glb_write_ready && glb_write_valid) begin
+        opsum_addr28 <= opsum_addr28 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr29 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr29 <= BASE_OPSUM + (pass_tile_n * 2) * 29;
+    end
+    else if(k_cnt == 6'd29 && glb_write_ready && glb_write_valid) begin
+        opsum_addr29 <= opsum_addr29 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr30 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr30 <= BASE_OPSUM + (pass_tile_n * 2) * 30;
+    end
+    else if(k_cnt == 6'd30 && glb_write_ready && glb_write_valid) begin
+        opsum_addr30 <= opsum_addr30 + 32'd4;
+    end
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        opsum_addr31 <= 32'd0;
+    end 
+    else if(current_state == S_IDLE) begin
+        opsum_addr31 <= BASE_OPSUM + (pass_tile_n * 2) * 31;
+    end
+    else if(k_cnt == 6'd31 && glb_write_ready && glb_write_valid) begin
+        opsum_addr31 <= opsum_addr31 + 32'd4;
+    end
+end
+
+
 
 //---------------------------------------------------
 // FIXME: 
