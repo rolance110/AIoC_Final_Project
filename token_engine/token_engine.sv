@@ -19,7 +19,7 @@ module token_engine (
     //==============================================================================
     input                        PASS_START,          // 1clk Pulse：收到後可開始向 GLB 抓值
     input   [1:0]                pass_layer_type,     // 
-    input   [BYTE_CNT_WIDTH-1:0] pass_tile_n,         // 一次 DRAM→GLB 要搬入的 Ifmap bytes 總數
+    input   [BYTE_CNT_WIDTH-1:0] pass_tile_n,         // pointwise: 一次 DRAM→GLB 要搬入的 Ifmap bytes 總數 DEPTHWISE:一次 DRAM→GLB 要搬入的ifmap row總數
     input   [FLAG_WIDTH-1:0]     pass_flags,          // Flags 控制：bit[0]=bias_en, bit[1]=relu_en, bit[2]=skip_en, … 
 
     input   [ADDR_WIDTH-1:0] BASE_IFMAP,         // GLB 中「此層 Ifmap 資料」的起始位址
@@ -27,18 +27,19 @@ module token_engine (
     input   [ADDR_WIDTH-1:0] BASE_OPSUM,         // GLB 中「此層 PSUM (Partial/Final) 資料」的起始位址
     input   [ADDR_WIDTH-1:0] BASE_BIAS,          // GLB 中「此層 Bias 資料」的起始位址
 
-    input   [6:0]           out_C,              // 輸出圖片 column 數量 (width)
-    input   [6:0]           out_R,              // 輸出圖片 row    數量 (height)
+    // input   [6:0]           out_C,              // 輸出圖片 column 數量 (width)
+    // input   [6:0]           out_R,              // 輸出圖片 row    數量 (height)
 
     //==============================================================================
     // 3) GLB 讀取接口 (Ifmap / Weight / Bias)
     //    – Token Engine 驅動 glb_read_addr & glb_read_ready
     //    – 接收 glb_read_valid & glb_read_data
     //==============================================================================
+
     output logic [ADDR_WIDTH-1:0] glb_read_addr,      // 要讀取的 GLB 位址 (Ifmap / Weight / Bias)
     output logic                  glb_read_ready,     // 1clk 脈衝：開始一次 GLB Read 交易
-    input                    glb_read_valid,     // GLB 回應：「此筆 glb_read_data 有效」
-    input   [DATA_WIDTH-1:0] glb_read_data,      // GLB 回傳的資料 (4×8bit Ifmap/Weight Pack，或 1×Bias)
+    input                         glb_read_valid,     // GLB 回應：「此筆 glb_read_data 有效」
+    input   [DATA_WIDTH-1:0]      glb_read_data,      // GLB 回傳的資料 (4×8bit Ifmap/Weight Pack，或 1×Bias)
 
     //==============================================================================
     // 4) GLB 寫回接口 (PSUM 回寫)
@@ -49,7 +50,7 @@ module token_engine (
     output logic [DATA_WIDTH-1:0] glb_write_data,     // 要寫回 GLB 的 PSUM 資料 (32‐lane Pack 或 4‐channel Pack)
     output logic                  glb_write_ready,    // 1clk 脈衝：開始一次 GLB Write 交易
     input                    glb_write_valid,    // GLB 回應：「此筆 glb_write_data 已寫回完成」
-    output logic WEB, 
+    output logic WEB, //給 glb 的web
     //==============================================================================
     // 5) PE Array 接口 (Token → PE)
     //    – Token Engine 送 token_data & token_valid
@@ -80,8 +81,8 @@ module token_engine (
     output logic pe_bias_valid,
     // output logic pe_psum_ready,
     // input pe_psum_valid
-    input logic [6:0] tile_K_o,
-    input logic [5:0] tile_D, // 記得接真實的
+    input logic [6:0] tile_K_o, //本次tile輸出的張數
+    input logic [5:0] tile_D, //本次tile的channel數量
 
     output logic [5:0] col_en, // 給pe確定有幾行要算
     output logic [5:0] row_en, // 給pe確定有幾個WEIGHT要算
@@ -90,22 +91,21 @@ module token_engine (
     // Depthwise 
     //==============================================================================
 
-    output logic [1:0] compute_num,
+    output logic [1:0] compute_num,//告訴pe 要算幾次(opsum數量)
     output logic change_row,//換row訊號
     input logic [6:0] in_C, //輸入特徵圖 Width column
     input logic [6:0] in_R, //輸入特徵圖 Height row
     input [1:0] stride,
-
-    output logic [1:0] compute_num0,
-    output logic [1:0] compute_num1,
-    output logic [1:0] compute_num2,
-    output logic [1:0] compute_num3,
-    output logic [1:0] compute_num4,
-    output logic [1:0] compute_num5,
-    output logic [1:0] compute_num6,
-    output logic [1:0] compute_num7,
-    output logic [1:0] compute_num8,
-    output logic [1:0] compute_num9,
+    // output logic [1:0] compute_num0,
+    // output logic [1:0] compute_num1,
+    // output logic [1:0] compute_num2,
+    // output logic [1:0] compute_num3,
+    // output logic [1:0] compute_num4,
+    // output logic [1:0] compute_num5,
+    // output logic [1:0] compute_num6,
+    // output logic [1:0] compute_num7,
+    // output logic [1:0] compute_num8,
+    // output logic [1:0] compute_num9,
 
     //==============================================================================
     // 8) Pass 完成回報 (送給 Tile Scheduler)
@@ -1337,100 +1337,101 @@ end
 always_comb begin
     if(change_row) begin// 控制ofmap
         compute_num = in_C - saturate;
-    end else begin
+    end 
+    else begin
         compute_num = 2'd3;
     end
 end
 
-always_comb begin
-    if(change_row0) begin
-        compute_num0 = in_C - (2-1+3*n_cnt0);
-    end 
-    else begin
-        compute_num0 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row0) begin
+//         compute_num0 = in_C - (2-1+3*n_cnt0);
+//     end 
+//     else begin
+//         compute_num0 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row1) begin
-        compute_num1 = in_C - (2-1+3*n_cnt1);
-    end 
-    else begin
-        compute_num1 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row1) begin
+//         compute_num1 = in_C - (2-1+3*n_cnt1);
+//     end 
+//     else begin
+//         compute_num1 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row2) begin
-        compute_num2 = in_C - (2-1+3*n_cnt2);
-    end 
-    else begin
-        compute_num2 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row2) begin
+//         compute_num2 = in_C - (2-1+3*n_cnt2);
+//     end 
+//     else begin
+//         compute_num2 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row3) begin
-        compute_num3 = in_C - (2-1+3*n_cnt3);
-    end 
-    else begin
-        compute_num3 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row3) begin
+//         compute_num3 = in_C - (2-1+3*n_cnt3);
+//     end 
+//     else begin
+//         compute_num3 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row4) begin
-        compute_num4 = in_C - (2-1+3*n_cnt4);
-    end 
-    else begin
-        compute_num4 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row4) begin
+//         compute_num4 = in_C - (2-1+3*n_cnt4);
+//     end 
+//     else begin
+//         compute_num4 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row5) begin
-        compute_num5 = in_C - (2-1+3*n_cnt5);
-    end 
-    else begin
-        compute_num5 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row5) begin
+//         compute_num5 = in_C - (2-1+3*n_cnt5);
+//     end 
+//     else begin
+//         compute_num5 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row6) begin
-        compute_num6 = in_C - (2-1+3*n_cnt6);
-    end 
-    else begin
-        compute_num6 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row6) begin
+//         compute_num6 = in_C - (2-1+3*n_cnt6);
+//     end 
+//     else begin
+//         compute_num6 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row7) begin
-        compute_num7 = in_C - (2-1+3*n_cnt7);
-    end 
-    else begin
-        compute_num7 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row7) begin
+//         compute_num7 = in_C - (2-1+3*n_cnt7);
+//     end 
+//     else begin
+//         compute_num7 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row8) begin
-        compute_num8 = in_C - (2-1+3*n_cnt8);
-    end 
-    else begin
-        compute_num8 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row8) begin
+//         compute_num8 = in_C - (2-1+3*n_cnt8);
+//     end 
+//     else begin
+//         compute_num8 = 2'd3;
+//     end
+// end
 
-always_comb begin
-    if(change_row9) begin
-        compute_num9 = in_C - (2-1+3*n_cnt9);
-    end 
-    else begin
-        compute_num9 = 2'd3;
-    end
-end
+// always_comb begin
+//     if(change_row9) begin
+//         compute_num9 = in_C - (2-1+3*n_cnt9);
+//     end 
+//     else begin
+//         compute_num9 = 2'd3;
+//     end
+// end
 
 
 
