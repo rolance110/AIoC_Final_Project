@@ -40,6 +40,15 @@
 `define DMA_EN_ADDR 32'h3000_0400 // Enable signal for DMA transfers
 
 
+// Load type
+`define LOAD_BYTE 2'd0 // Load type for input feature map
+`define LOAD_HALF 2'd1 // Load type for weights
+`define LOAD_WORD 2'd2 // Load type for output feature map
+
+`define LOAD_1BYTE 2'd0 // Load 1 byte at 7:0
+`define LOAD_2BYTE 2'd1 // Load 1 byte at 15:8
+`define LOAD_3BYTE 2'd2 // Load 1 byte at 23:16
+`define LOAD_4BYTE 2'd3 // Load 1 byte at 31:24
 
 
 // AXI define
