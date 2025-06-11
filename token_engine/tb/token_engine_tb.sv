@@ -1,12 +1,17 @@
 // token_engine_tb.sv
 `timescale 1ns/1ps
-
+`include "define.svh"
+`include "MEM32x16384.sv"
+`include "token_engine.sv"
 module token_engine_tb;
 
-  parameter ADDR_WIDTH = 14;
-  parameter DATA_WIDTH = 32;
-  parameter BYTE_CNT_WIDTH = 16;
-  parameter FLAG_WIDTH = 3;
+    parameter ADDR_WIDTH     = 32;  // GLB 地址寬度
+    parameter DATA_WIDTH     = 32;  // GLB / PE 資料寬度 (4×8bit Pack or 1×32bit)
+    parameter BYTE_CNT_WIDTH = 16;  // pass_tile_n 寬度
+    parameter FLAG_WIDTH     = 4;   // pass_flags 寬度
+    parameter IDX_WIDTH      = 4;   // tile 索引 (K, D 方向各自用)
+    parameter TAG_WIDTH      = 3;   // token_tag 寬度 (0~⌈tile_D/4⌉-1)
+    parameter FIFO_IDX_WIDTH = 3;   // 4-Channel Pack index (0~7)
 
   logic clk, rst;
   logic PASS_START;
@@ -63,7 +68,7 @@ module token_engine_tb;
   logic [ADDR_WIDTH-1:0] sram_addr_d;
 
   initial begin
-    $readmemh("init_sram_data.txt", sram_mem);
+    $readmemh("init_sram_data.txt",u_sram.mem);
     $fsdbDumpfile("token_engine.fsdb");
     $fsdbDumpvars(0, token_engine_tb);
     $fsdbDumpMDA();
@@ -74,16 +79,16 @@ module token_engine_tb;
       sram_addr_d <= glb_read_addr;
   end
 
-  assign glb_read_data = sram_mem[sram_addr_d];
+//   assign glb_read_data = sram_mem[sram_addr_d];
   assign glb_read_valid = glb_read_ready;
 
   always_ff @(posedge clk) begin
     if (glb_write_ready && WEB == 1'b1) begin
-      $display("[WRITE] Req Addr=%0d Data=%h", glb_write_addr, glb_write_data);
+    //   $display("[WRITE] Req Addr=%0d Data=%h", glb_write_addr, glb_write_data);
     end
     if (glb_write_valid && WEB == 1'b0) begin
       sram_mem[glb_write_addr] <= glb_write_data;
-      $display("[WRITE CONFIRMED] Addr=%0d Data=%h", glb_write_addr, glb_write_data);
+    //   $display("[WRITE CONFIRMED] Addr=%0d Data=%h", glb_write_addr, glb_write_data);
     end
   end
 
@@ -95,11 +100,12 @@ module token_engine_tb;
     pe_ifmap_ready = 1;
     pe_bias_ready = 1;
     pe_psum_data = 32'hABCD1234;
-    pe_psum_valid = 0;
-    tile_K_o = 7'd1;
-    tile_D = 6'd1;
-    in_C = 7'd8;
-    in_R = 7'd8;
+    pe_psum_valid = 1;
+    glb_write_ready = 1;
+    tile_K_o = 7'd32;
+    tile_D = 6'd32;
+    in_C = 7'd224;
+    in_R = 7'd224;
     stride = 2'd1;
 
     #20;
@@ -129,5 +135,17 @@ module token_engine_tb;
     if (pass_done)
       $display("[PASS DONE] at time %t", $time);
   end
+
+  MEM32X16384 u_sram (
+  .CK(clk),
+  .CS(1'b1),
+  .WEB(WEB),                     // 注意：WEB=0時寫入
+  .RE(glb_read_ready),            // RE=1 時讀取
+  .R_ADDR(glb_read_addr),    // 只支援 10-bit 位址
+  .W_ADDR(glb_write_addr),   // 只支援 10-bit 位址
+  .D_IN(glb_write_data),    // 只支援 24-bit 寬度
+  .D_OUT(glb_read_data)     // 回傳值
+);
+
 
 endmodule

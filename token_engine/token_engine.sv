@@ -5,6 +5,13 @@
 //  version: 未完成padding 
 // 
 //==============================================================================
+`define ADDR_WIDTH     32 // GLB 地址寬度
+`define DATA_WIDTH     32 // GLB / PE 資料寬度 (4×8bit Pack or 1×32bit)
+`define BYTE_CNT_WIDTH 16 // pass_tile_n 寬度
+`define FLAG_WIDTH     4  // pass_flags 寬度
+`define IDX_WIDTH      4  // tile 索引 (K, D 方向各自用)
+`define TAG_WIDTH      3  // token_tag 寬度 (0~⌈tile_D/4⌉-1)
+`define FIFO_IDX_WIDTH 3  // 4-Channel Pack index (0~7)
 
 `include "define.svh"
 module token_engine (
@@ -19,44 +26,43 @@ module token_engine (
     //==============================================================================
     input                        PASS_START,          // 1clk Pulse：收到後可開始向 GLB 抓值
     input   [1:0]                pass_layer_type,     // 
-    input   [BYTE_CNT_WIDTH-1:0] pass_tile_n,         // pointwise: 一次 DRAM→GLB 要搬入的 Ifmap bytes 總數 DEPTHWISE:一次 DRAM→GLB 要搬入的ifmap row總數
-    input   [FLAG_WIDTH-1:0]     pass_flags,          // Flags 控制：bit[0]=bias_en, bit[1]=relu_en, bit[2]=skip_en, … 
+    input   [`BYTE_CNT_WIDTH-1:0] pass_tile_n,         // 一次 DRAM→GLB 要搬入的 Ifmap bytes 總數
+    input   [`FLAG_WIDTH-1:0]     pass_flags,          // Flags 控制：bit[0]=bias_en, bit[1]=relu_en, bit[2]=skip_en, … 
 
-    input   [ADDR_WIDTH-1:0] BASE_IFMAP,         // GLB 中「此層 Ifmap 資料」的起始位址
-    input   [ADDR_WIDTH-1:0] BASE_WEIGHT,        // GLB 中「此層 Weight 資料」的起始位址
-    input   [ADDR_WIDTH-1:0] BASE_OPSUM,         // GLB 中「此層 PSUM (Partial/Final) 資料」的起始位址
-    input   [ADDR_WIDTH-1:0] BASE_BIAS,          // GLB 中「此層 Bias 資料」的起始位址
+    input   [`ADDR_WIDTH-1:0] BASE_IFMAP,         // GLB 中「此層 Ifmap 資料」的起始位址
+    input   [`ADDR_WIDTH-1:0] BASE_WEIGHT,        // GLB 中「此層 Weight 資料」的起始位址
+    input   [`ADDR_WIDTH-1:0] BASE_OPSUM,         // GLB 中「此層 PSUM (Partial/Final) 資料」的起始位址
+    input   [`ADDR_WIDTH-1:0] BASE_BIAS,          // GLB 中「此層 Bias 資料」的起始位址
 
-    // input   [6:0]           out_C,              // 輸出圖片 column 數量 (width)
-    // input   [6:0]           out_R,              // 輸出圖片 row    數量 (height)
+    input   [6:0]           out_C,              // 輸出圖片 column 數量 (width)
+    input   [6:0]           out_R,              // 輸出圖片 row    數量 (height)
 
     //==============================================================================
     // 3) GLB 讀取接口 (Ifmap / Weight / Bias)
     //    – Token Engine 驅動 glb_read_addr & glb_read_ready
     //    – 接收 glb_read_valid & glb_read_data
     //==============================================================================
-
-    output logic [ADDR_WIDTH-1:0] glb_read_addr,      // 要讀取的 GLB 位址 (Ifmap / Weight / Bias)
+    output logic [`ADDR_WIDTH-1:0] glb_read_addr,      // 要讀取的 GLB 位址 (Ifmap / Weight / Bias)
     output logic                  glb_read_ready,     // 1clk 脈衝：開始一次 GLB Read 交易
-    input                         glb_read_valid,     // GLB 回應：「此筆 glb_read_data 有效」
-    input   [DATA_WIDTH-1:0]      glb_read_data,      // GLB 回傳的資料 (4×8bit Ifmap/Weight Pack，或 1×Bias)
+    input                    glb_read_valid,     // GLB 回應：「此筆 glb_read_data 有效」
+    input   [`DATA_WIDTH-1:0] glb_read_data,      // GLB 回傳的資料 (4×8bit Ifmap/Weight Pack，或 1×Bias)
 
     //==============================================================================
     // 4) GLB 寫回接口 (PSUM 回寫)
     //    – Token Engine 驅動 glb_write_addr, glb_write_data & glb_write_ready
     //    – 接收 glb_write_valid
     //==============================================================================
-    output logic [ADDR_WIDTH-1:0] glb_write_addr,     // 要寫回 GLB 的位址 (PSUM Partial / Final)
-    output logic [DATA_WIDTH-1:0] glb_write_data,     // 要寫回 GLB 的 PSUM 資料 (32‐lane Pack 或 4‐channel Pack)
-    output logic                  glb_write_ready,    // 1clk 脈衝：開始一次 GLB Write 交易
-    input                    glb_write_valid,    // GLB 回應：「此筆 glb_write_data 已寫回完成」
-    output logic WEB, //給 glb 的web
+    output logic [`ADDR_WIDTH-1:0] glb_write_addr,     // 要寫回 GLB 的位址 (PSUM Partial / Final)
+    output logic [`DATA_WIDTH-1:0] glb_write_data,     // 要寫回 GLB 的 PSUM 資料 (32‐lane Pack 或 4‐channel Pack)
+    input                     glb_write_ready,    // 1clk 脈衝：開始一次 GLB Write 交易
+    output logic              glb_write_valid,    // GLB 回應：「此筆 glb_write_data 已寫回完成」
+    output logic WEB, 
     //==============================================================================
     // 5) PE Array 接口 (Token → PE)
     //    – Token Engine 送 token_data & token_valid
     //    – 監看 pe_busy
     //==============================================================================
-    output logic [DATA_WIDTH-1:0] token_data,         // 送給 PE Array 的 Ifmap/Weight/Bias Pack
+    output logic [`DATA_WIDTH-1:0] token_data,         // 送給 PE Array 的 Ifmap/Weight/Bias Pack
     // output logic                  token_valid,        // 1clk 脈衝：token_data + token_tag 現在有效
     // input  logic                  pe_busy,            // PE Array 拉高表示「目前忙碌中，尚在 Compute」//FIXME: 感覺不用
 
@@ -70,7 +76,7 @@ module token_engine (
     //    – PSUM Buffer pop 出累計結果後拉 pe_psum_valid
     //    – Token Engine 回 pe_psum_ready 表示可 pop 下一筆
     //==============================================================================
-    input   [DATA_WIDTH-1:0] pe_psum_data,       // PSUM Buffer pop 出的累加結果
+    input   [`DATA_WIDTH-1:0] pe_psum_data,       // PSUM Buffer pop 出的累加結果
     input                    pe_psum_valid,      // PSUM Buffer 回：pe_psum_data 有效
     output logic                  pe_psum_ready,      // Token Engine 拉高後，PSUM Buffer 才 pop 出下一筆
     input pe_weight_ready,
@@ -81,8 +87,8 @@ module token_engine (
     output logic pe_bias_valid,
     // output logic pe_psum_ready,
     // input pe_psum_valid
-    input logic [6:0] tile_K_o, //本次tile輸出的張數
-    input logic [5:0] tile_D, //本次tile的channel數量
+    input logic [6:0] tile_K_o,
+    input logic [5:0] tile_D, // 記得接真實的
 
     output logic [5:0] col_en, // 給pe確定有幾行要算
     output logic [5:0] row_en, // 給pe確定有幾個WEIGHT要算
@@ -91,21 +97,22 @@ module token_engine (
     // Depthwise 
     //==============================================================================
 
-    output logic [1:0] compute_num,//告訴pe 要算幾次(opsum數量)
+    output logic [1:0] compute_num,
     output logic change_row,//換row訊號
     input logic [6:0] in_C, //輸入特徵圖 Width column
     input logic [6:0] in_R, //輸入特徵圖 Height row
     input [1:0] stride,
-    // output logic [1:0] compute_num0,
-    // output logic [1:0] compute_num1,
-    // output logic [1:0] compute_num2,
-    // output logic [1:0] compute_num3,
-    // output logic [1:0] compute_num4,
-    // output logic [1:0] compute_num5,
-    // output logic [1:0] compute_num6,
-    // output logic [1:0] compute_num7,
-    // output logic [1:0] compute_num8,
-    // output logic [1:0] compute_num9,
+
+    output logic [1:0] compute_num0,
+    output logic [1:0] compute_num1,
+    output logic [1:0] compute_num2,
+    output logic [1:0] compute_num3,
+    output logic [1:0] compute_num4,
+    output logic [1:0] compute_num5,
+    output logic [1:0] compute_num6,
+    output logic [1:0] compute_num7,
+    output logic [1:0] compute_num8,
+    output logic [1:0] compute_num9,
 
     //==============================================================================
     // 8) Pass 完成回報 (送給 Tile Scheduler)
@@ -116,13 +123,7 @@ module token_engine (
     //==========================================================================
     // 參數設定
     //==========================================================================
-    parameter ADDR_WIDTH     = 16;  // GLB 地址寬度
-    parameter DATA_WIDTH     = 32;  // GLB / PE 資料寬度 (4×8bit Pack or 1×32bit)
-    parameter BYTE_CNT_WIDTH = 16;  // pass_tile_n 寬度
-    parameter FLAG_WIDTH     = 4;   // pass_flags 寬度
-    parameter IDX_WIDTH      = 4;   // tile 索引 (K, D 方向各自用)
-    parameter TAG_WIDTH      = 3;   // token_tag 寬度 (0~⌈tile_D/4⌉-1)
-    parameter FIFO_IDX_WIDTH = 3;   // 4-Channel Pack index (0~7)
+
 
     //==========================================================================
     // state定義 (enum 型態)
@@ -148,7 +149,7 @@ module token_engine (
     logic [5:0]            tile_D_internal;    // 6-bit: 由 pass_layer_type 決定 (32 or 10)
     logic [5:0]            tile_K_internal;    // 6-bit: 由 pass_layer_type 決定 (32 or 10)
 
-    logic [DATA_WIDTH-1:0] data_2_pe_reg;
+    logic [`DATA_WIDTH-1:0] data_2_pe_reg;
 
     // Counters 數送了幾個
     logic [5:0]            cnt_bias;          // 已推 Bias 的筆數
@@ -156,10 +157,10 @@ module token_engine (
     logic [5:0]            cnt_weight;        // 已推 Weight
     logic [5:0]            cnt_psum;          // 已 pop OPSUM 寫回的筆數
 
-    logic [ADDR_WIDTH-1:0] weight_addr;       // Weight 的位址計數器
-    logic [ADDR_WIDTH-1:0] ifmap_addr;        // Ifmap 的位址計數器
-    logic [ADDR_WIDTH-1:0] bias_addr;         // Bias 的位址計數器
-    logic [ADDR_WIDTH-1:0] opsum_addr;        // OPSUM 的位址計數器
+    logic [`ADDR_WIDTH-1:0] weight_addr;       // Weight 的位址計數器
+    logic [`ADDR_WIDTH-1:0] ifmap_addr;        // Ifmap 的位址計數器
+    logic [`ADDR_WIDTH-1:0] bias_addr;         // Bias 的位址計數器
+    logic [`ADDR_WIDTH-1:0] opsum_addr;        // OPSUM 的位址計數器
     
 
     //===== 會拿通道數去 計算opsum_row_num
@@ -181,38 +182,38 @@ module token_engine (
     // opsum_addr 0~31
     //---------------------------------------------------
 
-    logic [ADDR_WIDTH-1:0] opsum_addr0;
-    logic [ADDR_WIDTH-1:0] opsum_addr1;
-    logic [ADDR_WIDTH-1:0] opsum_addr2;
-    logic [ADDR_WIDTH-1:0] opsum_addr3;
-    logic [ADDR_WIDTH-1:0] opsum_addr4;
-    logic [ADDR_WIDTH-1:0] opsum_addr5;
-    logic [ADDR_WIDTH-1:0] opsum_addr6;
-    logic [ADDR_WIDTH-1:0] opsum_addr7;
-    logic [ADDR_WIDTH-1:0] opsum_addr8;
-    logic [ADDR_WIDTH-1:0] opsum_addr9;
-    logic [ADDR_WIDTH-1:0] opsum_addr10;
-    logic [ADDR_WIDTH-1:0] opsum_addr11;
-    logic [ADDR_WIDTH-1:0] opsum_addr12;
-    logic [ADDR_WIDTH-1:0] opsum_addr13;
-    logic [ADDR_WIDTH-1:0] opsum_addr14;
-    logic [ADDR_WIDTH-1:0] opsum_addr15;
-    logic [ADDR_WIDTH-1:0] opsum_addr16;
-    logic [ADDR_WIDTH-1:0] opsum_addr17;
-    logic [ADDR_WIDTH-1:0] opsum_addr18;
-    logic [ADDR_WIDTH-1:0] opsum_addr19;
-    logic [ADDR_WIDTH-1:0] opsum_addr20;
-    logic [ADDR_WIDTH-1:0] opsum_addr21;
-    logic [ADDR_WIDTH-1:0] opsum_addr22;
-    logic [ADDR_WIDTH-1:0] opsum_addr23;
-    logic [ADDR_WIDTH-1:0] opsum_addr24;
-    logic [ADDR_WIDTH-1:0] opsum_addr25;
-    logic [ADDR_WIDTH-1:0] opsum_addr26;
-    logic [ADDR_WIDTH-1:0] opsum_addr27;
-    logic [ADDR_WIDTH-1:0] opsum_addr28;
-    logic [ADDR_WIDTH-1:0] opsum_addr29;
-    logic [ADDR_WIDTH-1:0] opsum_addr30;
-    logic [ADDR_WIDTH-1:0] opsum_addr31;
+    logic [`ADDR_WIDTH-1:0] opsum_addr0;
+    logic [`ADDR_WIDTH-1:0] opsum_addr1;
+    logic [`ADDR_WIDTH-1:0] opsum_addr2;
+    logic [`ADDR_WIDTH-1:0] opsum_addr3;
+    logic [`ADDR_WIDTH-1:0] opsum_addr4;
+    logic [`ADDR_WIDTH-1:0] opsum_addr5;
+    logic [`ADDR_WIDTH-1:0] opsum_addr6;
+    logic [`ADDR_WIDTH-1:0] opsum_addr7;
+    logic [`ADDR_WIDTH-1:0] opsum_addr8;
+    logic [`ADDR_WIDTH-1:0] opsum_addr9;
+    logic [`ADDR_WIDTH-1:0] opsum_addr10;
+    logic [`ADDR_WIDTH-1:0] opsum_addr11;
+    logic [`ADDR_WIDTH-1:0] opsum_addr12;
+    logic [`ADDR_WIDTH-1:0] opsum_addr13;
+    logic [`ADDR_WIDTH-1:0] opsum_addr14;
+    logic [`ADDR_WIDTH-1:0] opsum_addr15;
+    logic [`ADDR_WIDTH-1:0] opsum_addr16;
+    logic [`ADDR_WIDTH-1:0] opsum_addr17;
+    logic [`ADDR_WIDTH-1:0] opsum_addr18;
+    logic [`ADDR_WIDTH-1:0] opsum_addr19;
+    logic [`ADDR_WIDTH-1:0] opsum_addr20;
+    logic [`ADDR_WIDTH-1:0] opsum_addr21;
+    logic [`ADDR_WIDTH-1:0] opsum_addr22;
+    logic [`ADDR_WIDTH-1:0] opsum_addr23;
+    logic [`ADDR_WIDTH-1:0] opsum_addr24;
+    logic [`ADDR_WIDTH-1:0] opsum_addr25;
+    logic [`ADDR_WIDTH-1:0] opsum_addr26;
+    logic [`ADDR_WIDTH-1:0] opsum_addr27;
+    logic [`ADDR_WIDTH-1:0] opsum_addr28;
+    logic [`ADDR_WIDTH-1:0] opsum_addr29;
+    logic [`ADDR_WIDTH-1:0] opsum_addr30;
+    logic [`ADDR_WIDTH-1:0] opsum_addr31;
     logic [31:0] opsum_num;
 
     logic [8:0] c_cnt;
@@ -382,7 +383,7 @@ module token_engine (
     logic enable8;
     logic enable9;
 
-    logic [BYTE_CNT_WIDTH-1:0] tile_R; //dEPTHWISE 沒PADDING的ROW數
+    logic [`BYTE_CNT_WIDTH-1:0] tile_R; //dEPTHWISE 沒PADDING的ROW數
     assign tile_R = pass_tile_n - 2;
     //hsk 時 +1， 因 hsk cnt 會有歸0的情況，當數到 tile_n * tile_K_o 時，此次tile算完
     logic [31:0] total_opsum_num_cnt; 
@@ -830,10 +831,10 @@ end
 
 always_comb begin
     if (current_state == S_WRITE_OPSUM) begin
-        glb_write_ready = 1'b1; // 準備寫回 OPSUM
+        glb_write_valid = 1'b1; // 準備寫回 OPSUM
     end
     else begin
-        glb_write_ready = 1'b0;
+        glb_write_valid = 1'b0;
     end
 end
 
@@ -1134,7 +1135,7 @@ always_ff@(posedge clk) begin
 end
 
 //---------- ifmap addr0~9 for depthwise ----------//
-logic [ADDR_WIDTH-1:0] ifmap_addr0, ifmap_addr1, ifmap_addr2, ifmap_addr3, ifmap_addr4, ifmap_addr5, ifmap_addr6, ifmap_addr7, ifmap_addr8, ifmap_addr9;
+logic [`ADDR_WIDTH-1:0] ifmap_addr0, ifmap_addr1, ifmap_addr2, ifmap_addr3, ifmap_addr4, ifmap_addr5, ifmap_addr6, ifmap_addr7, ifmap_addr8, ifmap_addr9;
 always_ff@(posedge clk) begin
     if(rst) begin
         ifmap_addr0 <= 0;
@@ -1337,101 +1338,100 @@ end
 always_comb begin
     if(change_row) begin// 控制ofmap
         compute_num = in_C - saturate;
-    end 
-    else begin
+    end else begin
         compute_num = 2'd3;
     end
 end
 
-// always_comb begin
-//     if(change_row0) begin
-//         compute_num0 = in_C - (2-1+3*n_cnt0);
-//     end 
-//     else begin
-//         compute_num0 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row0) begin
+        compute_num0 = in_C - (2-1+3*n_cnt0);
+    end 
+    else begin
+        compute_num0 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row1) begin
-//         compute_num1 = in_C - (2-1+3*n_cnt1);
-//     end 
-//     else begin
-//         compute_num1 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row1) begin
+        compute_num1 = in_C - (2-1+3*n_cnt1);
+    end 
+    else begin
+        compute_num1 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row2) begin
-//         compute_num2 = in_C - (2-1+3*n_cnt2);
-//     end 
-//     else begin
-//         compute_num2 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row2) begin
+        compute_num2 = in_C - (2-1+3*n_cnt2);
+    end 
+    else begin
+        compute_num2 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row3) begin
-//         compute_num3 = in_C - (2-1+3*n_cnt3);
-//     end 
-//     else begin
-//         compute_num3 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row3) begin
+        compute_num3 = in_C - (2-1+3*n_cnt3);
+    end 
+    else begin
+        compute_num3 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row4) begin
-//         compute_num4 = in_C - (2-1+3*n_cnt4);
-//     end 
-//     else begin
-//         compute_num4 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row4) begin
+        compute_num4 = in_C - (2-1+3*n_cnt4);
+    end 
+    else begin
+        compute_num4 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row5) begin
-//         compute_num5 = in_C - (2-1+3*n_cnt5);
-//     end 
-//     else begin
-//         compute_num5 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row5) begin
+        compute_num5 = in_C - (2-1+3*n_cnt5);
+    end 
+    else begin
+        compute_num5 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row6) begin
-//         compute_num6 = in_C - (2-1+3*n_cnt6);
-//     end 
-//     else begin
-//         compute_num6 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row6) begin
+        compute_num6 = in_C - (2-1+3*n_cnt6);
+    end 
+    else begin
+        compute_num6 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row7) begin
-//         compute_num7 = in_C - (2-1+3*n_cnt7);
-//     end 
-//     else begin
-//         compute_num7 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row7) begin
+        compute_num7 = in_C - (2-1+3*n_cnt7);
+    end 
+    else begin
+        compute_num7 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row8) begin
-//         compute_num8 = in_C - (2-1+3*n_cnt8);
-//     end 
-//     else begin
-//         compute_num8 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row8) begin
+        compute_num8 = in_C - (2-1+3*n_cnt8);
+    end 
+    else begin
+        compute_num8 = 2'd3;
+    end
+end
 
-// always_comb begin
-//     if(change_row9) begin
-//         compute_num9 = in_C - (2-1+3*n_cnt9);
-//     end 
-//     else begin
-//         compute_num9 = 2'd3;
-//     end
-// end
+always_comb begin
+    if(change_row9) begin
+        compute_num9 = in_C - (2-1+3*n_cnt9);
+    end 
+    else begin
+        compute_num9 = 2'd3;
+    end
+end
 
 
 
@@ -1615,10 +1615,10 @@ end
 //---------------------------------------------------
 always_ff @ (posedge clk) begin
     if (rst) begin
-        opsum_addr0 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr1 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr2 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr3 <= {ADDR_WIDTH{1'd0}};
+        opsum_addr0 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr1 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr2 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr3 <= {`ADDR_WIDTH{1'd0}};
     end
     else if (current_state == S_IDLE) begin
         opsum_addr0 <= BASE_OPSUM;
@@ -1647,10 +1647,10 @@ end
 //---------------------------------------------------
 always_ff @ (posedge clk) begin
     if (rst) begin
-        opsum_addr4 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr5 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr6 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr7 <= {ADDR_WIDTH{1'd0}};
+        opsum_addr4 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr5 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr6 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr7 <= {`ADDR_WIDTH{1'd0}};
     end
     else if (current_state == S_IDLE) begin
         opsum_addr4 <= BASE_OPSUM;
@@ -1680,10 +1680,10 @@ end
 //---------------------------------------------------
 always_ff @ (posedge clk) begin
     if (rst) begin
-        opsum_addr8  <= {ADDR_WIDTH{1'd0}};
-        opsum_addr9  <= {ADDR_WIDTH{1'd0}};
-        opsum_addr10 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr11 <= {ADDR_WIDTH{1'd0}};
+        opsum_addr8  <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr9  <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr10 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr11 <= {`ADDR_WIDTH{1'd0}};
     end
     else if (current_state == S_IDLE) begin
         opsum_addr8  <= BASE_OPSUM;
@@ -1713,10 +1713,10 @@ end
 //---------------------------------------------------
 always_ff @ (posedge clk) begin
     if (rst) begin
-        opsum_addr12 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr13 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr14 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr15 <= {ADDR_WIDTH{1'd0}};
+        opsum_addr12 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr13 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr14 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr15 <= {`ADDR_WIDTH{1'd0}};
     end
     else if (current_state == S_IDLE) begin
         opsum_addr12 <= BASE_OPSUM;
@@ -1746,10 +1746,10 @@ end
 //---------------------------------------------------
 always_ff @ (posedge clk) begin
     if (rst) begin
-        opsum_addr16 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr17 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr18 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr19 <= {ADDR_WIDTH{1'd0}};
+        opsum_addr16 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr17 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr18 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr19 <= {`ADDR_WIDTH{1'd0}};
     end
     else if (current_state == S_IDLE) begin
         opsum_addr16 <= BASE_OPSUM;
@@ -1779,10 +1779,10 @@ end
 //---------------------------------------------------
 always_ff @ (posedge clk) begin
     if (rst) begin
-        opsum_addr20 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr21 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr22 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr23 <= {ADDR_WIDTH{1'd0}};
+        opsum_addr20 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr21 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr22 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr23 <= {`ADDR_WIDTH{1'd0}};
     end
     else if (current_state == S_IDLE) begin
         opsum_addr20 <= BASE_OPSUM;
@@ -1812,10 +1812,10 @@ end
 //---------------------------------------------------
 always_ff @ (posedge clk) begin
     if (rst) begin
-        opsum_addr24 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr25 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr26 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr27 <= {ADDR_WIDTH{1'd0}};
+        opsum_addr24 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr25 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr26 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr27 <= {`ADDR_WIDTH{1'd0}};
     end
     else if (current_state == S_IDLE) begin
         opsum_addr24 <= BASE_OPSUM;
@@ -1845,10 +1845,10 @@ end
 //---------------------------------------------------
 always_ff @ (posedge clk) begin
     if (rst) begin
-        opsum_addr28 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr29 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr30 <= {ADDR_WIDTH{1'd0}};
-        opsum_addr31 <= {ADDR_WIDTH{1'd0}};
+        opsum_addr28 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr29 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr30 <= {`ADDR_WIDTH{1'd0}};
+        opsum_addr31 <= {`ADDR_WIDTH{1'd0}};
     end
     else if (current_state == S_IDLE) begin
         opsum_addr28 <= BASE_OPSUM;
@@ -1877,7 +1877,7 @@ end
 // FIXME: 
 //---------------------------------------------------
 // opsum_addr
-logic [ADDR_WIDTH-1:0] d_opsum_addr;
+logic [`ADDR_WIDTH-1:0] d_opsum_addr;
 
 always_ff@(posedge clk) begin
     if(rst) begin
