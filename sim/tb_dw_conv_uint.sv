@@ -15,7 +15,6 @@ module tb_dw_conv_uint;
   logic                    ready_ip , valid_ip;
   logic                    valid_op , ready_op;
   logic                    DW_PW_sel;
-  logic                    change_weight_f;
   logic  [31:0]            data_in;
   logic  [31:0]            data_out;
   logic  [5:0]             col_en;
@@ -71,108 +70,233 @@ module tb_dw_conv_uint;
         valid_if = 0;
         valid_ip = 0;
         ready_op = 0;
-        DW_PW_sel = 1; // 假設使用PW模式
+        DW_PW_sel = 0; // 假設使用PW模式
         data_in = 32'h00000000; // 初始數據輸入
 
         dw_stride = 0; // 假設使用stride 1
         dw_input_num = 2'b11; // 假設使用兩個輸入
         dw_row_end = 0; // 假設不是行結束
 
-        col_en = 6'b100000; // 使用所有列
-        row_en = 6'b100000; // 使用所有行
+        col_en = 6'b000011; // 使用所有列
+        row_en = 6'b011110; // 使用所有行
 
         #(`CYCLE*2);
         reset = 0; // 解除復位
 
         #(`CYCLE * 2); // 等待一段時間以觀察行為
-        valid_w = 1;
 
-        #(`CYCLE); // 等待一個時鐘週期
+        valid_w = 1;
         data_in = 32'h00123456;
 
         #(`CYCLE * 32); // 等待一個時鐘週期
         valid_w = 0; // 停止寫入數據
         
 
+        #(`CYCLE * 3); // 等待一段時間以觀察行為
         valid_if = 1; // 開始IF模式
-        #(`CYCLE); // 等待一段時間以觀察行為
+        #(`CYCLE); 
         data_in = 32'h00203040;
 
         #(`CYCLE * 3); // 等待一個時鐘週期
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'b000110; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00112233;
         #(`CYCLE * 6); // 等待一個時鐘週期
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'd9; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00203040;
         #(`CYCLE * 9); // 等待一個時鐘週期
+
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'd12; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00112233;
         #(`CYCLE * 12); // 等待一個時鐘週期
+
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'd15; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00203040;
         #(`CYCLE * 15); // 等待一個時鐘週期
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'd18; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00112233;
         #(`CYCLE * 18); // 等待一個時鐘週期
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'd21; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00203040;
         #(`CYCLE * 21); // 等待一個時鐘週期
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'd24; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00112233;
         #(`CYCLE * 24); // 等待一個時鐘週期
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'd27; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00203040;
         #(`CYCLE * 27); // 等待一個時鐘週期
         valid_if = 0; // 停止IF模式
 
-        #(`CYCLE * 1); // 等待一段時間以觀察行為
+        #(`CYCLE * 3)
+        col_en = 6'd30; // 使用所有列
+
+        #(`CYCLE * 5); // 等待一段時間以觀察行為
+
         valid_if = 1; // 再次開始IF模式
-        #(`CYCLE); // 等待一個時鐘週期
+        #(`CYCLE); 
         data_in = 32'h00112233;
         #(`CYCLE * 30); // 等待一個時鐘週期
         valid_if = 0; // 停止IF模式
 
+        //TODO: 開始正常的迴圈，進入ipsum
+        #(`CYCLE * 3)
+
         valid_ip = 1; // 開始IP模式
         #(`CYCLE); // 等待一個時鐘週期
         data_in = 32'h00001111; // 假設輸入數據
-        #(`CYCLE * 60); // 等待一段時間以觀察行為
+        #(`CYCLE * 10); // 等待一段時間以觀察行為
         valid_ip = 0; // 停止IP模式
+        #(`CYCLE * 3)
+
         ready_op = 1; // 開始OP模式
-        #(`CYCLE * 60); // 等待一個時鐘週期
+        #(`CYCLE * 10); // 等待一個時鐘週期
         ready_op = 0; // 停止OP模式
+
+        #(`CYCLE * 3)
+
+        //TODO: 多幾次
+        valid_if = 1; // 再次開始IF模式
+        #(`CYCLE); 
+        data_in = 32'h00112233;
         #(`CYCLE * 30); // 等待一個時鐘週期
+        valid_if = 0; // 停止IF模式
+        #(`CYCLE)
+        valid_ip = 1; // 開始IP模式
+        #(`CYCLE); // 等待一個時鐘週期
+        data_in = 32'h00001111; // 假設輸入數據
+        #(`CYCLE * 20); // 等待一段時間以觀察行為
+        valid_ip = 0; // 停止IP模式
+        #(`CYCLE * 3)
+
+        ready_op = 1; // 開始OP模式
+        #(`CYCLE * 20); // 等待一個時鐘週期
+        ready_op = 0; // 停止OP模式
+
+        #(`CYCLE * 3);
+
+        valid_if = 1; // 再次開始IF模式
+        #(`CYCLE); 
+        data_in = 32'h00112233;
+        #(`CYCLE * 30); // 等待一個時鐘週期
+        valid_if = 0; // 停止IF模式
+        #(`CYCLE)
+        valid_ip = 1; // 開始IP模式
+        #(`CYCLE); // 等待一個時鐘週期
+        data_in = 32'h00001111; // 假設輸入數據
+        #(`CYCLE * 20); // 等待一段時間以觀察行為
+        valid_ip = 0; // 停止IP模式
+        #(`CYCLE * 3)
+
+        ready_op = 1; // 開始OP模式
+        #(`CYCLE * 20); // 等待一個時鐘週期
+        ready_op = 0; // 停止OP模式
+
+        #(`CYCLE * 3)
+
+        valid_if = 1; // 再次開始IF模式
+        #(`CYCLE); 
+        data_in = 32'h00112233;
+        #(`CYCLE * 30); // 等待一個時鐘週期
+        valid_if = 0; // 停止IF模式
+        #(`CYCLE)
+        valid_ip = 1; // 開始IP模式
+        #(`CYCLE); // 等待一個時鐘週期
+        data_in = 32'h00001111; // 假設輸入數據
+        #(`CYCLE * 20); // 等待一段時間以觀察行為
+        valid_ip = 0; // 停止IP模式
+        #(`CYCLE * 3)
+
+        ready_op = 1; // 開始OP模式
+        #(`CYCLE * 20); // 等待一個時鐘週期
+        ready_op = 0; // 停止OP模式
+
+        dw_input_num = 2'b10; // 假設使用兩個輸入
+
+        #(`CYCLE * 3)
+
+
+        valid_if = 1; // 再次開始IF模式
+        #(`CYCLE); 
+        data_in = 32'h00112233;
+        #(`CYCLE * 30); // 等待一個時鐘週期
+        valid_if = 0; // 停止IF模式
+        #(`CYCLE)
+        valid_ip = 1; // 開始IP模式
+        #(`CYCLE); // 等待一個時鐘週期
+        data_in = 32'h00001111; // 假設輸入數據
+        #(`CYCLE * 10); // 等待一段時間以觀察行為
+        valid_ip = 0; // 停止IP模式
+        #(`CYCLE * 3)
+
+        ready_op = 1; // 開始OP模式
+        #(`CYCLE * 10); // 等待一個時鐘週期
+        ready_op = 0; // 停止OP模式
+
+        #(`CYCLE * 3)
+
 
         $finish; // 結束模
 

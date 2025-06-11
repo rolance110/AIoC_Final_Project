@@ -17,8 +17,8 @@ module Opsum_buffer(
     input DW_PW_sel,//用來決定是DW還是PW
     input dw_stride,
     input [1:0] dw_input_num,
-    input dw_out_2_f,//用來決定DW的output是否為2個
     input dw_open_f,
+    input [1:0] dw_out_times,//輸出幾筆opsum
 
     input store_opsum_f,//告知存計算結果
     input [`ROW_NUM*16 - 1:0] opsum_in,//from Reducer
@@ -41,6 +41,7 @@ module Opsum_buffer(
 
   wire handshake_f = ready_op && valid_op;
   wire [5:0] first_8_cnt = (ip_time_4 << 1) - 6'd1;
+  wire [5:0] dw_out_cnt = (row_en - 6'd1) << 1;
   logic depth_cnt;
 
   always_ff @(posedge clk) begin
@@ -61,38 +62,32 @@ module Opsum_buffer(
             else begin
               case(dw_stride)
                 1'd0:begin//stride = 1
-                  if(depth_cnt) begin
-                    if(dw_input_num > 2'd2) begin
+                  if(dw_input_num > 2'd2) begin
                       depth_cnt <= !depth_cnt;
-                      if(cnt == ((row_en << 1) - 6'd3))//row_en從0開始算，所以要減3
-                        cnt <= 6'd0;
-                      else
-                        cnt <= cnt + 6'd1;
-                    end
-                    else begin
-                      depth_cnt <= 1'd0;
-                      if(cnt == ((row_en << 1) - 6'd6))//row_en從0開始算，所以要減1
-                        cnt <= 6'd0;
-                      else
-                        cnt <= cnt + 6'd6;
-                    end
+                      if(!depth_cnt) begin
+                        if(cnt == (dw_out_cnt - 6'd3))//row_en從0開始算，所以要減3
+                          cnt <= 6'd0;
+                        else
+                          cnt <= cnt + 6'd1;
+                      end
+                      else begin
+                        depth_cnt <= !depth_cnt;
+                        if(cnt == (dw_out_cnt - 6'd3))
+                          cnt <= 6'd0;
+                        else
+                          cnt <= cnt + 6'd5;
+                      end
                   end
                   else begin
-                    if(dw_input_num > 2'd2) begin
-                      depth_cnt <= !depth_cnt;
-                      cnt <= cnt + 6'd5;
-                    end
-                    else begin
-                      depth_cnt <= 1'd0;
-                      if(cnt == ((row_en << 1) - 6'd6))//row_en從0開始算，所以要減1
+                    depth_cnt <= 1'd0;
+                      if(cnt == ((row_en << 1) - 6'd6))
                         cnt <= 6'd0;
                       else
                         cnt <= cnt + 6'd6;
-                    end
                   end
                 end
                 1'd1:begin//TODO: stride = 2
-                  if(cnt == ((row_en << 1) - 6'd6))//row_en從0開始算，所以要減1
+                  if(cnt == (dw_out_cnt - 6'd6))
                       cnt <= 6'd0;
                   else
                       cnt <= cnt + 6'd6;
@@ -150,17 +145,31 @@ module Opsum_buffer(
                 fifo[r][2] <= 16'd0;
                 fifo[r][3] <= opsum_in[r*16 +: 16];
               end
+              else if((dw_stride == 1'd1)) begin
+                if(dw_out_times == 2'd2) begin//輸出一筆
+                  fifo[r][0] <= 16'd0;
+                  fifo[r][1] <= 16'd0;  
+                  fifo[r][2] <= opsum_in[r*16 +: 16];
+                  fifo[r][3] <= fifo[r][2];
+                end
+                else begin//輸出兩筆
+                  fifo[r][0] <= 16'd0;
+                  fifo[r][1] <= 16'd0;  
+                  fifo[r][2] <= 16'd0;
+                  fifo[r][3] <= opsum_in[r*16 +: 16];
+                end
+              end
               else if(dw_input_num > 2'd2) begin
                 fifo[r][0] <= 16'd0;
                 fifo[r][1] <= opsum_in[r*16 +: 16];
                 fifo[r][2] <= fifo[r][1];
                 fifo[r][3] <= fifo[r][2];
               end
-              else if(dw_input_num == 2'd2 || (dw_stride == 1'd1 && dw_out_2_f)) begin
-                fifo[r][0] <= 16'd0;
-                fifo[r][1] <= 16'd0;  
-                fifo[r][2] <= opsum_in[r*16 +: 16];
-                fifo[r][3] <= fifo[r][2];
+              else if(dw_input_num == 2'd2) begin
+                  fifo[r][0] <= 16'd0;
+                  fifo[r][1] <= 16'd0;  
+                  fifo[r][2] <= opsum_in[r*16 +: 16];
+                  fifo[r][3] <= fifo[r][2];
               end
               else begin
                 fifo[r][0] <= 16'd0;
