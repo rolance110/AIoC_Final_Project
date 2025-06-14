@@ -12,10 +12,10 @@ config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
 #config_rtlds -rule  -reset -sync
 # vsd2023_constrain //
 
-analyze -sv +incdir+../include+ ../src/Layer_Decoder.sv 
+analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
 # analyze -sv +incdir+../include+../src/AXI ../src/top.sv ../sim/SRAM/TS1N16ADFPCLLLVTA512X45M4SWSHOD.sv
 
-elaborate -bbox true -top layer_decoder
+elaborate -bbox true -top token_engine
 
 # Setup clock and reset
 clock clk

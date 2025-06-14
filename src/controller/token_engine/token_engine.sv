@@ -1,5 +1,6 @@
 `include "weight_load_controller.sv"
 `include "pe_array_controller.sv"
+`include "Layer1_Controller.sv"
 `include "L2C_init_fifo_pe.sv"
 `include "L2C_preheat.sv"
 `include "L3C_fifo_ctrl.sv"
@@ -23,6 +24,9 @@ module token_engine (
     input logic  [31:0] bias_GLB_base_addr,
     input logic  [31:0] opsum_GLB_base_addr,
 
+    input logic is_bias,
+
+
     input logic [31:0] tile_n_i,
 
     input logic [6:0] in_C_i,
@@ -35,9 +39,14 @@ module token_engine (
     input logic [6:0] OC_real_i,
     input logic [31:0] On_real_i,
 
+//* from GLB
+    input  logic [31:0] glb_read_data_i,
+
+
+///* output
 //* to PE
-    output logic PE_en_matrix [31:0][31:0],
-    output logic PE_stall_matrix [31:0][31:0],
+    output logic PE_en_matrix_o [31:0][31:0],
+    output logic PE_stall_matrix_o [31:0][31:0],
 
 //* to GLB
     output logic [7:0]         weight_in,
@@ -48,12 +57,14 @@ module token_engine (
     output logic [31:0]        push_ifmap_mod,
     output logic [31:0]        push_ifmap_data,
     output logic [31:0]        pop_ifmap_en,
+    output logic [31:0]        ifmap_fifo_pop_matrix,
+
 
 //* ipsum fifo
     output logic [31:0]        push_ipsum_en,
     output logic [31:0]        push_ipsum_mod,
     output logic [31:0]        push_ipsum_data,
-    output logic [31:0]        pop_ipsum_en,
+    output logic [31:0]        pop_ipsum_en_o,
     output logic               ipsum_read_en,
     output logic               ipsum_add_en,
 
@@ -95,7 +106,7 @@ logic        glb_read_req, glb_write_req;
 logic [31:0] glb_read_addr, glb_write_addr;
 logic [3:0]  glb_read_web, glb_write_web;
 logic [31:0] permit_ifmap, permit_ipsum, permit_opsum;
-
+logic [31:0] ifmap_pop_num [31:0];
 
 logic weight_load_finish;
 
@@ -114,7 +125,7 @@ assign opsum_permit_pop  = permit_opsum;
 assign push_ifmap_en = ifmap_fifo_push_en;
 assign pop_ifmap_en  = ifmap_fifo_pop_en;
 assign push_ipsum_en = ipsum_fifo_push_en;
-assign pop_ipsum_en  = ipsum_fifo_pop_en;
+assign pop_ipsum_en_o  = ipsum_fifo_pop_en;
 assign opsum_pop_en  = opsum_fifo_pop_en;
 assign opsum_push_en = opsum_fifo_push_en;
 assign opsum_pop_mod = opsum_pop_web;
@@ -122,34 +133,33 @@ assign opsum_pop_mod = opsum_pop_web;
 weight_load_controller weight_load_controller_dut(
     .clk(clk), .rst_n(rst_n),
     .weight_load_state(weight_load_state),
-    .layer_type(layer_type_i),
+    .layer_type_i(layer_type_i),
     .weight_GLB_base_addr(weight_GLB_base_addr),
     .weight_load_WEB(weight_load_WEB),
     .weight_addr(weight_addr),
     .weight_load_byte_type(weight_load_byte_type),
     .weight_load_finish(weight_load_finish)
 );
-logic start_preheat_i;
-logic start_normal_i;
-logic [31:0] ifmap_fifo_pop_matrix_i;
+logic start_preheat;
+logic start_normal;
+logic preheat_done;
 pe_array_controller pe_array_controller(
     .clk(clk),
     .rst_n(rst_n),
 //* input
     .layer_type(layer_type_i),
 
-    .start_preheat_i(start_preheat_i), 
-    .start_normal_i(start_normal_i), 
+    .start_preheat_i(start_preheat), 
+    .start_normal_i(start_normal), 
 
-    .ifmap_fifo_pop_matrix_i(ifmap_fifo_pop_matrix_i),
+    .ifmap_fifo_pop_matrix_i(ifmap_fifo_pop_matrix),
 
 //* output
-    .PE_stall_matrix(PE_stall_matrix),
-    .PE_en_matrix(PE_en_matrix)
+    .PE_stall_matrix(PE_stall_matrix_o),
+    .PE_en_matrix(PE_en_matrix_o)
 );
 
-logic preheat_done_i;
-logic normal_loop_done_i;
+logic normal_loop_done;
 logic init_fifo_pe_state;
 logic preheat_state;
 logic normal_loop_state;
@@ -164,8 +174,8 @@ Layer1_Controller Layer1_Controller (
 
     .weight_load_done_i(weight_load_finish),
     // .init_fifo_pe_done_i(init_fifo_pe_done_i), // 1 cycle
-    .preheat_done_i(preheat_done_i),
-    .normal_loop_done_i(normal_loop_done_i),
+    .preheat_done_i(preheat_done),
+    .normal_loop_done_i(normal_loop_done),
 
 //* output
     // 傳給下層 L2 的控制
@@ -181,7 +191,7 @@ logic [31:0] ifmap_fifo_base_addr_matrix [31:0];
 logic [31:0] ipsum_fifo_base_addr_matrix [31:0];
 logic [31:0] opsum_fifo_base_addr_matrix [31:0];
 L2C_init_fifo_pe #(
-    .NUM_FIFOz(96)
+    .NUM_FIFO(96)
 ) L2C_init_fifo_pe_dut (
     .clk(clk),
     .rst_n(rst_n),
@@ -207,7 +217,11 @@ L2C_init_fifo_pe #(
 //* output
     .ifmap_fifo_base_addr_o(ifmap_fifo_base_addr_matrix),
     .ipsum_fifo_base_addr_o(ipsum_fifo_base_addr_matrix),
-    .opsum_fifo_base_addr_o(opsum_fifo_base_addr_matrix)
+    .opsum_fifo_base_addr_o(opsum_fifo_base_addr_matrix),
+
+    .ifmap_fifo_reset_o(ifmap_fifo_reset), // reset signal for ifmap FIFO
+    .ipsum_fifo_reset_o(ipsum_fifo_reset), // reset signal for ipsum FIFO
+    .opsum_fifo_reset_o(opsum_fifo_reset) // reset signal for opsum FIFO
 );
 
 L2C_preheat #(
@@ -215,13 +229,13 @@ L2C_preheat #(
 ) L2C_preheat_dut (
     .clk(clk),
     .rst_n(rst_n),
-    .start_preheat_i(start_preheat_i),
+    .start_preheat_i(start_preheat),
     .layer_type_i(layer_type_i),
     .ifmap_fifo_done_i(ifmap_fifo_done_i),
 
-    .ifmap_need_pop_o(ifmap_need_pop_o),
-    .ifmap_pop_num_o(ifmap_pop_num_o),
-    .preheat_done_o(preheat_done_o)
+    .ifmap_need_pop_o(ifmap_need_pop),
+    .ifmap_pop_num_o(ifmap_pop_num),
+    .preheat_done_o(preheat_done)
 
 );
 
@@ -236,29 +250,29 @@ L3C_fifo_ctrl #(
     .rst_n(rst_n),
 //* input
     //======== L2 控制訊號 (每條 FIFO 的需求與 reset 控制) ========
-    .ifmap_fifo_reset_i(ifmap_fifo_reset_i),
-    .ifmap_need_pop_i(ifmap_need_pop_i),
-    .ifmap_pop_num_i(ifmap_pop_num_i),
-    .ifmap_permit_push_i(ifmap_permit_push_i),
-    .ifmap_fifo_full_i(ifmap_fifo_full_i),
-    .ifmap_fifo_empty_i(ifmap_fifo_empty_i),
+    .ifmap_fifo_reset_i(ifmap_fifo_reset),
+    .ifmap_need_pop_i(ifmap_need_pop),
+    .ifmap_pop_num_i(ifmap_pop_num),
+    .ifmap_permit_push_i(ifmap_permit_push),
+    .ifmap_fifo_full_i(ifmap_fifo_full),
+    .ifmap_fifo_empty_i(ifmap_fifo_empty),
     .ifmap_glb_base_addr_matrix_i(ifmap_fifo_base_addr_matrix),
-    .ifmap_glb_read_data_i(ifmap_glb_read_data_i),
+    .ifmap_glb_read_data_i(glb_read_data_i),
 
     .ipsum_need_push_i(ipsum_need_push_i),
     .ipsum_need_pop_i(ipsum_need_pop_i),
     .ipsum_permit_push_i(ipsum_permit_push_i),
-    .ipsum_fifo_full_i(ipsum_fifo_full_i),
-    .ipsum_fifo_empty_i(ipsum_fifo_empty_i),
-    .ipsum_fifo_reset_i(ipsum_fifo_reset_i),
+    .ipsum_fifo_full_i(ipsum_fifo_full),
+    .ipsum_fifo_empty_i(ipsum_fifo_empty),
+    .ipsum_fifo_reset_i(ipsum_fifo_reset),
     .ipsum_fifo_base_addr_matrix_i(ipsum_fifo_base_addr_matrix),
 
-    .opsum_need_push_i(opsum_need_push_i),
-    .opsum_need_pop_i(opsum_need_pop_i),
-    .opsum_permit_pop_i(opsum_permit_pop_i),
-    .opsum_fifo_empty_i(opsum_fifo_empty_i),
-    .opsum_fifo_reset_i(opsum_fifo_reset_i),
-    .opsum_pop_web_i(opsum_pop_web_i),
+    .opsum_need_push_i(opsum_need_push),
+    .opsum_need_pop_i(opsum_need_pop),
+    .opsum_permit_pop_i(opsum_permit_pop),
+    .opsum_fifo_empty_i(opsum_fifo_empty),
+    .opsum_fifo_reset_i(opsum_fifo_reset),
+    .opsum_pop_web_i(opsum_pop_web),
     .opsum_fifo_base_addr_matrix_i(opsum_fifo_base_addr_matrix),
 
 //* output
@@ -267,7 +281,7 @@ L3C_fifo_ctrl #(
     .ifmap_fifo_push_en_o(ifmap_fifo_push_en_o),
     .ifmap_fifo_push_data_o(ifmap_fifo_push_data_o),
     .ifmap_fifo_push_mod_o(ifmap_fifo_push_mod_o),
-    .ifmap_fifo_pop_en_o(ifmap_fifo_pop_en_o),
+    .ifmap_fifo_pop_matrix_o(ifmap_fifo_pop_matrix),
     .ifmap_glb_read_req_o(ifmap_glb_read_req_o),
     .ifmap_glb_read_addr_o(ifmap_glb_read_addr_o),
     .ifmap_fifo_done_o(ifmap_fifo_done_o),

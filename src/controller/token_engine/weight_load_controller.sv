@@ -3,7 +3,7 @@ module weight_load_controller(
     input logic clk,
     input logic rst_n,
     input logic weight_load_state,
-    input logic [1:0] layer_type, // 00: conv, 01: dwconv, 10: fc, 11: pool
+    input logic [1:0] layer_type_i, // 00: conv, 01: dwconv, 10: fc, 11: pool
     input logic [31:0] weight_GLB_base_addr, // base address of weight in GLB
 
 //* to GLB
@@ -30,7 +30,7 @@ always_ff@(posedge clk or negedge rst_n) begin
 end
 
 always_comb begin
-    case(layer_type)
+    case(layer_type_i)
         `POINTWISE: begin
             weight_num = 32'd1024; // 32*32 = 1024 weights for pointwise
         end

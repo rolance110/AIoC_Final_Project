@@ -1,0 +1,745 @@
+# ----------------------------------------
+# Jasper Version Info
+# tool      : Jasper 2022.03
+# platform  : Linux 4.18.0-553.51.1.el8_10.x86_64
+# version   : 2022.03p002 64 bits
+# build date: 2022.05.26 13:21:20 UTC
+# ----------------------------------------
+# started   : 2025-06-14 22:07:49 CST
+# hostname  : icdeslab19.ee.ncku.edu.tw.(none)
+# pid       : 863494
+# arguments : '-label' 'session_0' '-console' '//127.0.0.1:46213' '-style' 'windows' '-data' 'AAAAunicXYoxCsJAFETfYmFr4SkE4wXS2ikBBVuRmCIQjOgGwcarepP1uYqFf/iz+2deAMpHSok8o7s2YcWaDUu9Yuf7m/D8fsrwpt0Zcw50qufGnoETV/2sei5EGo7mFVvpqfSnbew6WuloXmQt7Grz1j7m658s3NoLxi9WQR1w' '-proj' '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/jgproject/sessionLogs/session_0' '-init' '-hidden' '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/jgproject/.tmp/.initCmds.tcl' '../script/superlint.tcl'
+
+Any disclosure about the Cadence Design Systems software or its use
+model to any third party violates the written Non-Disclosure Agreement
+between Cadence Design Systems, Inc. and the customer.
+
+THIS SOFTWARE CONTAINS CONFIDENTIAL INFORMATION AND TRADE SECRETS OF
+CADENCE DESIGN SYSTEMS, INC. USE, DISCLOSURE, OR REPRODUCTION IS
+PROHIBITED WITHOUT THE PRIOR EXPRESS WRITTEN PERMISSION OF CADENCE
+DESIGN SYSTEMS, INC.
+
+Copyright (C) 2000-2022 Cadence Design Systems, Inc. All Rights
+Reserved.  Unpublished -- rights reserved under the copyright laws of
+the United States.
+
+This product includes software developed by others and redistributed
+according to license agreement. See doc/third_party_readme.txt for
+further details.
+
+RESTRICTED RIGHTS LEGEND
+
+Use, duplication, or disclosure by the Government is subject to
+restrictions as set forth in subparagraph (c) (1) (ii) of the Rights in
+Technical Data and Computer Software clause at DFARS 252.227-7013 or
+subparagraphs (c) (1) and (2) of Commercial Computer Software -- Restricted
+Rights at 48 CFR 52.227-19, as applicable.
+
+
+                          Cadence Design Systems, Inc.
+                          2655 Seely Avenue
+                          San Jose, CA 95134
+                          Phone: 408.943.1234
+
+For technical assistance visit http://support.cadence.com.
+
+Jasper Apps Analysis Session - /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/jgproject/sessionLogs/session_0
+
+INFO: successfully checked out licenses "jasper_interactive" and "jasper_dao".
+INFO: reading configuration file "/home/n26130126/.config/cadence/jasper.conf".
+% check_superlint -init
+% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+% 
+% # Config rules
+% config_rtlds -rule -enable -domain { LINT }
+% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+% # vsd2023_constrain //
+% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+% #config_rtlds -rule  -reset -sync
+% # vsd2023_constrain //
+% 
+% analyze -sv +incdir+../include+ ../src/token_engine/token_engine.sv 
+ERROR (ESW046): The file "../src/token_engine/token_engine.sv" does not exist.
+
+ERROR: problem encountered at line 15 in file ../script/superlint.tcl
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[ERROR (VERI-1128)] ../src/controller/token_engine/weight_load_controller.sv(105): 'layer_type_i' is not declared
+[ERROR (VERI-1072)] ../src/controller/token_engine/weight_load_controller.sv(141): module 'weight_load_controller' is ignored due to previous errors
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[ERROR (VERI-1072)] ../src/controller/token_engine/pe_array_controller.sv(50): module 'pe_array_controller' is ignored due to previous errors
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[ERROR (VERI-1137)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(38): syntax error near ')'
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../src/controller/token_engine/weight_load_controller.sv(105): 'layer_type_i' is not declared
+	[ERROR (VERI-1072)] ../src/controller/token_engine/weight_load_controller.sv(141): module 'weight_load_controller' is ignored due to previous errors
+	[ERROR (VERI-1072)] ../src/controller/token_engine/pe_array_controller.sv(50): module 'pe_array_controller' is ignored due to previous errors
+	[ERROR (VERI-1137)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(38): syntax error near ')'
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 4 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[ERROR (VERI-1137)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(38): syntax error near ')'
+Summary of errors detected:
+	[ERROR (VERI-1137)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(38): syntax error near ')'
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 1 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[ERROR (VERI-1100)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(45): procedural assignment to a non-register 'ifmap_glb_base_addr_i' is not permitted
+[WARN (VERI-1214)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(45): assignment to input 'ifmap_glb_base_addr_i'
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'pad_L' is not declared
+[INFO (VMSG-1000)] Too many errors. Further error messages will be suppressed.
+Summary of errors detected:
+	[ERROR (VERI-1100)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(45): procedural assignment to a non-register 'ifmap_glb_base_addr_i' is not permitted
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'pad_L' is not declared
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 19 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'in_R' is not declared
+[INFO (VMSG-1000)] Too many errors. Further error messages will be suppressed.
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(65): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(66): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(68): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(69): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(70): 'in_R' is not declared
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 19 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(117): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(117): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(117): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(118): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(118): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(118): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(120): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(120): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(120): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'in_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'pad_R' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'pad_L' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'in_R' is not declared
+[INFO (VMSG-1000)] Too many errors. Further error messages will be suppressed.
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(117): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(117): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(117): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(118): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(118): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(118): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(120): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(120): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(120): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'in_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'pad_R' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'pad_L' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'in_R' is not declared
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 19 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(117): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(118): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(120): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(124): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(125): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(125): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(126): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(126): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(128): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(129): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(129): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(130): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(130): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(132): 'in_R_i' is not declared
+[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(133): 'in_R_i' is not declared
+[INFO (VMSG-1000)] Too many errors. Further error messages will be suppressed.
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(117): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(118): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(120): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(121): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(122): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(124): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(125): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(125): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(126): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(126): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(128): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(129): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(129): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(130): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(130): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(132): 'in_R_i' is not declared
+	[ERROR (VERI-1128)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(133): 'in_R_i' is not declared
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 19 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[ERROR (VERI-1100)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(158): procedural assignment to a non-register 'ifmap_glb_base_addr_i' is not permitted
+[WARN (VERI-1214)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(158): assignment to input 'ifmap_glb_base_addr_i'
+[ERROR (VERI-1100)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(169): procedural assignment to a non-register 'ipsum_glb_base_addr_i' is not permitted
+[WARN (VERI-1214)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(169): assignment to input 'ipsum_glb_base_addr_i'
+[ERROR (VERI-1100)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(219): procedural assignment to a non-register 'opsum_glb_base_addr_i' is not permitted
+[WARN (VERI-1214)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(219): assignment to input 'opsum_glb_base_addr_i'
+[ERROR (VERI-1072)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(269): module 'L2C_init_fifo_pe' is ignored due to previous errors
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(4): analyzing included file '../src/controller/token_engine/L2C_preheat.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/L2C_preheat.sv(5): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[ERROR (VERI-1072)] ../src/controller/token_engine/L2C_preheat.sv(134): module 'L2C_preheat' is ignored due to previous errors
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(5): analyzing included file '../src/controller/token_engine/L3C_fifo_ctrl.sv'
+[ERROR (VERI-1072)] ../src/controller/token_engine/L3C_fifo_ctrl.sv(139): module 'L3C_fifo_ctrl' is ignored due to previous errors
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(6): analyzing included file '../src/controller/token_engine/token_arbiter.sv'
+[ERROR (VERI-1072)] ../src/controller/token_engine/token_arbiter.sv(589): module 'token_arbiter' is ignored due to previous errors
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(7): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(194): undeclared symbol 'is_bias', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(220): undeclared symbol 'ifmap_fifo_done_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(222): undeclared symbol 'ifmap_need_pop_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(223): undeclared symbol 'ifmap_pop_num_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(224): undeclared symbol 'preheat_done_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(239): undeclared symbol 'ifmap_fifo_reset_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(240): undeclared symbol 'ifmap_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(241): undeclared symbol 'ifmap_pop_num_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(242): undeclared symbol 'ifmap_permit_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(243): undeclared symbol 'ifmap_fifo_full_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(244): undeclared symbol 'ifmap_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(246): undeclared symbol 'ifmap_glb_read_data_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(248): undeclared symbol 'ipsum_need_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(249): undeclared symbol 'ipsum_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(250): undeclared symbol 'ipsum_permit_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(251): undeclared symbol 'ipsum_fifo_full_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(252): undeclared symbol 'ipsum_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(253): undeclared symbol 'ipsum_fifo_reset_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(256): undeclared symbol 'opsum_need_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(257): undeclared symbol 'opsum_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(258): undeclared symbol 'opsum_permit_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(259): undeclared symbol 'opsum_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(260): undeclared symbol 'opsum_fifo_reset_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(261): undeclared symbol 'opsum_pop_web_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(267): undeclared symbol 'ifmap_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(268): undeclared symbol 'ifmap_fifo_push_data_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(269): undeclared symbol 'ifmap_fifo_push_mod_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(270): undeclared symbol 'ifmap_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(271): undeclared symbol 'ifmap_glb_read_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(272): undeclared symbol 'ifmap_glb_read_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(273): undeclared symbol 'ifmap_fifo_done_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(275): undeclared symbol 'ipsum_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(276): undeclared symbol 'ipsum_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(278): undeclared symbol 'ipsum_glb_read_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(279): undeclared symbol 'ipsum_glb_read_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(281): undeclared symbol 'opsum_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(282): undeclared symbol 'opsum_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(284): undeclared symbol 'opsum_glb_write_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(285): undeclared symbol 'opsum_glb_write_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(286): undeclared symbol 'opsum_glb_write_web_o', assumed default net type 'wire'
+[ERROR (VERI-1128)] ../src/controller/token_engine/token_engine.sv(117): 'ipsum_fifo_pop_en' is not declared
+[ERROR (VERI-1072)] ../src/controller/token_engine/token_engine.sv(308): module 'token_engine' is ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1100)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(158): procedural assignment to a non-register 'ifmap_glb_base_addr_i' is not permitted
+	[ERROR (VERI-1100)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(169): procedural assignment to a non-register 'ipsum_glb_base_addr_i' is not permitted
+	[ERROR (VERI-1100)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(219): procedural assignment to a non-register 'opsum_glb_base_addr_i' is not permitted
+	[ERROR (VERI-1072)] ../src/controller/token_engine/L2C_init_fifo_pe.sv(269): module 'L2C_init_fifo_pe' is ignored due to previous errors
+	[ERROR (VERI-1072)] ../src/controller/token_engine/L2C_preheat.sv(134): module 'L2C_preheat' is ignored due to previous errors
+	[ERROR (VERI-1072)] ../src/controller/token_engine/L3C_fifo_ctrl.sv(139): module 'L3C_fifo_ctrl' is ignored due to previous errors
+	[ERROR (VERI-1072)] ../src/controller/token_engine/token_arbiter.sv(589): module 'token_arbiter' is ignored due to previous errors
+	[ERROR (VERI-1128)] ../src/controller/token_engine/token_engine.sv(117): 'ipsum_fifo_pop_en' is not declared
+	[ERROR (VERI-1072)] ../src/controller/token_engine/token_engine.sv(308): module 'token_engine' is ignored due to previous errors
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 9 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(4): analyzing included file '../src/controller/token_engine/L2C_preheat.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/L2C_preheat.sv(5): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(5): analyzing included file '../src/controller/token_engine/L3C_fifo_ctrl.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(6): analyzing included file '../src/controller/token_engine/token_arbiter.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(7): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(194): undeclared symbol 'is_bias', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(220): undeclared symbol 'ifmap_fifo_done_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(222): undeclared symbol 'ifmap_need_pop_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(223): undeclared symbol 'ifmap_pop_num_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(224): undeclared symbol 'preheat_done_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(239): undeclared symbol 'ifmap_fifo_reset_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(240): undeclared symbol 'ifmap_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(241): undeclared symbol 'ifmap_pop_num_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(242): undeclared symbol 'ifmap_permit_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(243): undeclared symbol 'ifmap_fifo_full_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(244): undeclared symbol 'ifmap_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(246): undeclared symbol 'ifmap_glb_read_data_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(248): undeclared symbol 'ipsum_need_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(249): undeclared symbol 'ipsum_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(250): undeclared symbol 'ipsum_permit_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(251): undeclared symbol 'ipsum_fifo_full_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(252): undeclared symbol 'ipsum_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(253): undeclared symbol 'ipsum_fifo_reset_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(256): undeclared symbol 'opsum_need_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(257): undeclared symbol 'opsum_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(258): undeclared symbol 'opsum_permit_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(259): undeclared symbol 'opsum_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(260): undeclared symbol 'opsum_fifo_reset_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(261): undeclared symbol 'opsum_pop_web_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(267): undeclared symbol 'ifmap_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(268): undeclared symbol 'ifmap_fifo_push_data_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(269): undeclared symbol 'ifmap_fifo_push_mod_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(270): undeclared symbol 'ifmap_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(271): undeclared symbol 'ifmap_glb_read_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(272): undeclared symbol 'ifmap_glb_read_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(273): undeclared symbol 'ifmap_fifo_done_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(275): undeclared symbol 'ipsum_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(276): undeclared symbol 'ipsum_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(278): undeclared symbol 'ipsum_glb_read_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(279): undeclared symbol 'ipsum_glb_read_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(281): undeclared symbol 'opsum_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(282): undeclared symbol 'opsum_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(284): undeclared symbol 'opsum_glb_write_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(285): undeclared symbol 'opsum_glb_write_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(286): undeclared symbol 'opsum_glb_write_web_o', assumed default net type 'wire'
+[ERROR (VERI-1128)] ../src/controller/token_engine/token_engine.sv(117): 'ipsum_fifo_pop_en' is not declared
+[ERROR (VERI-1072)] ../src/controller/token_engine/token_engine.sv(308): module 'token_engine' is ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../src/controller/token_engine/token_engine.sv(117): 'ipsum_fifo_pop_en' is not declared
+	[ERROR (VERI-1072)] ../src/controller/token_engine/token_engine.sv(308): module 'token_engine' is ignored due to previous errors
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/Layer1_Controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(4): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(5): analyzing included file '../src/controller/token_engine/L2C_preheat.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/L2C_preheat.sv(5): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(6): analyzing included file '../src/controller/token_engine/L3C_fifo_ctrl.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(7): analyzing included file '../src/controller/token_engine/token_arbiter.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(8): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(195): undeclared symbol 'is_bias', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(225): undeclared symbol 'ifmap_fifo_done_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(227): undeclared symbol 'ifmap_need_pop_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(228): undeclared symbol 'ifmap_pop_num_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(229): undeclared symbol 'preheat_done_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(245): undeclared symbol 'ifmap_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(246): undeclared symbol 'ifmap_pop_num_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(247): undeclared symbol 'ifmap_permit_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(248): undeclared symbol 'ifmap_fifo_full_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(249): undeclared symbol 'ifmap_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(251): undeclared symbol 'ifmap_glb_read_data_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(253): undeclared symbol 'ipsum_need_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(254): undeclared symbol 'ipsum_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(255): undeclared symbol 'ipsum_permit_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(256): undeclared symbol 'ipsum_fifo_full_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(257): undeclared symbol 'ipsum_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(261): undeclared symbol 'opsum_need_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(262): undeclared symbol 'opsum_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(263): undeclared symbol 'opsum_permit_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(264): undeclared symbol 'opsum_fifo_empty_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(266): undeclared symbol 'opsum_pop_web_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(272): undeclared symbol 'ifmap_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(273): undeclared symbol 'ifmap_fifo_push_data_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(274): undeclared symbol 'ifmap_fifo_push_mod_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(275): undeclared symbol 'ifmap_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(276): undeclared symbol 'ifmap_glb_read_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(277): undeclared symbol 'ifmap_glb_read_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(278): undeclared symbol 'ifmap_fifo_done_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(280): undeclared symbol 'ipsum_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(281): undeclared symbol 'ipsum_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(283): undeclared symbol 'ipsum_glb_read_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(284): undeclared symbol 'ipsum_glb_read_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(286): undeclared symbol 'opsum_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(287): undeclared symbol 'opsum_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(289): undeclared symbol 'opsum_glb_write_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(290): undeclared symbol 'opsum_glb_write_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(291): undeclared symbol 'opsum_glb_write_web_o', assumed default net type 'wire'
+[ERROR (VERI-1128)] ../src/controller/token_engine/token_engine.sv(118): 'ipsum_fifo_pop_en' is not declared
+[ERROR (VERI-1072)] ../src/controller/token_engine/token_engine.sv(313): module 'token_engine' is ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../src/controller/token_engine/token_engine.sv(118): 'ipsum_fifo_pop_en' is not declared
+	[ERROR (VERI-1072)] ../src/controller/token_engine/token_engine.sv(313): module 'token_engine' is ignored due to previous errors
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
+
+% include ../script/superlint.tcl
+%% clear -all
+INFO (IPF121): Cleared environment completely for new design analysis.
+%% 
+%% # Config rules
+%% config_rtlds -rule -enable -domain { LINT }
+%% config_rtlds -rule -disable -tag { CAS_IS_DFRC SIG_IS_DLCK SIG_NO_TGFL SIG_NO_TGRS SIG_NO_TGST FSM_NO_MTRN FSM_NO_TRRN }
+%% # vsd2023_constrain //
+%% config_rtlds -rule  -disable -category { NAMING AUTO_FORMAL_DEAD_CODE AUTO_FORMAL_SIGNALS AUTO_FORMAL_ARITHMETIC_OVERFLOW }
+WARNING (WSW005): The value "AUTO_FORMAL_ARITHMETIC_OVERFLOW" is deprecated and should be replaced with "AUTO_FORMAL_OVERFLOW".
+%% config_rtlds -rule  -disable -tag { IDN_NR_SVKY ARY_MS_DRNG IDN_NR_AMKY IDN_NR_CKYW IDN_NR_SVKW ARY_NR_LBND VAR_NR_INDL INS_NR_PTEX INP_NO_USED OTP_NR_ASYA FLP_NR_MXCS OTP_UC_INST OTP_NR_UDRV REG_NR_TRRC INS_NR_INPR MOD_NS_GLGC } 
+WARNING (WRTL017): Unable to find a matching tag for IDN_NR_SVKY,IDN_NR_AMKY,VAR_NR_INDL. These items will be ignored
+%% config_rtlds -rule  -disable -tag { REG_NR_RWRC  }
+%% config_rtlds -rule  -disable -tag { BUS_IS_FLOT ASG_IS_XRCH }
+%% config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
+%% #config_rtlds -rule  -reset -sync
+%% # vsd2023_constrain //
+%% 
+%% analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+[-- (VERI-1482)] Analyzing Verilog file '/usr/cad/cadence/JASPER/jasper_2022.03p002/lib/verilog/packages/std/std.sv' into library 'std'
+[-- (VERI-1482)] Analyzing Verilog file '../src/controller/token_engine/token_engine.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(1): analyzing included file '../src/controller/token_engine/weight_load_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/weight_load_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(2): analyzing included file '../src/controller/token_engine/pe_array_controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/pe_array_controller.sv(1): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(3): analyzing included file '../src/controller/token_engine/Layer1_Controller.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(4): analyzing included file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(5): analyzing included file '../src/controller/token_engine/L2C_preheat.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/L2C_preheat.sv(5): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(6): analyzing included file '../src/controller/token_engine/L3C_fifo_ctrl.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(7): analyzing included file '../src/controller/token_engine/token_arbiter.sv'
+[INFO (VERI-1328)] ../src/controller/token_engine/token_engine.sv(8): analyzing included file '../src/controller/token_engine/../../../include/define.svh'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(234): undeclared symbol 'ifmap_fifo_done_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(262): undeclared symbol 'ipsum_need_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(263): undeclared symbol 'ipsum_need_pop_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(264): undeclared symbol 'ipsum_permit_push_i', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(281): undeclared symbol 'ifmap_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(282): undeclared symbol 'ifmap_fifo_push_data_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(283): undeclared symbol 'ifmap_fifo_push_mod_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(285): undeclared symbol 'ifmap_glb_read_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(286): undeclared symbol 'ifmap_glb_read_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(287): undeclared symbol 'ifmap_fifo_done_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(289): undeclared symbol 'ipsum_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(290): undeclared symbol 'ipsum_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(292): undeclared symbol 'ipsum_glb_read_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(293): undeclared symbol 'ipsum_glb_read_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(295): undeclared symbol 'opsum_fifo_pop_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(296): undeclared symbol 'opsum_fifo_push_en_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(298): undeclared symbol 'opsum_glb_write_req_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(299): undeclared symbol 'opsum_glb_write_addr_o', assumed default net type 'wire'
+[INFO (VERI-2561)] ../src/controller/token_engine/token_engine.sv(300): undeclared symbol 'opsum_glb_write_web_o', assumed default net type 'wire'
+[ERROR (VERI-1128)] ../src/controller/token_engine/token_engine.sv(128): 'ipsum_fifo_pop_en' is not declared
+[ERROR (VERI-1072)] ../src/controller/token_engine/token_engine.sv(322): module 'token_engine' is ignored due to previous errors
+Summary of errors detected:
+	[ERROR (VERI-1128)] ../src/controller/token_engine/token_engine.sv(128): 'ipsum_fifo_pop_en' is not declared
+	[ERROR (VERI-1072)] ../src/controller/token_engine/token_engine.sv(322): module 'token_engine' is ignored due to previous errors
+ERROR at line 15 in file ../script/superlint.tcl, more info in Tcl-variable errorInfo
+ERROR (ENL034): 2 errors detected in the design file(s).
+
+
+INFO (IPL005): Received request to exit from the console.
+INFO (IPL014): Waiting for the Tcl-thread to exit.
+INFO (IPL018): The peak resident set memory use for this session was 0.665 GB.
+INFO (IPL015): The Tcl-thread exited with status 0.
+INFO (IPL016): Exiting the analysis session with status 0.

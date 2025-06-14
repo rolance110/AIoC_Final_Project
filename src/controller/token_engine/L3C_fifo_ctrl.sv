@@ -35,7 +35,7 @@ module L3C_fifo_ctrl #(
     output logic [31:0] ifmap_fifo_push_en_o,
     output logic [31:0] ifmap_fifo_push_data_o [31:0],
     output logic [31:0] ifmap_fifo_push_mod_o,
-    output logic [31:0] ifmap_fifo_pop_en_o,
+    output logic [31:0] ifmap_fifo_pop_matrix_o,
     output logic [31:0] ifmap_glb_read_req_o,
     output logic [31:0] ifmap_glb_read_addr_o [31:0],
     output logic [31:0] ifmap_fifo_done_o,
@@ -79,8 +79,7 @@ generate
             .ifmap_fifo_push_en_o(ifmap_fifo_push_en_o[i]),
             .ifmap_fifo_push_data_o(ifmap_fifo_push_data_o[i]),
             .ifmap_fifo_push_mod_o(ifmap_fifo_push_mod_o[i]),
-            // from FIFO
-            .ifmap_fifo_pop_en_o(ifmap_fifo_pop_en_o[i]),
+            .ifmap_fifo_pop_en_o(ifmap_fifo_pop_matrix_o[i]),
             // Arbiter
             .ifmap_glb_read_req_o(ifmap_glb_read_req_o[i]),
             .ifmap_glb_read_addr_o(ifmap_glb_read_addr_o[i]),

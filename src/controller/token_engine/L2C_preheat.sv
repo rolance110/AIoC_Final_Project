@@ -13,7 +13,7 @@ module L2C_preheat #(
     input  logic [31:0] ifmap_fifo_done_i,
 
     output logic [31:0] ifmap_need_pop_o,
-    output logic [4:0] ifmap_pop_num_o [31:0],
+    output logic [31:0] ifmap_pop_num_o [31:0],
     output logic preheat_done_o
 );
 
@@ -63,57 +63,57 @@ integer i, j;
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         for (i = 0; i < 32; i++)
-            ifmap_pop_num_o[i]  <= 5'd0;
+            ifmap_pop_num_o[i]  <= 32'd0;
     end 
     else if ((cs == WAIT_DONE) && (layer_type_i == `POINTWISE)) begin
         for(j = 0; j < 32; j++)begin
-            ifmap_pop_num_o[j] <= 5'd1;
+            ifmap_pop_num_o[j] <= 32'd1;
         end
     end
     else if ((cs == WAIT_DONE) && (layer_type_i == `DEPTHWISE)) begin
-        ifmap_pop_num_o[0]  <= 5'd3;
-        ifmap_pop_num_o[1]  <= 5'd3;
-        ifmap_pop_num_o[2]  <= 5'd3;
+        ifmap_pop_num_o[0]  <= 32'd3;
+        ifmap_pop_num_o[1]  <= 32'd3;
+        ifmap_pop_num_o[2]  <= 32'd3;
 
-        ifmap_pop_num_o[3]  <= 5'd6;
-        ifmap_pop_num_o[4]  <= 5'd6;
-        ifmap_pop_num_o[5]  <= 5'd6;
+        ifmap_pop_num_o[3]  <= 32'd6;
+        ifmap_pop_num_o[4]  <= 32'd6;
+        ifmap_pop_num_o[5]  <= 32'd6;
 
-        ifmap_pop_num_o[6]  <= 5'd9;
-        ifmap_pop_num_o[7]  <= 5'd9;
-        ifmap_pop_num_o[8]  <= 5'd9;
+        ifmap_pop_num_o[6]  <= 32'd9;
+        ifmap_pop_num_o[7]  <= 32'd9;
+        ifmap_pop_num_o[8]  <= 32'd9;
 
-        ifmap_pop_num_o[9]  <= 5'd12;
-        ifmap_pop_num_o[10] <= 5'd12;
-        ifmap_pop_num_o[11] <= 5'd12;
+        ifmap_pop_num_o[9]  <= 32'd12;
+        ifmap_pop_num_o[10] <= 32'd12;
+        ifmap_pop_num_o[11] <= 32'd12;
 
-        ifmap_pop_num_o[12] <= 5'd15;
-        ifmap_pop_num_o[13] <= 5'd15;
-        ifmap_pop_num_o[14] <= 5'd15;
+        ifmap_pop_num_o[12] <= 32'd15;
+        ifmap_pop_num_o[13] <= 32'd15;
+        ifmap_pop_num_o[14] <= 32'd15;
 
-        ifmap_pop_num_o[15] <= 5'd18;
-        ifmap_pop_num_o[16] <= 5'd18;
-        ifmap_pop_num_o[17] <= 5'd18;
+        ifmap_pop_num_o[15] <= 32'd18;
+        ifmap_pop_num_o[16] <= 32'd18;
+        ifmap_pop_num_o[17] <= 32'd18;
 
-        ifmap_pop_num_o[18] <= 5'd21;
-        ifmap_pop_num_o[19] <= 5'd21;
-        ifmap_pop_num_o[20] <= 5'd21;
+        ifmap_pop_num_o[18] <= 32'd21;
+        ifmap_pop_num_o[19] <= 32'd21;
+        ifmap_pop_num_o[20] <= 32'd21;
 
-        ifmap_pop_num_o[21] <= 5'd24;
-        ifmap_pop_num_o[22] <= 5'd24;
-        ifmap_pop_num_o[23] <= 5'd24;
+        ifmap_pop_num_o[21] <= 32'd24;
+        ifmap_pop_num_o[22] <= 32'd24;
+        ifmap_pop_num_o[23] <= 32'd24;
 
-        ifmap_pop_num_o[24] <= 5'd27;
-        ifmap_pop_num_o[25] <= 5'd27;
-        ifmap_pop_num_o[26] <= 5'd27;   
+        ifmap_pop_num_o[24] <= 32'd27;
+        ifmap_pop_num_o[25] <= 32'd27;
+        ifmap_pop_num_o[26] <= 32'd27;   
 
-        ifmap_pop_num_o[27] <= 5'd30;
-        ifmap_pop_num_o[28] <= 5'd30;
-        ifmap_pop_num_o[29] <= 5'd30;
+        ifmap_pop_num_o[27] <= 32'd30;
+        ifmap_pop_num_o[28] <= 32'd30;
+        ifmap_pop_num_o[29] <= 32'd30;
     end
     else if (cs == DONE) begin
         for (i = 0; i < NUM_IFMAP_FIFO; i++) begin
-            ifmap_pop_num_o[i]  <= 5'd0;
+            ifmap_pop_num_o[i]  <= 32'd0;
         end
     end
 end
