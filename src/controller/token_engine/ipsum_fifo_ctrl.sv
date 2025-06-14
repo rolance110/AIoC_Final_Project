@@ -1,65 +1,129 @@
-module ipsum_fifo_ctrl(
+module ipsum_fifo_ctrl (
     input  logic        clk,
     input  logic        rst_n,
 
-    // 控制來源來自 L2
-    input  logic        ipsum_fifo_reset_i, // FIFO reset signal
-    input  logic        ipsum_need_push_i,
-    input  logic        ipsum_need_pop_i,
-    
-    // from arbiter
-    // Arbiter 拉起表示你這個 FIFO 可以存取 GLB
+    // From L2 Controller
+    input  logic        ipsum_fifo_reset_i, // Reset FIFO
+    input  logic        ipsum_need_pop_i,   // 新任務觸發
+    input  logic [4:0]  ipsum_pop_num_i,    // 本次需 pop 幾次
+
+    // From Arbiter
     input  logic        ipsum_permit_push_i,
 
-
-    // from 對應的 fifo (1 fifo_ctrl to 1 fifo)
+    // FIFO 狀態
     input  logic        ipsum_fifo_full_i,
     input  logic        ipsum_fifo_empty_i,
 
-    // GLB base address（由 Token Engine 統一給予）
+    // GLB 控制
     input  logic [31:0] ipsum_glb_base_addr_i,
+    input  logic [31:0] ipsum_glb_read_data_i,
 
+    // FIFO 寫入端
 
-    // to 對應的 fifo (1 fifo_ctrl to 1 fifo)
-    output logic        ipsum_fifo_reset_o, // reset signal to fifo
-    output logic        ipsum_fifo_push_en_o, // GLB push to fifo
-    output logic        ipsum_fifo_pop_en_o,  // fifo pop to PE
+    output logic        ipsum_fifo_reset_o, // FIFO 重置輸出
+    output logic        ipsum_fifo_push_en_o,
+    output logic [31:0] ipsum_fifo_push_data_o,
+    output logic        ipsum_fifo_push_mod_o,
 
-    // 向 arbiter 發送要讀取的 token 
+    // FIFO 讀出端
+    output logic        ipsum_fifo_pop_en_o,
+
+    // Arbiter
     output logic        ipsum_glb_read_req_o,
-    output logic [31:0] ipsum_glb_read_addr_o
+    output logic [31:0] ipsum_glb_read_addr_o,
+
+    // 完成訊號
+    output logic        ipsum_fifo_done_o
 );
 
-// Internal state
-logic        push_pending;
-logic [15:0] read_ptr;
+logic [4:0] pop_num_buf;
 
-// Push 任務記憶與完成控制
+    // 直接將輸入連接到輸出
+assign ipsum_fifo_reset_o = ipsum_fifo_reset_i; // 直接將輸入連接到輸出
+    
+typedef enum logic [1:0] {
+    IDLE,
+    POP,
+    PUSH
+} state_t;
+
+state_t cs, ns;
+logic [15:0] read_ptr;
+logic [4:0]  pop_cnt;
+logic        refill_mode;
+
+// 狀態記憶
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
-        push_pending <= 1'b0;
-    else if (ipsum_need_push_i)
-        push_pending <= 1'b1;
-    else if (ipsum_fifo_push_en_o)
-        push_pending <= 1'b0;
+        cs <= IDLE;
+    else
+        cs <= ns;
 end
 
-//fixme: GLB read 位址累加 (depthwise 不單純)
+// 狀態轉移
+always_comb begin
+    unique case (cs)
+        IDLE: begin
+            if (ipsum_need_pop_i)
+                ns = POP;
+            else
+                ns = IDLE;
+        end
+        POP: begin
+            if (pop_cnt == (pop_num_buf-5'd1))
+                ns = IDLE;
+            else if (ipsum_fifo_empty_i)
+                ns = PUSH;
+            else
+                ns = POP;
+        end
+        PUSH: begin
+            if (ipsum_fifo_full_i)
+                ns = POP;
+            else
+                ns = PUSH;
+        end
+        default: ns = IDLE;
+    endcase
+end
+
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
-        read_ptr <= 16'd0;
-    else if (ipsum_fifo_reset_i)
+        pop_num_buf <= 5'd0;
+    else if (cs == IDLE)
+        pop_num_buf <= ipsum_pop_num_i;
+end
+
+    // 讀取地址管理
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n || ipsum_fifo_reset_i)
         read_ptr <= 16'd0;
     else if (ipsum_fifo_push_en_o)
         read_ptr <= read_ptr + 16'd1;
 end
+ 
+assign ipsum_glb_read_addr_o = ipsum_glb_base_addr_i + read_ptr;
 
-// Assign 控制訊號
-assign ipsum_fifo_reset_o     = ipsum_fifo_reset_i;
-assign ipsum_glb_read_req_o   = push_pending && !ipsum_fifo_full_i;
-assign ipsum_glb_read_addr_o  = ipsum_glb_base_addr_i + read_ptr;
-assign ipsum_fifo_push_en_o   = push_pending && ipsum_permit_push_i && !ipsum_fifo_full_i;
-assign ipsum_fifo_pop_en_o    = ipsum_need_pop_i && !ipsum_fifo_empty_i;
+// Arbiter Request
+assign ipsum_glb_read_req_o = (cs == PUSH) && !ipsum_fifo_full_i;
 
+// PUSH 控制
+assign ipsum_fifo_push_en_o   = (cs == PUSH) && ipsum_permit_push_i && !ipsum_fifo_full_i;
+assign ipsum_fifo_push_data_o = ipsum_glb_read_data_i;
+assign ipsum_fifo_push_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可自行加 burst 條件）
+
+// POP 控制
+assign ipsum_fifo_pop_en_o = (cs == POP) && !ipsum_fifo_empty_i;
+
+// pop count 累加
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n || cs == IDLE)
+        pop_cnt <= 5'd0;
+    else if (ipsum_fifo_pop_en_o)
+        pop_cnt <= pop_cnt + 5'd1;
+end
+
+// 完成條件
+assign ipsum_fifo_done_o = (cs == IDLE);
 
 endmodule

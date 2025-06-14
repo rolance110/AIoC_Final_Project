@@ -14,6 +14,7 @@ module pe_array #(
 
     // PE enable 控制（每個 PE 可被獨立 enable）
     input  logic [ROW-1:0][COL-1:0] PE_en_matrix,
+    input logic [ROW-1:0][COL-1:0] PE_stall_matrix, // 每個 PE 的 stall 狀態
 
     // 輸出結果（給 adder tree）
     output logic [15:0] mul_out_matrix [ROW-1:0][COL-1:0]
@@ -50,6 +51,7 @@ generate
                 .w_load_en (load_en[r][c]),
 
                 .PE_en     (PE_en_matrix[r][c]),
+                .PE_stall  (PE_stall_matrix[r][c]),
 
                 .ifmap     (ifmap_chain_in[r][c]), // 來自上一個 PE 或 ifmap_row0
                 .ifmap_out (ifmap_chain_out[r][c]),

@@ -34,6 +34,7 @@ module conv_unit (
 
 //* PE array
     input  logic [31:0][31:0]  PE_en_matrix, // 32*32 PE array enable matrix
+    input  logic [31:0][31:0]  PE_stall_matrix, // 32*32 PE array stall matrix
 
 //* ipsum fifo 
     input  logic [31:0]        push_ipsum_en,
@@ -98,6 +99,7 @@ module conv_unit (
         .weight_in      (weight_in),
         .load_en        (weight_load_en),
         .PE_en_matrix   (PE_en_matrix),
+        .PE_stall_matrix(PE_stall_matrix),
         .mul_out_matrix (mul_out_matrix)
     );
 

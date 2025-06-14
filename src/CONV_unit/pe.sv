@@ -6,6 +6,7 @@ module pe (
     input  logic [7:0]  w_in,
     input  logic        w_load_en,
     input  logic        PE_en,
+    input  logic        PE_stall,
     input  logic [7:0]  ifmap,
 
     output logic [7:0]  ifmap_out,   // 傳下去的資料
@@ -32,7 +33,7 @@ module pe (
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             ifmap_out <= 8'd0;
-        else if (PE_en)
+        else if (PE_stall)
             ifmap_out <= ifmap;
         else
             ifmap_out <= 8'd0;

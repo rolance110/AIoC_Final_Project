@@ -1,3 +1,7 @@
+../src/controller/token_engine/ifmap_fifo_ctrl.sv
+
+
+
 ../src/CONV_unit/ifmap_fifo.sv
 ../src/CONV_unit/ifmap_fifo_bank.sv
 ../src/CONV_unit/opsum_fifo.sv
