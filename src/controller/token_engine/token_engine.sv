@@ -18,25 +18,25 @@ module token_engine (
     // 來自 Layer Decoder 的資訊（tile_K, tile_D, layer_type, stride, ...）
     input  logic [1:0]   layer_type_i,
 
-    input logic  [31:0] weight_GLB_base_addr,
-    input logic  [31:0] ifmap_GLB_base_addr,
-    input logic  [31:0] ipsum_GLB_base_addr,
-    input logic  [31:0] bias_GLB_base_addr,
-    input logic  [31:0] opsum_GLB_base_addr,
+    input logic  [31:0] weight_GLB_base_addr_i,
+    input logic  [31:0] ifmap_GLB_base_addr_i,
+    input logic  [31:0] ipsum_GLB_base_addr_i,
+    input logic  [31:0] bias_GLB_base_addr_i,
+    input logic  [31:0] opsum_GLB_base_addr_i,
 
-    input logic is_bias,
+    input logic is_bias_i,
 
 
     input logic [31:0] tile_n_i,
 
-    input logic [6:0] in_C_i,
-    input logic [6:0] in_R_i,
+    input logic [7:0] in_C_i,
+    input logic [7:0] in_R_i,
     input logic [1:0] pad_R_i,
     input logic [1:0] pad_L_i,
-    input logic [6:0] out_C_i,
-    input logic [6:0] out_R_i,
-    input logic [6:0] IC_real_i,
-    input logic [6:0] OC_real_i,
+    input logic [7:0] out_C_i,
+    input logic [7:0] out_R_i,
+    input logic [7:0] IC_real_i,
+    input logic [7:0] OC_real_i,
     input logic [31:0] On_real_i,
 
 //* from GLB
@@ -87,7 +87,7 @@ logic [31:0] weight_addr;
 logic [1:0] weight_load_byte_type;
 logic [31:0] ifmap_fifo_pop_en;
 
-logic [31:0] ifmap_need_pop, ifmap_permit_push, ifmap_fifo_reset;
+logic [31:0] ifmap_need_pop_matrix, ifmap_permit_push, ifmap_fifo_reset;
 logic [31:0] ifmap_fifo_push_en, ifmap_fifo_reset_o;
 logic [31:0] ifmap_glb_read_req, ifmap_glb_read_addr;
 
@@ -106,9 +106,10 @@ logic        glb_read_req, glb_write_req;
 logic [31:0] glb_read_addr, glb_write_addr;
 logic [3:0]  glb_read_web, glb_write_web;
 logic [31:0] permit_ifmap, permit_ipsum, permit_opsum;
-logic [31:0] ifmap_pop_num [31:0];
+logic [31:0] ifmap_pop_num_matrix [31:0];
 
-logic weight_load_finish;
+logic weight_load_done
+;
 
 assign ifmap_read_req_vec   = ifmap_glb_read_req;
 assign ifmap_read_addr_vec  = ifmap_glb_read_addr;
@@ -132,25 +133,27 @@ assign opsum_pop_mod = opsum_pop_web;
 
 weight_load_controller weight_load_controller_dut(
     .clk(clk), .rst_n(rst_n),
-    .weight_load_state(weight_load_state),
+    .weight_load_state_i(weight_load_state),
     .layer_type_i(layer_type_i),
-    .weight_GLB_base_addr(weight_GLB_base_addr),
-    .weight_load_WEB(weight_load_WEB),
-    .weight_addr(weight_addr),
-    .weight_load_byte_type(weight_load_byte_type),
-    .weight_load_finish(weight_load_finish)
+    .weight_GLB_base_addr_i(weight_GLB_base_addr_i),
+    .weight_load_WEB_o(weight_load_WEB),
+    .weight_addr_o(weight_addr_o),
+    .weight_load_byte_type_o(weight_load_byte_type),
+    .weight_load_done_o(weight_load_done)
 );
-logic start_preheat;
-logic start_normal;
 logic preheat_done;
+logic normal_loop_done;
+logic init_fifo_pe_state;
+logic preheat_state;
+logic normal_loop_state;
 pe_array_controller pe_array_controller(
     .clk(clk),
     .rst_n(rst_n),
 //* input
     .layer_type(layer_type_i),
 
-    .start_preheat_i(start_preheat), 
-    .start_normal_i(start_normal), 
+    .start_preheat_i(preheat_state), 
+    .start_normal_i(normal_loop_state), 
 
     .ifmap_fifo_pop_matrix_i(ifmap_fifo_pop_matrix),
 
@@ -159,10 +162,7 @@ pe_array_controller pe_array_controller(
     .PE_en_matrix(PE_en_matrix_o)
 );
 
-logic normal_loop_done;
-logic init_fifo_pe_state;
-logic preheat_state;
-logic normal_loop_state;
+
 //* Layer 1 Controller ==============================================
 Layer1_Controller Layer1_Controller (
     .clk(clk),
@@ -172,17 +172,17 @@ Layer1_Controller Layer1_Controller (
     .pass_start_i(pass_start_i),
     .pass_done_o(pass_done_o),
 
-    .weight_load_done_i(weight_load_finish),
+    .weight_load_done_i(weight_load_done),
     // .init_fifo_pe_done_i(init_fifo_pe_done_i), // 1 cycle
     .preheat_done_i(preheat_done),
     .normal_loop_done_i(normal_loop_done),
 
 //* output
     // 傳給下層 L2 的控制
-    .weight_load_state(weight_load_state),   // INIT_WEIGHT
-    .init_fifo_pe_state(init_fifo_pe_state),  // INIT_FIFO_PE
-    .preheat_state(preheat_state),       // 下層 PREHEAT 觸發
-    .normal_loop_state(normal_loop_state)  // 下層 FLOW 觸發
+    .weight_load_state_o(weight_load_state),   // INIT_WEIGHT
+    .init_fifo_pe_state_o(init_fifo_pe_state),  // INIT_FIFO_PE
+    .preheat_state_o(preheat_state),       // 下層 PREHEAT 觸發
+    .normal_loop_state_o(normal_loop_state)  // 下層 FLOW 觸發
 );
 
 
@@ -197,11 +197,11 @@ L2C_init_fifo_pe #(
     .rst_n(rst_n),
 //* input
     .init_fifo_pe_state_i(init_fifo_pe_state),   // 啟動初始化
-    .ifmap_glb_base_addr_i(ifmap_GLB_base_addr), // ifmap base address 由 TB 配置
-    .ipsum_glb_base_addr_i(ipsum_GLB_base_addr), // ipsum FIFO base address 由 TB 配置
-    .opsum_glb_base_addr_i(opsum_GLB_base_addr), // opsum FIFO base address 由 TB 配置
-    .bias_glb_base_addr_i(bias_GLB_base_addr),   // bias  FIFO base address 由 TB 配置
-    .is_bias(is_bias), // 判斷現在 ipsum_fifo 是要輸入 bias or ipsum
+    .ifmap_glb_base_addr_i(ifmap_GLB_base_addr_i), // ifmap base address 由 TB 配置
+    .ipsum_glb_base_addr_i(ipsum_GLB_base_addr_i), // ipsum FIFO base address 由 TB 配置
+    .opsum_glb_base_addr_i(opsum_GLB_base_addr_i), // opsum FIFO base address 由 TB 配置
+    .bias_glb_base_addr_i(bias_GLB_base_addr_i),   // bias  FIFO base address 由 TB 配置
+    .is_bias_i(is_bias_i), // 判斷現在 ipsum_fifo 是要輸入 bias or ipsum
 
     //* From Tile_Scheduler
     .layer_type_i(layer_type_i),
@@ -223,18 +223,18 @@ L2C_init_fifo_pe #(
     .ipsum_fifo_reset_o(ipsum_fifo_reset), // reset signal for ipsum FIFO
     .opsum_fifo_reset_o(opsum_fifo_reset) // reset signal for opsum FIFO
 );
-
+logic [31:0] ifmap_fifo_done_matrix;
 L2C_preheat #(
     .NUM_IFMAP_FIFO(32)
 ) L2C_preheat_dut (
     .clk(clk),
     .rst_n(rst_n),
-    .start_preheat_i(start_preheat),
+    .start_preheat_i(preheat_state),
     .layer_type_i(layer_type_i),
-    .ifmap_fifo_done_i(ifmap_fifo_done_i),
+    .ifmap_fifo_done_i(ifmap_fifo_done_matrix),
 
-    .ifmap_need_pop_o(ifmap_need_pop),
-    .ifmap_pop_num_o(ifmap_pop_num),
+    .ifmap_need_pop_o(ifmap_need_pop_matrix),
+    .ifmap_pop_num_o(ifmap_pop_num_matrix),
     .preheat_done_o(preheat_done)
 
 );
@@ -251,8 +251,8 @@ L3C_fifo_ctrl #(
 //* input
     //======== L2 控制訊號 (每條 FIFO 的需求與 reset 控制) ========
     .ifmap_fifo_reset_i(ifmap_fifo_reset),
-    .ifmap_need_pop_i(ifmap_need_pop),
-    .ifmap_pop_num_i(ifmap_pop_num),
+    .ifmap_need_pop_i(ifmap_need_pop_matrix),
+    .ifmap_pop_num_i(ifmap_pop_num_matrix),
     .ifmap_permit_push_i(ifmap_permit_push),
     .ifmap_fifo_full_i(ifmap_fifo_full),
     .ifmap_fifo_empty_i(ifmap_fifo_empty),
@@ -282,9 +282,9 @@ L3C_fifo_ctrl #(
     .ifmap_fifo_push_data_o(ifmap_fifo_push_data_o),
     .ifmap_fifo_push_mod_o(ifmap_fifo_push_mod_o),
     .ifmap_fifo_pop_matrix_o(ifmap_fifo_pop_matrix),
-    .ifmap_glb_read_req_o(ifmap_glb_read_req_o),
-    .ifmap_glb_read_addr_o(ifmap_glb_read_addr_o),
-    .ifmap_fifo_done_o(ifmap_fifo_done_o),
+    .ifmap_glb_read_req_o(ifmap_glb_read_req),
+    .ifmap_glb_read_addr_o(ifmap_glb_read_addr),
+    .ifmap_fifo_done_o(ifmap_fifo_done_matrix),
 
     .ipsum_fifo_push_en_o(ipsum_fifo_push_en_o),
     .ipsum_fifo_pop_en_o(ipsum_fifo_pop_en_o),

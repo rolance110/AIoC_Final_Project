@@ -24,12 +24,12 @@ module L2C_init_fifo_pe #(
     input logic [1:0] layer_type_i,
     // ifmap base addr require
     input logic [31:0] tile_n_i,
-    input logic [8:0] in_C_i,
+    input logic [7:0] in_C_i,
     input logic [1:0] pad_R_i,
     input logic [1:0] pad_L_i,
     // ofmap base addr require
     input logic [31:0] On_real_i,
-    input logic [8:0] out_C_i,
+    input logic [7:0] out_C_i,
 
 
     output logic [31:0] ifmap_fifo_base_addr_o [31:0],

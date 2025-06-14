@@ -12,10 +12,10 @@ module Layer1_Controller (
     input  logic        normal_loop_done_i,
 
     // 傳給下層 L2 的控制
-    output logic        weight_load_state,   // INIT_WEIGHT
-    output logic        init_fifo_pe_state,  // INIT_FIFO_PE
-    output logic        preheat_state,       // 下層 PREHEAT 觸發
-    output logic        normal_loop_state  // 下層 FLOW 觸發
+    output logic        weight_load_state_o,   // INIT_WEIGHT
+    output logic        init_fifo_pe_state_o,  // INIT_FIFO_PE
+    output logic        preheat_state_o,       // 下層 PREHEAT 觸發
+    output logic        normal_loop_state_o  // 下層 FLOW 觸發
 
 );
 
@@ -39,10 +39,10 @@ always_ff@(posedge clk or negedge rst_n) begin
 end
 
 logic all_row_finish; // 由下層 L2 回報，所有 row 都完成
-assign weight_load_state = (L1C_cs == INIT_WEIGHT);
-assign init_fifo_pe_state = (L1C_cs == INIT_FIFO_PE);
-assign preheat_state     = (L1C_cs == PREHEAT);
-assign normal_loop_state = (L1C_cs == NORMAL_LOOP);
+assign weight_load_state_o = (L1C_cs == INIT_WEIGHT);
+assign init_fifo_pe_state_o = (L1C_cs == INIT_FIFO_PE);
+assign preheat_state_o     = (L1C_cs == PREHEAT);
+assign normal_loop_state_o = (L1C_cs == NORMAL_LOOP);
 
 always_comb begin
     case(L1C_cs)
