@@ -195,13 +195,13 @@ always_comb begin
         WEIGHT_LOAD: begin
             case(DW_PW_sel)//OKAY
                 1'd0: begin //DW
-                    if(cnt == row_en - 6'd1)
+                    if((cnt == row_en - 6'd1)  && (valid_w && ready_w))
                         ns = IFMAP_LOAD;
                     else
                         ns = WEIGHT_LOAD;
                 end
                 1'd1: begin //PW
-                    if(cnt == weight_load_time)
+                    if((cnt == weight_load_time) && (valid_w && ready_w))
                         ns = IFMAP_LOAD;
                     else
                         ns = WEIGHT_LOAD;
@@ -212,20 +212,20 @@ always_comb begin
             case(DW_PW_sel)
                 1'd0: begin //DW
                     if(dw_open_f) begin
-                        if(cnt == dw_time_3)
+                        if(cnt == dw_time_3 && (valid_if && ready_if))
                             ns = PASS;
                         else
                             ns = IFMAP_LOAD;
                     end
                     else begin
-                        if(cnt[4:0] == col_en - 5'd1)
+                        if((cnt[4:0] == col_en - 5'd1) && (valid_if && ready_if))
                             ns = IPSUM_LOAD;
                         else
                             ns = IFMAP_LOAD;
                     end
                 end
                 1'd1: begin //PW
-                    if(cnt[4:0] == ifmap_load_time)
+                    if(cnt[4:0] == ifmap_load_time  && (valid_if && ready_if))
                         ns = IPSUM_LOAD;
                     else
                         ns = IFMAP_LOAD;
@@ -247,7 +247,7 @@ always_comb begin
             case(DW_PW_sel)
                 1'd0: begin //DW
                     if(dw_open_f) begin//第一次只要抓最多10筆
-                        if(cnt[3:0] == dw_open_num - 4'd1) 
+                        if((cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip))
                             ns = COMPUTE;
                         else
                             ns = IPSUM_LOAD;
@@ -256,21 +256,21 @@ always_comb begin
                         case(dw_stride)
                             1'd0: begin
                                 if(dw_input_num < 2'd3) begin//代表送一筆就夠了
-                                    if(cnt[3:0] == dw_open_num - 4'd1) begin//max 10筆
+                                    if((cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip)) begin//max 10筆
                                         ns = COMPUTE;
                                     end
                                     else
                                         ns = IPSUM_LOAD;
                                 end
                                 else begin//依舊要送兩筆, max 20筆
-                                    if(cnt[4:0] == dw_ip_num)
+                                    if((cnt[4:0] == dw_ip_num) && (valid_ip && ready_ip))
                                         ns = COMPUTE;
                                     else
                                         ns = IPSUM_LOAD;
                                 end
                             end
                             1'd1:begin//固定存一筆(因為1或2都可以一次傳送進來使用) max 10筆
-                                if(cnt[3:0] == dw_open_num - 4'd1) begin
+                                if((cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip)) begin
                                     ns = COMPUTE;
                                 end
                                 else
@@ -281,18 +281,18 @@ always_comb begin
                 end
                 1'd1: begin //PW
                     if(pw_first_f) begin //第一個8個cycle的weight load
-                        if(cnt[6:0] == pw_time_8) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
+                        if((cnt[6:0] == pw_time_8) && (valid_ip && ready_ip)) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
                             ns = COMPUTE;
                         else 
                             ns = IPSUM_LOAD;
                     end
                     else if(pw_close_f) begin //關閉PE array
-                        if(cnt[5:0] == pw_close_num)
+                        if((cnt[5:0] == pw_close_num) && (valid_ip && ready_ip))
                             ns = COMPUTE;
                         else 
                             ns = IPSUM_LOAD;
                     end
-                    else if(cnt[6:0] == ipsum_load_time)
+                    else if((cnt[6:0] == ipsum_load_time) && (valid_ip && ready_ip))
                         ns = COMPUTE;
                     else 
                         ns = IPSUM_LOAD;
@@ -321,7 +321,7 @@ always_comb begin
             case(DW_PW_sel)
                 1'd0: begin //DW，共10個FIFO
                     if(dw_open_f) begin//第一次最多只要輸出10筆
-                        if(cnt[3:0] == dw_open_num - 4'd1)//最大10筆
+                        if((cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op))//最大10筆
                             ns = IDLE;
                         else
                             ns = OPSUM_OUT;
@@ -330,21 +330,21 @@ always_comb begin
                         case(dw_stride)
                             1'd0: begin
                                 if(dw_input_num < 2'd3) begin//一個FIFO送一次
-                                    if(cnt[3:0] == dw_open_num - 4'd1) begin//最大10筆
+                                    if((cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op)) begin//最大10筆
                                         ns = IDLE;
                                     end
                                     else
                                         ns = OPSUM_OUT;
                                 end
                                 else begin//一樣一個FIFO要送兩次
-                                    if(cnt[4:0] == dw_ip_num) //dw_ip_num = (col_en << 1) - 6'd1
+                                    if((cnt[4:0] == dw_ip_num) && (valid_op && ready_op)) //dw_ip_num = (col_en << 1) - 6'd1
                                         ns = IDLE; 
                                     else 
                                         ns = OPSUM_OUT;
                                 end
                             end
                             1'd1: begin
-                                if(cnt[3:0] == dw_open_num - 4'd1) begin//最大10筆
+                                if((cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op)) begin//最大10筆
                                     ns = IDLE;
                                 end
                                 else
@@ -355,18 +355,18 @@ always_comb begin
                 end
                 1'd1: begin //PW
                     if(pw_first_f) begin
-                        if(cnt[6:0] == pw_time_8) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
+                        if((cnt[6:0] == pw_time_8) && (valid_op && ready_op)) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
                             ns = IDLE; //代表這32個channel做完，已經
                         else 
                             ns = OPSUM_OUT;
                     end
                     else if(pw_close_f) begin //關閉PE array
-                        if(cnt[5:0] == pw_close_num)
+                        if((cnt[5:0] == pw_close_num) && (valid_op && ready_op))
                             ns = IDLE; //代表這32個channel做完，已經
                         else 
                             ns = OPSUM_OUT;
                     end
-                    else if(cnt[6:0] == opsum_load_time - 7'd1) begin
+                    else if((cnt[6:0] == opsum_load_time) && (valid_op && ready_op)) begin
                         ns = IDLE;
                     end
                     else
@@ -386,25 +386,25 @@ always_ff @(posedge clk) begin
             1'd0: begin//DW
                 if(dw_open_f) begin
                     if(((cs == PASS) && (cnt == 8'd2)) ||
-                    (cs == WEIGHT_LOAD && (cnt == row_en - 6'd1)) ||
-                    (cs == IFMAP_LOAD && (cnt == dw_time_3)) ||
-                    (cs == IPSUM_LOAD && (cnt[3:0] == dw_open_num - 4'd1)) ||
+                    (cs == WEIGHT_LOAD && (cnt == row_en - 6'd1) && (valid_w && ready_w)) ||
+                    (cs == IFMAP_LOAD && (cnt == dw_time_3) && (valid_if && ready_if)) ||
+                    (cs == IPSUM_LOAD && (cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip)) ||
                     (cs == COMPUTE) ||
-                    (cs == OPSUM_OUT && (cnt[3:0] == dw_open_num - 4'd1)))
+                    (cs == OPSUM_OUT && (cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op)))
                         cnt <= 8'd0;
                     else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == PASS))
                         cnt <= cnt + 8'd1; //每次都+1
                 end
                 else begin //TODO: stride 2 可能會有問題
-                    if(((cs == IFMAP_LOAD) && (cnt == (col_en - 5'd1))) ||
-                    ((cs == WEIGHT_LOAD) && (cnt == row_en - 6'd1)) ||
-                    ((cs == IPSUM_LOAD) && (dw_input_num < 2'd3) && (cnt[3:0] == dw_open_num - 4'd1)) ||
-                    ((cs == IPSUM_LOAD) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num)) ||
-                    ((cs == IPSUM_LOAD) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (dw_stride == 1'd1)) ||
+                    if(((cs == IFMAP_LOAD) && (cnt == (col_en - 5'd1)) && (valid_if && ready_if)) ||
+                    ((cs == WEIGHT_LOAD) && (cnt == row_en - 6'd1) && (valid_w && ready_w)) ||
+                    ((cs == IPSUM_LOAD) && (dw_input_num < 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip)) ||
+                    ((cs == IPSUM_LOAD) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num) && (valid_ip && ready_ip)) ||
+                    ((cs == IPSUM_LOAD) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (dw_stride == 1'd1) && (valid_ip && ready_ip)) ||
                     ((cs == COMPUTE) && (cnt == (dw_input_num - 2'd1))) ||
-                    ((cs == OPSUM_OUT) && (dw_input_num < 2'd3) && (cnt[3:0] == dw_open_num - 4'd1)) ||
-                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num) && (dw_stride == 1'd0)) ||
-                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (dw_stride == 1'd1))
+                    ((cs == OPSUM_OUT) && (dw_input_num < 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op)) ||
+                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num) && (dw_stride == 1'd0) && (valid_op && ready_op)) ||
+                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (dw_stride == 1'd1) && (valid_op && ready_op))
                     )
                         cnt <= 8'd0;
                     else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
@@ -413,25 +413,25 @@ always_ff @(posedge clk) begin
             end
             1'd1: begin//PW FIXME: OKAY
                 if(pw_first_f) begin
-                    if(((cs == WEIGHT_LOAD) && (cnt == weight_load_time)) || 
-                    ((cs == IFMAP_LOAD) && (cnt[4:0] == ifmap_load_time)) ||
-                    ((cs == IPSUM_LOAD) && (cnt[6:0] == pw_time_8)) || 
-                    ((cs == OPSUM_OUT) && (cnt[6:0] == pw_time_8))  || 
+                    if(((cs == WEIGHT_LOAD) && (cnt == weight_load_time) && (valid_w && ready_w)) || 
+                    ((cs == IFMAP_LOAD) && (cnt[4:0] == ifmap_load_time) && (valid_if && ready_if)) ||
+                    ((cs == IPSUM_LOAD) && (cnt[6:0] == pw_time_8) && (valid_ip && ready_ip)) || 
+                    ((cs == OPSUM_OUT) && (cnt[6:0] == pw_time_8) && (valid_op && ready_op))  || 
                     ((cs == COMPUTE) && (cnt == 8'd3)))
                         cnt <= 8'd0;
                     else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
                         cnt <= cnt + 8'd1;
                 end
                 else if(pw_close_f) begin
-                    if(((cs == IPSUM_LOAD) && (cnt[5:0] == pw_close_num)) || 
-                    ((cs == OPSUM_OUT) && (cnt[5:0] == pw_close_num))  || 
+                    if(((cs == IPSUM_LOAD) && (cnt[5:0] == pw_close_num) && (valid_ip && ready_ip)) || 
+                    ((cs == OPSUM_OUT) && (cnt[5:0] == pw_close_num) && (valid_op && ready_op))  || 
                     ((cs == COMPUTE) && (cnt == 8'd3)))
                         cnt <= 8'd0;
                     else if((valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
                         cnt <= cnt + 8'd1;
                 end
-                else if(((cs == WEIGHT_LOAD) && (cnt == weight_load_time)) || ((cs == IFMAP_LOAD) && (cnt[5:0] == ifmap_load_time)) ||
-                ((cs == IPSUM_LOAD) && (cnt[6:0] == ipsum_load_time)) || ((cs == OPSUM_OUT) && (cnt[6:0] == opsum_load_time)) || ((cs == COMPUTE) && cnt == 8'd3))begin
+                else if(((cs == WEIGHT_LOAD) && (cnt == weight_load_time) && (valid_w && ready_w)) || ((cs == IFMAP_LOAD) && (cnt[5:0] == ifmap_load_time) && (valid_if && ready_if)) ||
+                ((cs == IPSUM_LOAD) && (cnt[6:0] == ipsum_load_time) && (valid_ip && ready_ip)) || ((cs == OPSUM_OUT) && (cnt[6:0] == opsum_load_time) && (valid_op && ready_op)) || ((cs == COMPUTE) && cnt == 8'd3))begin
                     cnt <= 8'd0;
                 end
                 else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))

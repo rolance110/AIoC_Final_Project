@@ -20,12 +20,18 @@ module tb_Conv_uint;
   logic  [31:0]            data_out;
   logic  [5:0]             col_en;
   logic  [5:0]             row_en;
+  logic  [1:0]             dw_input_num;
+  logic                    dw_row_end;
+  logic                    dw_stride;
   // ──────────────────────────────────────────────
   //  ▍ 例化 DUT
   // ──────────────────────────────────────────────
     conv_unit dut(
     .clk            (clk),
     .reset          (reset),
+
+    .data_in        (data_in),
+    .data_out       (data_out),
 
     .ready_w        (ready_w),
     .valid_w        (valid_w),
@@ -39,10 +45,11 @@ module tb_Conv_uint;
     .valid_op       (valid_op),
     .ready_op       (ready_op),
 
+    .dw_input_num   (dw_input_num),
+    .dw_row_end     (dw_row_end),
+    .dw_stride      (dw_stride),
+
     .DW_PW_sel      (DW_PW_sel),
-    .change_weight_f(change_weight_f),
-    .data_in        (data_in),
-    .data_out       (data_out),
     .col_en         (col_en),
     .row_en         (row_en)
   );
@@ -65,7 +72,6 @@ module tb_Conv_uint;
         valid_ip = 0;
         ready_op = 0;
         DW_PW_sel = 1; // 假設使用PW模式
-        change_weight_f = 0; // 假設不改變權重
         data_in = 32'h00000000; // 初始數據輸入
 
         col_en = 6'b100000; // 使用所有列
@@ -76,14 +82,12 @@ module tb_Conv_uint;
 
 
         #(`CYCLE * 2); // 等待一段時間以觀察行為
-        change_weight_f = 1; // 假設不改變權重
         valid_w = 1;
 
         #(`CYCLE); // 等待一個時鐘週期
         data_in = 32'h01234567;
 
         #(`CYCLE * 256); // 等待一個時鐘週期
-        change_weight_f = 0; // 假設不改變權重
         valid_w = 0; // 停止寫入數據
 
         valid_if = 1; // 開始IF模式
