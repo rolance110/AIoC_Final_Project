@@ -43,6 +43,7 @@ module token_engine (
     input  logic [31:0] glb_read_data_i,
 
 
+
 ///* output
 //* to PE
     output logic PE_en_matrix_o [31:0][31:0],
@@ -150,16 +151,18 @@ pe_array_controller pe_array_controller(
     .clk(clk),
     .rst_n(rst_n),
 //* input
-    .layer_type(layer_type_i),
+    .layer_type_i(layer_type_i),
 
-    .start_preheat_i(preheat_state), 
-    .start_normal_i(normal_loop_state), 
+    .preheat_state_i(preheat_state), 
+    .normal_loop_state_i(normal_loop_state), 
 
     .ifmap_fifo_pop_matrix_i(ifmap_fifo_pop_matrix),
+    .ipsum_fifo_pop_matrix_i(ipsum_fifo_pop_matrix),
+    .opsum_fifo_push_matrix_i(opsum_fifo_push_matrix),
 
 //* output
-    .PE_stall_matrix(PE_stall_matrix_o),
-    .PE_en_matrix(PE_en_matrix_o)
+    .PE_stall_matrix_o(PE_stall_matrix_o),
+    .PE_en_matrix_o(PE_en_matrix_o)
 );
 
 
