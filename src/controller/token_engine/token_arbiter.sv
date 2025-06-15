@@ -400,19 +400,7 @@ always_comb begin
             permit_ifmap_matrix_o  = 32'd0;
         end
     end
-    else begin
-        glb_read_o  = 1'b0;
-        glb_read_addr_o = 32'd0;
-        permit_ifmap_matrix_o  = 32'd0;
-    end
-end
-
-// Priority Read: ipsum last
-always_comb begin
-    //glb_read_o  = 1'b0;
-    // glb_read_addr_o = 32'd0;
-    // permit_ipsum_matrix_o  = 32'd0;
-    if (!glb_write_o && !glb_read_o) begin
+    else if (!glb_write_o && !glb_read_o) begin // ipsum
         if (ipsum_read_req_matrix_i[0]) begin
             glb_read_o  = 1'b1;
             glb_read_addr_o = ipsum_read_addr_matrix_i[0];
@@ -579,10 +567,11 @@ always_comb begin
             permit_ipsum_matrix_o  = 32'd0;
         end
     end
+
     else begin
         glb_read_o  = 1'b0;
         glb_read_addr_o = 32'd0;
-        permit_ipsum_matrix_o  = 32'd0;
+        permit_ifmap_matrix_o  = 32'd0;
     end
 end
 

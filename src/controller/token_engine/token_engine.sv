@@ -250,51 +250,76 @@ L3C_fifo_ctrl #(
     .clk(clk),
     .rst_n(rst_n),
 //* input
-    //======== L2 控制訊號 (每條 FIFO 的需求與 reset 控制) ========
+// reset 
     .ifmap_fifo_reset_i(ifmap_fifo_reset_o),
+    .ipsum_fifo_reset_i(ipsum_fifo_reset_o),
+    .opsum_fifo_reset_i(opsum_fifo_reset_o),
+
+// L2 need 
     .ifmap_need_pop_matrix_i(ifmap_need_pop_matrix),
     .ifmap_pop_num_matrix_i(ifmap_pop_num_matrix),
-    .ifmap_permit_push_matrix_i(ifmap_permit_push_matrix),
+
+    .ipsum_need_pop_matrix_i(ipsum_need_pop_matrix),
+    .ipsum_pop_num_matrix_i(ipsum_pop_num_matrix),
+
+    .opsum_need_pop_matrix_i(opsum_need_pop_matrix),
+
+// FIFO
     .ifmap_fifo_full_matrix_i(ifmap_fifo_full_matrix_i),
     .ifmap_fifo_empty_matrix_i(ifmap_fifo_empty_matrix_i),
-    .ifmap_fifo_base_addr_matrix_i(ifmap_fifo_base_addr_matrix),
-    .ifmap_glb_read_data_i(glb_read_data_i),
-
-    .ipsum_need_push_matrix_i(ipsum_need_push_matrix),
-    .ipsum_need_pop_matrix_i(ipsum_need_pop_matrix),
-    .ipsum_permit_push_matrix_i(ipsum_permit_push_matrix),
     .ipsum_fifo_full_matrix_i(ipsum_fifo_full_matrix_i),
     .ipsum_fifo_empty_matrix_i(ipsum_fifo_empty_matrix_i),
-    .ipsum_fifo_reset_i(ipsum_fifo_reset_o),
-    .ipsum_fifo_base_addr_matrix_i(ipsum_fifo_base_addr_matrix),
-
-    .opsum_need_push_matrix_i(opsum_need_push_matrix),
-    .opsum_need_pop_matrix_i(opsum_need_pop_matrix),
-    .opsum_permit_pop_matrix_i(opsum_permit_pop),
+    .opsum_fifo_full_matrix_i(opsum_fifo_full_matrix_i),
     .opsum_fifo_empty_matrix_i(opsum_fifo_empty_matrix_i),
-    .opsum_fifo_reset_i(opsum_fifo_reset_o),
+
+// base address matrix
+    .ifmap_fifo_base_addr_matrix_i(ifmap_fifo_base_addr_matrix),
+    .ipsum_fifo_base_addr_matrix_i(ipsum_fifo_base_addr_matrix),
     .opsum_fifo_base_addr_matrix_i(opsum_fifo_base_addr_matrix),
 
+// arbiter permit
+    .ifmap_permit_push_matrix_i(ifmap_permit_push_matrix),
+    .ipsum_permit_push_matrix_i(ipsum_permit_push_matrix),
+    .opsum_permit_pop_matrix_i(opsum_permit_pop),
+
+// GLB read data in (need pre-processed by FIFO ctrl)
+    .ifmap_glb_read_data_i(glb_read_data_i),
+    .ipsum_glb_read_data_i(glb_read_data_i),
+
+
+
 //* output
-    //======== 控制訊號給 FIFO 本體 ========
+//to FIFO 
     .ifmap_fifo_push_matrix_o(ifmap_fifo_push_matrix_o),
-    .ifmap_fifo_push_data_matrix_o(ifmap_fifo_push_data_matrix_o),
     .ifmap_fifo_push_mod_matrix_o(ifmap_fifo_push_mod_matrix_o),
-    .ifmap_fifo_pop_matrix_o(ifmap_fifo_pop_matrix),
-    .ifmap_read_req_matrix_o(ifmap_read_req_matrix),
-    .ifmap_glb_read_addr_matrix_o(ifmap_read_addr_matrix),
-    .ifmap_fifo_done_matrix_o(ifmap_fifo_done_matrix),
+    .ifmap_fifo_push_data_matrix_o(ifmap_fifo_push_data_matrix_o),
+    .ifmap_fifo_pop_matrix_o(ifmap_fifo_pop_matrix_o),
 
     .ipsum_fifo_push_matrix_o(ipsum_fifo_push_matrix_o),
+    .ipsum_fifo_push_mod_matrix_o(ipsum_fifo_push_mod_matrix_o),
+    .ipsum_fifo_push_data_matrix_o(ipsum_fifo_push_data_matrix_o),
     .ipsum_fifo_pop_matrix_o(ipsum_fifo_pop_matrix_o),
-    .ipsum_glb_read_req_matrix_o(ipsum_read_req_matrix),
-    .ipsum_glb_read_addr_matrix_o(ipsum_read_addr_matrix),
 
     .opsum_fifo_pop_matrix_o(opsum_fifo_pop_matrix_o),
     .opsum_fifo_push_matrix_o(opsum_fifo_push_matrix_o),
+    .opsum_fifo_pop_mod_matrix_o(opsum_fifo_push_mod_matrix_o),
+
+
+// to arbiter
+    .ifmap_read_req_matrix_o(ifmap_read_req_matrix),
+    .ifmap_glb_read_addr_matrix_o(ifmap_read_addr_matrix),
+
+    .ipsum_read_req_matrix_o(ipsum_read_req_matrix_o),
+    .ipsum_glb_read_addr_matrix_o(ipsum_glb_read_addr_matrix),
+
     .opsum_glb_write_req_matrix_o(opsum_write_req_matrix),
     .opsum_glb_write_addr_matrix_o(opsum_write_addr_matrix),
-    .opsum_glb_write_web_matrix_o(opsum_write_web_matrix)
+    .opsum_glb_write_web_matrix_o(opsum_write_web_matrix),
+
+// done
+    .ifmap_fifo_done_matrix_o(ifmap_fifo_done_matrix),
+    .ipsum_fifo_done_matrix_o(ipsum_fifo_done_matrix),
+    .opsum_fifo_done_matrix_o(opsum_fifo_done_matrix)
 );
 
 token_arbiter token_arbiter_dut (

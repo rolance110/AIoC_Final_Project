@@ -15,21 +15,20 @@ module ifmap_fifo_ctrl (
     input  logic        ifmap_fifo_empty_i,
 
     // GLB 控制
-    input  logic [31:0] ifmap_glb_base_addr_i,
+    input  logic [31:0] ifmap_fifo_base_addr_i,
     input  logic [31:0] ifmap_glb_read_data_i,
 
     // FIFO 寫入端
 
-    output logic        ifmap_fifo_reset_o, // FIFO 重置輸出
-    output logic        ifmap_fifo_push_en_o,
+    output logic        ifmap_fifo_push_o,
     output logic [31:0] ifmap_fifo_push_data_o,
     output logic        ifmap_fifo_push_mod_o,
 
     // FIFO 讀出端
-    output logic        ifmap_fifo_pop_en_o,
+    output logic        ifmap_fifo_pop_o,
 
     // Arbiter
-    output logic        ifmap_glb_read_req_o,
+    output logic        ifmap_read_req_o,
     output logic [31:0] ifmap_glb_read_addr_o,
 
     // 完成訊號
@@ -39,7 +38,6 @@ module ifmap_fifo_ctrl (
 logic [31:0] pop_num_buf;
 
     // 直接將輸入連接到輸出
-assign ifmap_fifo_reset_o = ifmap_fifo_reset_i; // 直接將輸入連接到輸出
     
 typedef enum logic [1:0] {
     IDLE,
@@ -98,28 +96,28 @@ end
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || ifmap_fifo_reset_i)
         read_ptr <= 16'd0;
-    else if (ifmap_fifo_push_en_o)
+    else if (ifmap_fifo_push_o)
         read_ptr <= read_ptr + 16'd1;
 end
  
-assign ifmap_glb_read_addr_o = ifmap_glb_base_addr_i + read_ptr;
+assign ifmap_glb_read_addr_o = ifmap_fifo_base_addr_i + read_ptr;
 
 // Arbiter Request
-assign ifmap_glb_read_req_o = (cs == PUSH) && !ifmap_fifo_full_i;
+assign ifmap_read_req_o = (cs == PUSH) && !ifmap_fifo_full_i;
 
 // PUSH 控制
-assign ifmap_fifo_push_en_o   = (cs == PUSH) && ifmap_permit_push_i && !ifmap_fifo_full_i;
+assign ifmap_fifo_push_o   = (cs == PUSH) && ifmap_permit_push_i && !ifmap_fifo_full_i;
 assign ifmap_fifo_push_data_o = ifmap_glb_read_data_i;
 assign ifmap_fifo_push_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可自行加 burst 條件）
 
 // POP 控制
-assign ifmap_fifo_pop_en_o = (cs == POP) && !ifmap_fifo_empty_i;
+assign ifmap_fifo_pop_o = (cs == POP) && !ifmap_fifo_empty_i;
 
 // pop count 累加
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || cs == IDLE)
         pop_cnt <= 5'd0;
-    else if (ifmap_fifo_pop_en_o)
+    else if (ifmap_fifo_pop_o)
         pop_cnt <= pop_cnt + 5'd1;
 end
 

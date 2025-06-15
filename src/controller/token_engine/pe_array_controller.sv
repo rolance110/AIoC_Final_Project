@@ -1,4 +1,4 @@
-`include "../../../include/define.svh"
+// `include "../../../include/define.svh"
 module pe_array_controller(
     input logic clk,
     input logic rst_n,

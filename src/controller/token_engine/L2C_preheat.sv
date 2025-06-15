@@ -2,7 +2,7 @@
 // Module: L2C_preheat
 // Description: 控制每個 ifmap_fifo 將資料推送至對應的 PE row，達成 preheat
 //===========================================================================
-`include "../../../include/define.svh"
+// `include "../../../include/define.svh"
 module L2C_preheat #(
     parameter int NUM_IFMAP_FIFO = 32
 )(
