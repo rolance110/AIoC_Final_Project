@@ -1,11 +1,11 @@
-`include "weight_load_controller.sv"
-`include "pe_array_controller.sv"
-`include "Layer1_Controller.sv"
-`include "L2C_init_fifo_pe.sv"
-`include "L2C_preheat.sv"
-`include "L3C_fifo_ctrl.sv"
-`include "token_arbiter.sv"
-`include "../../../include/define.svh"
+// `include "weight_load_controller.sv"
+// `include "pe_array_controller.sv"
+// `include "Layer1_Controller.sv"
+// `include "L2C_init_fifo_pe.sv"
+// `include "L2C_preheat.sv"
+// `include "L3C_fifo_ctrl.sv"
+// `include "token_arbiter.sv"
+// `include "../../../include/define.svh"
 
 module token_engine (
     input  logic         clk,

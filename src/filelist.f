@@ -1,6 +1,12 @@
 ../src/controller/token_engine/ifmap_fifo_ctrl.sv
 
-
+../src/controller/token_engine/weight_load_controller.sv
+../src/controller/token_engine/pe_array_controller.sv
+../src/controller/token_engine/Layer1_Controller.sv
+../src/controller/token_engine/L2C_init_fifo_pe.sv
+../src/controller/token_engine/L2C_preheat.sv
+../src/controller/token_engine/L3C_fifo_ctrl.sv
+../src/controller/token_engine/token_arbiter.sv
 
 ../src/CONV_unit/ifmap_fifo.sv
 ../src/CONV_unit/ifmap_fifo_bank.sv
