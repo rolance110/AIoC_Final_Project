@@ -17,7 +17,7 @@ module L2C_init_fifo_pe #(
     input  logic [31:0]  ipsum_glb_base_addr_i, // 各 FIFO base address 由上層配置
     input  logic [31:0]  opsum_glb_base_addr_i, // 各 FIFO base address 由上層配置
     input  logic [31:0]  bias_glb_base_addr_i, 
-    input logic is_bias, // 判斷現在 ipsum_fifo 是要輸入 bias or ipsum 
+    input logic is_bias_i, // 判斷現在 ipsum_fifo 是要輸入 bias or ipsum 
     
     //* Form Tile_Scheduler
     // require by every module
@@ -36,26 +36,26 @@ module L2C_init_fifo_pe #(
     output logic [31:0] ipsum_fifo_base_addr_o [31:0],
     output logic [31:0] opsum_fifo_base_addr_o [31:0],
 
-    output logic [31:0] ifmap_fifo_reset_o, // reset signal for all ifmap FIFO
-    output logic [31:0] ipsum_fifo_reset_o, // reset signal for all ipsum FIFO
-    output logic [31:0] opsum_fifo_reset_o  // reset signal for all opsum FIFO
+    output logic ifmap_fifo_reset_o, // reset signal for all ifmap FIFO
+    output logic ipsum_fifo_reset_o, // reset signal for all ipsum FIFO
+    output logic opsum_fifo_reset_o  // reset signal for all opsum FIFO
 );
 
 always_ff@(posedge clk or negedge rst_n)begin
     if(!rst_n)begin
-        ifmap_fifo_reset_o <= 32'd0;
-        ipsum_fifo_reset_o <= 32'd0;
-        opsum_fifo_reset_o <= 32'd0;
+        ifmap_fifo_reset_o <= 1'b0;
+        ipsum_fifo_reset_o <= 1'b0;
+        opsum_fifo_reset_o <= 1'b0;
     end
     else if(init_fifo_pe_state_i)begin
-        ifmap_fifo_reset_o <= 32'd1;
-        ipsum_fifo_reset_o <= 32'd1;
-        opsum_fifo_reset_o <= 32'd1;
+        ifmap_fifo_reset_o <= 1'b1;
+        ipsum_fifo_reset_o <= 1'b1;
+        opsum_fifo_reset_o <= 1'b1;
     end
     else begin
-        ifmap_fifo_reset_o <= 32'd0;
-        ipsum_fifo_reset_o <= 32'd0;
-        opsum_fifo_reset_o <= 32'd0;
+        ifmap_fifo_reset_o <= 1'b0;
+        ipsum_fifo_reset_o <= 1'b0;
+        opsum_fifo_reset_o <= 1'b0;
     end
 end
 
@@ -183,14 +183,14 @@ always_ff@(posedge clk or negedge rst_n)begin
         end
     end
 end
-
+integer i1, i2;
 // ipsum_glb_base_addr_i
 logic [31:0] ipsum_glb_base_addr_i_sel;
-assign ipsum_glb_base_addr_i_sel = is_bias ? bias_glb_base_addr_i : ipsum_glb_base_addr_i;
+assign ipsum_glb_base_addr_i_sel = is_bias_i ? bias_glb_base_addr_i : ipsum_glb_base_addr_i;
 always_ff@(posedge clk or negedge rst_n)begin
     if(!rst_n)begin
-        for(i=0; i<32; i++)begin
-            ipsum_fifo_base_addr_o[i] <= 32'd0;
+        for(i1=0; i1<32; i1++)begin
+            ipsum_fifo_base_addr_o[i1] <= 32'd0;
         end
     end
     else if(layer_type_i == `POINTWISE && init_fifo_pe_state_i)begin
@@ -230,17 +230,19 @@ always_ff@(posedge clk or negedge rst_n)begin
         ipsum_fifo_base_addr_o[29] <= ipsum_glb_base_addr_i + 9*tile_n_i*in_C_i + 2*in_C_i;       
     end
     else begin
-        for(j=0; j<32; j++)begin
-            ipsum_fifo_base_addr_o[j] <= 32'd0;
+        for(i2=0; i2<32; i2++)begin
+            ipsum_fifo_base_addr_o[i2] <= 32'd0;
         end
     end
 end
 
+integer j1, j2;
+
 // opsum_glb_base_addr_i
 always_ff@(posedge clk or negedge rst_n)begin
     if(!rst_n)begin
-        for(i=0; i<32; i++)begin
-            opsum_fifo_base_addr_o[i] <= 32'd0;
+        for(j1=0; j1<32; j1++)begin
+            opsum_fifo_base_addr_o[j1] <= 32'd0;
         end
     end
     else if(layer_type_i == `POINTWISE && init_fifo_pe_state_i)begin
@@ -280,8 +282,8 @@ always_ff@(posedge clk or negedge rst_n)begin
         opsum_fifo_base_addr_o[29] <= opsum_glb_base_addr_i + 9*On_real_i*in_C_i + 2*in_C_i;       
     end
     else begin
-        for(j=0; j<32; j++)begin
-            opsum_fifo_base_addr_o[j] <= 32'd0;
+        for(j2=0; j2<32; j2++)begin
+            opsum_fifo_base_addr_o[j2] <= 32'd0;
         end
     end
 end

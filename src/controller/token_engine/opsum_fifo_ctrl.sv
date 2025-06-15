@@ -4,7 +4,6 @@ module opsum_fifo_ctrl (
 
     // 控制來源來自 L2
     input  logic        opsum_fifo_reset_i,    // FIFO reset
-    input  logic        opsum_pop_web_i,       // pop 進入 GLB token 是哪個 byte
     input  logic        opsum_need_push_i,     // L2 指令：請嘗試 push 一筆資料 (reducer -> FIFO)
     input  logic        opsum_need_pop_i,      // L2 指令：請嘗試 pop 出一筆資料 (FIFO -> arbiter)
 
@@ -67,6 +66,6 @@ assign opsum_fifo_pop_en_o = pop_pending && opsum_permit_pop_i && !opsum_fifo_em
 // GLB 寫入 token（排隊後送 arbiter）
 assign opsum_glb_write_req_o   = pop_pending && !opsum_fifo_empty_i;
 assign opsum_glb_write_addr_o  = opsum_glb_base_addr_i + write_ptr;
-assign opsum_glb_write_web_o   = opsum_pop_web_i;  // 4 bytes 全寫（可改為參數化）
+//fixme: assign opsum_glb_write_web_o;  // 4 bytes 全寫（可改為參數化）
 
 endmodule

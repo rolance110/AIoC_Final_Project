@@ -1,0 +1,969 @@
+#VERSION#
+1.06
+#POITUPLE#
+1
+11
+2
+1
+0
+0
+0
+0
+<user-defined>
+0
+<obsolete>
+0
+<userdefined-clocks>
+0
+0
+<clocks>
+1
+clock
+:global_clock
+1
+clock
+1
+0
+21
+0
+<signalCorrelation-vector>
+0
+0
+0
+1
+1
+0
+0
+0
+../src/controller/token_engine/token_engine.sv
+
+5
+54
+287
+287
+#POITUPLE#
+2
+11
+2
+1
+0
+0
+0
+0
+<user-defined>
+0
+<obsolete>
+0
+<userdefined-clocks>
+0
+0
+<clocks>
+1
+clock
+:global_clock
+1
+clock
+1
+0
+21
+0
+<signalCorrelation-vector>
+0
+0
+0
+1
+2
+0
+0
+0
+../src/controller/token_engine/token_engine.sv
+
+5
+56
+293
+293
+#POITUPLE#
+3
+11
+2
+1
+0
+0
+0
+0
+<user-defined>
+0
+<obsolete>
+0
+<userdefined-clocks>
+0
+0
+<clocks>
+1
+clock
+:global_clock
+1
+clock
+1
+0
+21
+0
+<signalCorrelation-vector>
+0
+0
+0
+1
+3
+0
+0
+0
+../src/controller/token_engine/token_engine.sv
+
+5
+56
+293
+293
+#MESSAGETUPLE#
+0
+1
+1
+VERI-1010
+Error
+"cannot find port 'ipsum_fifo_pop_matrix_o' on this module"
+0
+<label>
+
+<string-helpers>
+</string-helpers>
+<waivers>
+0
+0
+1
+#MESSAGETUPLE#
+0
+2
+2
+VERI-1010
+Error
+"cannot find port 'opsum_fifo_push_matrix_o' on this module"
+0
+<label>
+
+<string-helpers>
+</string-helpers>
+<waivers>
+0
+0
+1
+#MESSAGETUPLE#
+0
+3
+3
+VDB-9017
+Error
+"Module token_engine could not be elaborated"
+0
+<label>
+
+<string-helpers>
+</string-helpers>
+<waivers>
+0
+0
+1
+<source-checksums>
+0
+<tag-defenition>
+22
+
+23
+
+   module top (clk1,reset,out);
+   input clk1,reset;
+   reg [7:0] count1;
+   output [7:0] out;
+   always @(posedge clk1)begin
+     if(!reset)begin
+       count1 <= 8'b00000000;
+     end
+     else begin
+       if (count1 == 8'b11111110)
+       begin
+          count1 <= 8'b00000000;
+       end
+       else begin
+         count1 = count1+ 8'b00000010;
+       end
+     end
+   end
+   assign out = count1;
+   endmodule
+   In the given example, a violation is reported for count1, in which the signal
+   does not toggle to its original value at any point of time.
+ARY_IS_OOBI
+20
+   A bit/part select reference in an expression has an index specification
+   outside of the defined range of the variable.
+   This can lead to unexpected results. It is
+   recommended that this reference be modified such that the index/subrange
+   falls within the defined range.
+   The following code illustrates the problem.
+   module test1 (a, b, out1);
+   input [3:0] a;
+   input [3:0] b;
+   output out1;
+   wire [3:0] a;
+   reg [2:0] out1;
+   wire [2:-1] q;
+   wire [2:-4] w;
+   always @(a or b)
+       out1 = q[4] & b[3];
+       assign a[3] = out1[3];
+     assign q = w[1+:3];
+   endmodule
+   In the above code, 'q[4]' and 'out1[3]' are used, which are outside the defined range.
+ASG_AR_OVFL
+1
+    HAl support  for ASG_AR_OVFL
+ASG_IS_XRCH
+12
+   A reachable X assignment was detected in the design.
+   If the X assignment is reachable, it will become
+   an active X source. 'X' source present in the design can lead to unexpected functionality.
+
+   The following examples illustrates this problem:
+   always @(port_a or port_b or port_c or port_d)
+   casez(port_d)
+       2'b00: port_e = port_a;
+       2'b01: port_e = port_b;
+       2'b10: port_e = port_c;
+       2'b11: port_e = 4'b00xx;
+   endcase
+BLK_NO_RCHB
+20
+   Unreachable block statement was detected. This needs to be reviewed to determine if this is intentional or undesired. RTL needs to be modified accordingly.
+   The following example illustrates the issue:
+
+   module blkif (out, a, b);
+   input a, b;
+   output out;
+   reg out;
+   wire sel;
+   assign sel = 1'b1;
+   always @(sel or a or b)
+   begin
+   if (sel)
+       out <= a;
+   else
+       out <= b;
+   end
+  endmodule
+  In the given example, a violation is reported as 'sel' has a
+  a constant value due to which one branch of the 'if' block is not reachable.
+
+BUS_IS_CONT
+8
+   The specified bus has multiple drivers which can
+   be active simultaneously. This may lead to signal/register
+   having undefined/unexpected value.
+
+   The following example illustrates the problem:
+   assign sig_a = var_a;
+   assign sig_a = var_b;
+   In the above example, 'sig_a' is multiply driven.
+BUS_IS_FLOT
+21
+   A bus without any driver was detected. This could be unintentional and can lead to unexpected functionality.
+
+   Following example illustrates this scenario:
+   module mod_a(port_a, port_b, port_c, reg_a, reg_b, reg_c);
+       input [1:0] port_a, port_b, port_c;
+       output [1:0] reg_a, reg_b, reg_c;
+       reg  [1:0] reg_a;
+       reg  [1:0] reg_b;
+       reg  [1:0] reg_c;
+       wire [1:0] wir_a;
+       wire [1:0] wir_b;
+       wire [1:0] wir_c;
+
+       assign wire_a = port_a;
+       assign reg_a = wir_a;
+       assign reg_b = wir_b;
+
+   endmodule
+
+   reg_b is a floating bus.
+   Design needs to be remodelled to avoid this problem.
+CAS_IS_DFRC
+31
+   The case statement has a default case which is reachable. This could be a result of an incompletely specified case.
+   The following example illustrates this scenario:
+
+   module FSM (clk, rst);
+   input clk, rst;
+   reg [2:0] state, next;
+   wire en;
+   always @(posedge clk)
+       if (rst)
+           state <= 3'b000;
+       else
+           state <= next;
+   always @(state)
+   begin
+   case(state)
+       3'b000:
+           next = 3'b001;
+       3'b001:
+           if (en)
+               next = 3'b010;
+           else
+               next = 3'b011;
+       3'b010:
+               next = 3'b100;
+       3'b011:
+               next = 3'b101;
+       default:
+               next = 3'bxxx;
+   endcase
+   end
+   endmodule
+CAS_NO_PRIO
+16
+   The keywords 'unique' and 'priority' indicate the intent that the case statement will have exactly one case item that matches the case expression. However, the specified case statement, qualified with a'priority' keyword, does not have all the cases covered.
+   The following example illustrates this problem:
+   module mod_a (port_a, port_b, port_c);
+       input [3:0] port_a;
+       input [1:0] port_c;
+       output port_b;
+       reg port_b;
+       always @(port_c)
+       begin
+           priority case(port_c)
+           2'b01 : port_b = port_a[1];
+           2'b10 : port_b = port_a[2];
+           2'b11 : port_b = port_a[3];
+       endcase
+       end
+   endmodule
+CAS_NO_UNIQ
+18
+   The keywords 'unique' and 'priority' indicate the intent that the case statement will have exactly one case item that matches the case expression. However, the specified case statement, qualified with a'unique' keyword, has more than one case item that matches the
+   case expression.
+   The following example illustrates this problem:
+   reg  [3:0]  reg_a;
+   always @(posedge clk)
+   begin
+       reg_a = 12;
+       unique case ( reg_a )
+       6, 12, 14:  out_a = 32'd10012;
+       2, 6, 7:    out_a = 32'd10015;
+       3, 12, 10:  out_a = 32'd50009;
+       default:    out_a = 32'd0;
+   endcase
+   end
+
+   In the above code example, 'reg_a' is used as the case expression in a
+   'unique case' statement, where two of the case item expressions are 12.
+   It is recommended that case item expressions are mutually exclusive.
+EXP_AR_OVFL
+1
+    HAl support  for ASG_AR_OVFL
+EXP_IS_OVFL
+20
+   Arithmetic operation results in overflow of bits leading to potential loss of data.
+   The following example illustrates the problem:
+
+   module mod_a();
+       reg  [1:0] reg_a;
+       reg  [1:0] reg_b;
+       reg  [1:0] reg_c;
+       wire [1:0] wir_a;
+       wire [1:0] wir_b;
+       wire [1:0] wir_c;
+       assign wir_a = reg_a + 2'd2;
+       assign wir_b = reg_b + 2'b11;
+       assign wir_c = reg_c - 2'b11;
+   endmodule
+
+   In the above code, 2-bit wires, wir_a, wir_b, wir_c
+   are being assigned a value that can be greater than
+   the maximum value that it can hold. This can lead to loss
+   of bits.
+   Remodel the design to avoid this violation.
+FSM_IS_DDLK
+45
+   A deadlock situation has been detected for a state of the FSM. This can occur if either
+   there is no outgoing edge from the current state or the condition of the outgoing edge
+   cannot be met. To avoid this violation, modify the RTL and rerun the design.
+   Consider the given example:
+   module FSM (din, a_rst, clk, z_o);
+      input  din, a_rst,clk;
+      output z_o;
+      reg z_o;
+      parameter [1:0] s0=0, s1=1, s2=2;
+      reg [1:0] ps, ns;
+      // sequential block
+      always @ (posedge clk or posedge a_rst)
+      begin: seq_block
+         if (a_rst)
+            ps = s0;
+         else
+            ps = ns;
+      end
+
+      // combinational block
+      always @ (ps or din)
+      begin: comb_block
+         ns  = s0;
+         z_o = 1'b1;
+         case (ps)
+           s0: begin
+             z_o = 1'b0;
+              end
+           s1: begin
+                if (din == 1'b0)
+                   ns = s0;
+                else
+                   ns = s2;
+              end
+           s2: begin
+                if (din == 1'b1)
+                   ns = s1;
+                else
+                   ns = s0;
+              end
+         endcase
+      end
+   endmodule
+   In the given example, after reaching s0, the design remains in that state.
+   This means that a deadlock has been reached, and a violation is reported.
+FSM_IS_LVLK
+62
+   Livelock condition detected for the FSM. The states of the processes involved in this
+   condition constantly change with regard to one another but do not progress to some other state.
+   To avoid this violation, modify the RTL and rerun the design.
+   Consider the given example:
+   module FSM (err, ack,req, clk, rst);
+   output err;
+   output [3:0] ack;
+   input [3:0] req;
+   input clk, rst;
+   reg err;
+   reg [3:0] ack;
+   reg [2:0] state, next;
+   integer i;
+   always @(posedge clk)
+      if (rst)
+        state <= 3'b000;
+      else
+        state <= next;
+   always @(state or req)
+   begin
+      next = 3'bxxx;
+      err = 0;
+      ack = 0;
+    case(state)
+           3'b000: begin
+                  case(req)
+                     4'b0001 : next = 3'b001;
+                     default : next = 3'b000;
+                 endcase
+                 end
+           3'b001: begin
+                  case(req)
+                     4'b0010 : next = 3'b010;
+                     default : next = 3'b001;
+                 endcase
+                 ack[0] = 1;
+                 ack[1] = 1;
+               end
+           3'b010: begin
+                  case(req)
+                     4'b0100 : next = 3'b011;
+                 endcase
+                 ack[1] = 1;
+                 ack[2] = 1;
+               end
+           3'b011: begin
+                  case(req)
+                     4'b1000 : next = 3'b100; // missing default statement
+                 endcase
+                 ack[3] = 1;
+               end
+           3'b100: begin
+                  case(req)
+                     4'b0000 : next = 3'b000;
+                     default : next = 3'b100;
+                 endcase
+                 err = 1;
+                 end
+      endcase
+      end
+   endmodule
+   In the given example, a Livelock is detected at state 3'b011 and a violation is reported.
+FSM_NO_MTRN
+36
+   An unreachable consequent transition in a FSM has been detected. There is no
+   scenario where the mentioned source state will move to the first target state
+   and then to the next target state in sequence.
+
+   The following example illustrates this scenario:
+
+   module FSM (clk, rst);
+   input clk, rst;
+   reg [2:0] state, next;
+   wire en;
+   always @(posedge clk)
+       if (rst)
+           state <= 2'b00;
+       else
+           state <= next;
+   always @(state)
+   begin
+   case(state)
+          2'b00:
+            next = 2'b01;
+           2'b01:
+             if (en)
+                 next = 2'b10;
+             else
+                 next = 2'b11;
+           2'b10:
+             next = 2'b11;
+           2'b11:
+             next = 2'b00;
+           default:
+             next = 2'bxx;
+   endcase
+   end
+   endmodule
+
+   In this example, if 'en' is stuck at 1'b0, the transition from 2'b01 to 2'b10 and then to 2'b11 is unreachable.
+FSM_NO_RCHB
+33
+   There are unreachable states in the specified FSM. The unreachable
+   states may create extra states that were not intended.
+   The tool is unable to perform analysis for reachable states if variables
+   are used in the combinational logic for the next state computations
+   and therefore, takes a pessimistic approach.
+
+   params FSMURS { fsm_states_in_default_clause="no/yes" }
+   The default value for this parameter is 'no'.
+   By default, the states that can only be reached from the default clause
+   of the case statement are not considered for next state computations
+   and are reported as unreachable states in the FSM.
+   When the value of the parameter is set to 'yes', the tool
+   considers the states in the default clause of the case statement as
+   reachable.
+
+   The following code illustrates the occurrence of FSMURS
+
+   pro_comb : process (fsm, d)
+   begin
+       case fsm is
+         when State_0 =>
+             z <= '0';
+             next_fsm <= State_1;
+         when State_1 =>
+             z <= '1';
+             next_fsm <= State_0;
+         when State_2 =>
+             z <= d;
+             next_fsm <= State_0;
+       end case;
+   end process pro_comb;
+   In the above code,'State_2' is reported as an unreachable state because
+  there is no path to this state from any other valid state in the FSM.
+FSM_NO_TRRN
+33
+   An unreachable transition in a FSM has been detected. There is no scenario where the mentioned source state will move to the mentioned target state.
+   The following example illustrates this scenario:
+
+   module FSM (clk, rst);
+   input clk, rst;
+   reg [1:0] state, next;
+   wire en;
+   always @(posedge clk)
+      if (rst)
+        state <= 2'b00;
+      else
+        state <= next;
+   always @(state)
+   begin
+   case(state)
+           2'b00:
+             next = 2'b01;
+           2'b01:
+               if (en)
+                   next = 2'b10;
+               else
+                   next = 2'b11;
+           2'b10:
+               next = 2'b11;
+           2'b11:
+               next = 2'b00;
+           default:
+               next = 2'bxx;
+   endcase
+   end
+   endmodule
+
+   In this example, if 'en' is stuck at 1'b0, the transition from 2'b01 to 2'b10 is unreachable.
+MOD_IS_FCMB
+55
+    A combinational loop has been detected involving the listed
+    signals/wires/expressions. As Per RMM section 5.5.3, you should avoid
+    combinational feedback that is looping of combinational processes.
+    The following code illustrates the occurrence of MOD_IS_FCMB.
+
+    library ieee;
+    use ieee.std_logic_1164.all;
+    entity TEST is
+      port (
+      a,b,c,d,e,f: buffer std_logic;
+      o ,o2 : out std_logic);
+    end;
+
+    Architecture structural of test is
+    component NAND_2
+    port (I0, I1: in std_logic;
+          o: buffer std_logic);
+    end component;
+
+    component OR_2
+       port (I0, I1: in std_logic;
+             o:      buffer std_logic);
+    end component;
+    begin
+       x1: NAND_2 port map (a, b,c);
+       x2: OR_2 port map (c,d,b);
+    end structural;
+    library ieee;
+    use ieee.std_logic_1164.all;
+
+    entity nand_2 is
+    port (I0, I1: in std_logic;
+         o: buffer std_logic);
+    end;
+    architecture dataflow of NAND_2 is
+    begin
+       O <= I0 nand I1;
+    end dataflow;
+
+    library ieee;
+    use ieee.std_logic_1164.all;
+
+    entity OR_2 is
+    port (I0, I1: in std_logic;
+           o : buffer std_logic);
+    end entity;
+
+    architecture dataflow of OR_2 is
+    begin
+       O <= I0 or I1;
+    end dataflow;
+
+    In the above example, "c" is NAND of "a" and "b" and "b" is OR of "c" and "d"
+    resulting in a combinational feedback loop between c and b. This kind of
+    looping of combinational processes is not a good design practice.
+SIG_IS_DLCK
+46
+   A deadlock situation has been detected for a signal.
+   To avoid this violation, modify the RTL and rerun the design.
+   Consider the given example:
+
+   module FSM (din, a_rst, clk, z_o);
+     input  din, a_rst,clk;
+     output z_o;
+     reg z_o;
+     parameter [1:0] s0=0, s1=1, s2=2;
+     reg [1:0] ps, ns;
+     // sequential block
+     always @ (posedge clk or posedge a_rst)
+     begin: seq_block
+       if (a_rst)
+          ps = s0;
+       else
+          ps = ns;
+     end
+
+     // combinational block
+     always @ (ps or din)
+     begin: comb_block
+        ns  = s0;
+        z_o = 1'b1;
+        case (ps)
+          s0: begin
+           z_o = 1'b0;
+              end
+          s1: begin
+                if (din == 1'b0)
+                  ns = s0;
+                else
+                  ns = s2;
+              end
+          s2: begin
+                if (din == 1'b1)
+                  ns = s1;
+                else
+                 ns = s0;
+             end
+           endcase
+         end
+    endmodule
+
+   In the given example, after reaching s0, the design remains in that state.
+   This means that a deadlock has been reached, and a violation is reported
+SIG_IS_STCK
+17
+   A logic element stuck at a constant value has been detected. There is no design scenario where the logic element will get any other value.
+   The following example illustrates this scenario
+
+   module mod_a(clk, rst, port_a, port_b);
+      input clk, rst, port_a;
+      output port_b;
+      reg port_b;
+      always @(posedge clk or negedge rst)
+      begin
+      if (!rst)
+          port_b = 1'b1;
+      else
+          port_b = port_a | 1'b1;
+      end
+   endmodule
+   In this example 'port_b' is always stuck at '1'b1'.
+   To avoid this violation, modify the RTL.
+SIG_NO_TGFL
+24
+   The signal has not toggled from 1 to 0. Modify the RTL and rerun the design.
+   Consider the given example:
+   module top (clk1,reset,out);
+   input clk1,reset;
+   reg [7:0] count1;
+   output [7:0] out;
+   always @(posedge clk1)begin
+     if(!reset)begin
+       count1 <= 8'b00000000;
+     end
+     else begin
+       if (count1 == 8'b11111110)
+       begin
+          count1 <= 8'b00000000;
+       end
+       else begin
+         count1 = count1+ 8'b00000010;
+       end
+     end
+   end
+   assign out = count1;
+   endmodule
+   In the given example, a violation is reported for count1, in which the signal
+   does not toggle from 1 to 0 at any point of time.
+SIG_NO_TGRS
+25
+   The signal has not toggled from 0 to 1. Modify the RTL and rerun the design.
+   Consider the given example:
+
+   module top (clk1,reset,out);
+   input clk1,reset;
+   reg [7:0] count1;
+   output [7:0] out;
+   always @(posedge clk1)begin
+     if(!reset)begin
+       count1 <= 8'b00000000;
+     end
+     else begin
+       if (count1 == 8'b11111110)
+       begin
+          count1 <= 8'b00000000;
+       end
+       else begin
+         count1 = count1+ 8'b00000010;
+       end
+     end
+   end
+   assign out = count1;
+   endmodule
+   In the given example, a violation is reported for LSB of count1, in which
+   the signal does not toggle from 0 to1 at any point of time.
+<superLintPoiType-tagAndMessage>
+25
+ARITHMETIC_OVERFLOW_ASSIGNMENT
+ASG_AR_OVFL
+Arithmetic overflow assignment failure found.
+COMBINATIONAL_LOOP
+MOD_IS_FCMB
+Combinational loop detected passing through: "%1"
+CONTENTION_BUS
+BUS_IS_CONT
+Contention bus failure found in bus "%1".
+DEAD_CODE
+BLK_NO_RCHB
+The block is not reachable.
+DEFAULT_CASE
+CAS_IS_DFRC
+A reachable default case was found.
+EXPRESSION_OVERFLOW
+EXP_AR_OVFL
+Arithmetic overflow expression failure found.
+FLOATING_BUS
+BUS_IS_FLOT
+Floating bus failure found in bus "%1".
+FSM_FREE_LIVELOCK
+FSM_IS_NLLK
+No livelock condition found (%d) in the FSM "%1".
+FSM_LIVELOCK
+FSM_IS_LVLK
+Livelock condition found (%d) in the FSM "%1".
+FSM_MULTI_TRANS_COVER
+FSM_NO_MTRN
+Unreachable consequence transitions (%d1->%d2->%d3) found in the FSM "%1".
+FSM_POTENTIAL_LIVELOCK
+FSM_IS_PLLK
+Potential livelock condition found (%d) in the FSM "%1".
+FSM_STATE_COVER
+FSM_NO_RCHB
+Unreachable states found (%d) in the FSM "%1".
+FSM_STATE_DEADLOCK
+FSM_IS_DDLK
+A deadlock situation was found (%d) for a state of the FSM "%1".
+FSM_STATE_FREE_DEADLOCK
+FSM_IS_NDLK
+No deadlock situation was found (%d) for a state of the FSM "%1".
+FSM_STATE_POTENTIAL_DEADLOCK
+FSM_IS_PDLK
+Potential deadlock situation was found (%d) for a state of the FSM "%1".
+FSM_TRANS_COVER
+FSM_NO_TRRN
+Unreachable transitions found (%d1->%d2) in the FSM "%1".
+OUT_OF_BOUND_INDEXING
+ARY_IS_OOBI
+Out-of-bound indexing failure found.
+PRIORITY_CASE
+CAS_NO_PRIO
+Priority case failure found.
+SIGNALS_DEADLOCK_SIGNALS
+SIG_IS_DLCK
+The signal "%1" is a deadlock signal.
+SIGNALS_STUCKAT
+SIG_IS_STCK
+The signal "%1" is stuck-at %s.
+SIGNALS_TOGGLE_FALL
+SIG_NO_TGFL
+The signal "%1" has not toggled from 1 to 0.
+SIGNALS_TOGGLE_RISE
+SIG_NO_TGRS
+The signal "%1" has not toggled from 0 to 1.
+SIGNALS_TOGGLE_STABLE
+SIG_NO_TGST
+The signal "%1" has not toggled stable.
+UNIQUE_CASE
+CAS_NO_UNIQ
+Unique case failure found.
+X_ASSIGNMENT
+ASG_IS_XRCH
+A reachable x-assignment was found.
+<top-model-name>
+token_engine
+<progress-events>
+0
+<alias-tag>
+0
+<tag-mode>
+0
+<property-category-is-enabled>
+0
+<hal-category-is-enabled>
+0
+<candidate-merged-group>
+0
+<id-to-merged-signature>
+0
+<propertyId-to-fsmInfo>
+0
+<fsmName-to-idleState>
+0
+<fsmName-to-disablingState>
+0
+<idToPrimaryGroupData>
+3
+3
+3
+-1
+<priority>
+-1
+0
+2
+3
+-1
+<priority>
+-1
+0
+1
+3
+-1
+<priority>
+-1
+0
+<verificMsgData>
+3
+1
+2
+3
+<isNewFlowUsed>
+1
+<propertyCtlLtlPairTable>
+0
+<ctlPoiToArgs>
+11
+226
+2
+PASS_DONE
+Layer1_Controller.L1C_cs
+225
+2
+NORMAL_LOOP
+Layer1_Controller.L1C_cs
+224
+2
+PREHEAT
+Layer1_Controller.L1C_cs
+223
+2
+INIT_FIFO_PE
+Layer1_Controller.L1C_cs
+222
+2
+INIT_WEIGHT
+Layer1_Controller.L1C_cs
+221
+2
+PASS_IDLE
+Layer1_Controller.L1C_cs
+217
+2
+IDLE
+L2C_preheat_dut.cs
+216
+2
+IDLE
+L2C_preheat_dut.cs
+218
+2
+WAIT_DONE
+L2C_preheat_dut.cs
+219
+2
+DONE
+L2C_preheat_dut.cs
+220
+2
+PASS_IDLE
+Layer1_Controller.L1C_cs
+<propertiesIdsToEnable>
+0
+<propertiesIdsToDisable>
+0
+<AmpaToPropMap>
+0
+

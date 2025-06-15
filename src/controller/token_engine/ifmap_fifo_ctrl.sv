@@ -5,7 +5,7 @@ module ifmap_fifo_ctrl (
     // From L2 Controller
     input  logic        ifmap_fifo_reset_i, // Reset FIFO
     input  logic        ifmap_need_pop_i,   // 新任務觸發
-    input  logic [4:0]  ifmap_pop_num_i,    // 本次需 pop 幾次
+    input  logic [31:0]  ifmap_pop_num_i,    // 本次需 pop 幾次
 
     // From Arbiter
     input  logic        ifmap_permit_push_i,
@@ -36,7 +36,7 @@ module ifmap_fifo_ctrl (
     output logic        ifmap_fifo_done_o
 );
 
-logic [4:0] pop_num_buf;
+logic [31:0] pop_num_buf;
 
     // 直接將輸入連接到輸出
 assign ifmap_fifo_reset_o = ifmap_fifo_reset_i; // 直接將輸入連接到輸出
@@ -70,7 +70,7 @@ always_comb begin
                 ns = IDLE;
         end
         POP: begin
-            if (pop_cnt == (pop_num_buf-5'd1))
+            if (pop_cnt == (pop_num_buf-31'd1))
                 ns = IDLE;
             else if (ifmap_fifo_empty_i)
                 ns = PUSH;
@@ -89,7 +89,7 @@ end
 
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
-        pop_num_buf <= 5'd0;
+        pop_num_buf <= 31'd0;
     else if (cs == IDLE)
         pop_num_buf <= ifmap_pop_num_i;
 end

@@ -1,0 +1,100 @@
+2025-06-15 16:55:26.907536 (25148) main____ INFO    ----------------------------------------
+2025-06-15 16:55:26.907573 (25148) main____ INFO    Jasper version info
+2025-06-15 16:55:26.907578 (25148) main____ INFO      tool      : Jasper 2022.03
+2025-06-15 16:55:26.907583 (25148) main____ INFO      version   : 2022.03p002 64 bits
+2025-06-15 16:55:26.907586 (25148) main____ INFO      build date: 2022.05.26 13:21:20 UTC
+2025-06-15 16:55:26.907589 (25148) main____ INFO    ----------------------------------------
+2025-06-15 16:55:26.907591 (25148) main____ INFO    Runtime info:
+2025-06-15 16:55:26.907594 (25148) main____ INFO      platform  : Linux 4.18.0-553.51.1.el8_10.x86_64 x86_64
+2025-06-15 16:55:26.907598 (25148) main____ INFO      hostname  : icdeslab19.ee.ncku.edu.tw
+2025-06-15 16:55:26.907601 (25148) main____ INFO      pid       : 25148
+2025-06-15 16:55:26.907604 (25148) main____ INFO      arguments : '-style' 'windows' '-allow_unsupported_OS' '-superlint' '../script/superlint.tcl'
+2025-06-15 16:55:26.907609 (25148) main____ INFO      locale    : UTF-8
+2025-06-15 16:55:26.907612 (25148) main____ INFO    ----------------------------------------
+2025-06-15 16:55:26.907615 (25148) main____ INFO    System resource limits info:
+2025-06-15 16:55:26.907618 (25148) main____ INFO      virtual memory: unlimited
+2025-06-15 16:55:26.907620 (25148) main____ INFO      cpu time      : unlimited
+2025-06-15 16:55:26.907625 (25148) main____ INFO      processes     : 29942
+2025-06-15 16:55:26.907630 (25148) main____ INFO      stack size    : 8388608 B
+2025-06-15 16:55:26.907634 (25148) main____ INFO      core file size: 0 B
+2025-06-15 16:55:26.907637 (25148) main____ INFO      open files    : 262144
+2025-06-15 16:55:26.907639 (25148) main____ INFO      file size     : unlimited
+2025-06-15 16:55:26.907642 (25148) main____ INFO    ----------------------------------------
+2025-06-15 16:55:26.907644 (25148) main____ INFO    Memory statistics:
+2025-06-15 16:55:26.907647 (25148) main____ INFO      total physical memory  : 7724748 kB
+2025-06-15 16:55:26.907650 (25148) main____ INFO      free physical memory   : 132124 kB
+2025-06-15 16:55:26.907653 (25148) main____ INFO      committed address space: 21635440 kB
+2025-06-15 16:55:26.907655 (25148) main____ INFO    ----------------------------------------
+2025-06-15 16:55:26.908235 (25148) main____ INFO    Important environment variables:
+2025-06-15 16:55:26.908245 (25148) main____ INFO      DISPLAY               : ':0'
+2025-06-15 16:55:26.908249 (25148) main____ INFO      JASPER_INSTALL_DIR    : '/usr/cad/cadence/JASPER/jasper_2022.03p002'
+2025-06-15 16:55:26.908252 (25148) main____ INFO      JASPER_MACRO_LINEFILES: '1'
+2025-06-15 16:55:26.908256 (25148) main____ INFO      JASPER_OS_CHECK       : '0'
+2025-06-15 16:55:26.908259 (25148) main____ INFO      JG_MACRO_LINEFILES    : '1'
+2025-06-15 16:55:26.908262 (25148) main____ INFO      LANG                  : 'en_US.UTF-8'
+2025-06-15 16:55:26.908265 (25148) main____ INFO      LM_LICENSE_FILE       : '5280@lstn:26585@lstn:'
+2025-06-15 16:55:26.908267 (25148) main____ INFO    ----------------------------------------
+2025-06-15 16:55:26.908593 (25148) lic_core INFO    Initializing license system ...
+2025-06-15 16:55:27.209525 (25148) lic_core INFO    ... license system initialized.
+2025-06-15 16:55:27.385700 (25148) lic__man INFO    Claim 'main' for <ui>.
+2025-06-15 16:55:27.385730 (25148) lic_core INFO    (1) checking out 'jasper_interactive' ...
+2025-06-15 16:55:27.447827 (25148) lic_core INFO    ... (1) checkout succeeded
+2025-06-15 16:55:27.447878 (25148) lic__man INFO    Claim 'superlint' for <ui>.
+2025-06-15 16:55:27.447890 (25148) lic_core INFO    (2) checking out 'jasper_afl' ...
+2025-06-15 16:55:27.479605 (25148) lic_core INFO    ... (2) checkout failed (error: -5) ("FLEXnet ERROR(-5, 0, 0): No such feature exists.")
+2025-06-15 16:55:27.479637 (25148) lic_core INFO    (3) checking out 'jasper_dao' ...
+2025-06-15 16:55:27.545165 (25148) lic_core INFO    ... (3) checkout succeeded
+2025-06-15 16:55:27.546213 (25148) main____ INFO    Tool inactivity delay is 480000 ms.
+2025-06-15 16:55:28.735858 (25148) lic__man INFO    Claim 'superlint' for <ui>.
+2025-06-15 16:55:29.523677 (25148) lic__man INFO    Unclaim 'superlint' for <ui>.
+2025-06-15 16:55:29.523707 (25148) lic__man INFO    Claim 'superlint' for <ui>.
+2025-06-15 16:55:29.552183 (25148) session_ INFO    Starting analysis session with session id 'session_0' (launcher: <local>) ...
+2025-06-15 16:55:29.553673 (25148) session_ INFO    Analysis session with session id 'session_0' started (pid: 25222)
+2025-06-15 16:55:37.773103 (25148) session_ INFO    Analysis session 'session_0' connected to the console (host: 127.0.0.1:41274)
+2025-06-15 16:55:39.267845 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 16:55:39.268478 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 16:56:14.128185 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 16:56:14.128284 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 16:56:53.833235 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 16:56:53.844978 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 16:58:35.531192 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 16:58:35.531415 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:00:01.536796 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:00:01.536856 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:02:02.796969 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:02:02.797038 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:03:24.875474 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:03:24.875565 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:06:12.446723 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:06:12.465014 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:08:05.206556 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:08:05.223760 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:09:25.488751 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:09:25.489008 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:10:23.556580 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:10:23.556704 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:10:50.900442 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:10:50.900753 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:11:46.362331 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:11:46.362482 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:12:18.850894 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:12:18.850961 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:12:22.507672 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:12:24.786344 (25148) lic__man INFO    Claim 'superlint' for 'session_0'.
+2025-06-15 17:15:46.684830 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 17:15:46.699127 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:15:48.907009 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 17:15:49.106790 (25148) lic__man INFO    Claim 'superlint' for 'session_0'.
+2025-06-15 17:24:52.820539 (25148) lic__man INFO    Entering idle state.
+2025-06-15 17:55:51.848550 (25148) lic__man INFO    Leaving idle state.
+2025-06-15 18:11:33.820643 (25148) lic__man INFO    Entering idle state.
+2025-06-15 18:22:18.812154 (25148) lic__man INFO    Leaving idle state.
+2025-06-15 18:22:19.601124 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 18:22:19.601565 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 18:23:00.789371 (25148) main____ INFO    Releasing console memory by request of analysis session 'session_0'.
+2025-06-15 18:23:00.789534 (25148) lic__man INFO    Unclaim everything for 'session_0'.
+2025-06-15 18:23:39.797505 (25148) main____ INFO    About to exit: requested from GUI
+2025-06-15 18:23:44.099871 (25148) session_ INFO    Analysis session 'session_0' disconnected.
+2025-06-15 18:23:44.726780 (25148) lic_core INFO    (1) checkin jasper_interactive
+2025-06-15 18:23:44.731177 (25148) lic_core INFO    (3) checkin jasper_dao
+2025-06-15 18:23:44.746245 (25148) main____ INFO    Exiting with status 0.

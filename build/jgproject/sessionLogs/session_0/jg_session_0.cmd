@@ -5,10 +5,10 @@
 # version   : 2022.03p002 64 bits
 # build date: 2022.05.26 13:21:20 UTC
 # ----------------------------------------
-# started   : 2025-06-14 22:07:49 CST
+# started   : 2025-06-15 18:24:01 CST
 # hostname  : icdeslab19.ee.ncku.edu.tw.(none)
-# pid       : 863494
-# arguments : '-label' 'session_0' '-console' '//127.0.0.1:46213' '-style' 'windows' '-data' 'AAAAunicXYoxCsJAFETfYmFr4SkE4wXS2ikBBVuRmCIQjOgGwcarepP1uYqFf/iz+2deAMpHSok8o7s2YcWaDUu9Yuf7m/D8fsrwpt0Zcw50qufGnoETV/2sei5EGo7mFVvpqfSnbew6WuloXmQt7Grz1j7m658s3NoLxi9WQR1w' '-proj' '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/jgproject/sessionLogs/session_0' '-init' '-hidden' '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/jgproject/.tmp/.initCmds.tcl' '../script/superlint.tcl'
+# pid       : 42514
+# arguments : '-label' 'session_0' '-console' '//127.0.0.1:44689' '-style' 'windows' '-data' 'AAAAunicXYoxCsJAFETfYmFr4SkE4wXS2ikBBVuRmCIQjOgGwcarepP1uYqFf/iz+2deAMpHSok8o7s2YcWaDUu9Yuf7m/D8fsrwpt0Zcw50qufGnoETV/2sei5EGo7mFVvpqfSnbew6WuloXmQt7Grz1j7m658s3NoLxi9WQR1w' '-proj' '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/jgproject/sessionLogs/session_0' '-init' '-hidden' '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/jgproject/.tmp/.initCmds.tcl' '../script/superlint.tcl'
 check_superlint -init
 clear -all
 
@@ -24,7 +24,22 @@ config_rtlds -rule  -disable -tag { FIL_NR_CTLC}
 #config_rtlds -rule  -reset -sync
 # vsd2023_constrain //
 
-analyze -sv +incdir+../include+ ../src/token_engine/token_engine.sv 
+analyze -sv +incdir+../include+ ../src/controller/token_engine/token_engine.sv 
+# analyze -sv +incdir+../include+../src/AXI ../src/top.sv ../sim/SRAM/TS1N16ADFPCLLLVTA512X45M4SWSHOD.sv
+
+elaborate -bbox true -top token_engine
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
+include ../script/superlint.tcl
 include ../script/superlint.tcl
 include ../script/superlint.tcl
 include ../script/superlint.tcl

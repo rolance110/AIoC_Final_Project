@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1749988110.737141991, "rt":7.33, "ut":3.98, "st":0.15}}
+{"vcselab":{"timestamp_begin":1749988118.136618599, "rt":3.53, "ut":0.19, "st":0.05}}
+{"link":{"timestamp_begin":1749988121.742194602, "rt":1.32, "ut":0.09, "st":0.06}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1749988110.286508306}
+{"VCS_COMP_START_TIME": 1749988110.286508306}
+{"VCS_COMP_END_TIME": 1749988125.318381288}
+{"VCS_USER_OPTIONS": "-R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/calc_tile_n_tb.sv -f /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f -debug_access+all -full64 +incdir+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./include+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim +notimingcheck +define+"}
+{"vcs1": {"peak_mem": 432404}}
+{"vcselab": {"peak_mem": 187340}}

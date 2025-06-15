@@ -10,10 +10,10 @@
 `define BYTES_P 2 // Partial sum bytes
 
 // convolution layer types
-`define POINTWISE 0 // Bit width for activation
-`define DEPTHWISE 1 // Bit width for activation
-`define STANDARD 2 // Bit width for activation
-`define LINEAR 3 // Bit width for activation
+`define POINTWISE 2'd0 // Bit width for activation
+`define DEPTHWISE 2'd1 // Bit width for activation
+`define STANDARD 2'd2 // Bit width for activation
+`define LINEAR 2'd3 // Bit width for activation
 
 // Layer Descriptor flags
 `define RELU_EN 1 // ReLU activation

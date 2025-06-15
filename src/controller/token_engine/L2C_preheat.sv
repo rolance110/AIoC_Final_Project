@@ -10,7 +10,7 @@ module L2C_preheat #(
     input  logic               rst_n,
     input  logic               start_preheat_i,
     input  logic [1:0]         layer_type_i,    // 00: pw, 01: dw, others: future
-    input  logic [31:0] ifmap_fifo_done_i,
+    input  logic [31:0] ifmap_fifo_done_matrix_i,
 
     output logic [31:0] ifmap_need_pop_o,
     output logic [31:0] ifmap_pop_num_o [31:0],
@@ -44,7 +44,7 @@ module L2C_preheat #(
                     ns = IDLE;
             end
             WAIT_DONE: begin
-                if(&ifmap_fifo_done_i)
+                if(&ifmap_fifo_done_matrix_i)
                     ns = DONE;
                 else
                     ns = WAIT_DONE;

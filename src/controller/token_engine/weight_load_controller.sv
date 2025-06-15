@@ -73,7 +73,7 @@ always_ff@(posedge clk or negedge rst_n) begin
     if (!rst_n)
         weight_addr_o <= 32'd0;
     else if(weight_read_cnt==32'd0) // reset base address
-        weight_addr_o <= weight_GLB_base_addr;
+        weight_addr_o <= weight_GLB_base_addr_i;
     else if (weight_load_state_i)
         weight_addr_o <= weight_addr_o + 32'd1; // increment counter until all weights are loaded
     else

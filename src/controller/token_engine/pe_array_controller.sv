@@ -10,7 +10,7 @@ module pe_array_controller(
 
     input logic [31:0] ifmap_fifo_pop_matrix_i,
     input logic [31:0] ipsum_fifo_pop_matrix_i,
-    input logic [31:0] ipsum_fifo_push_matrix_i,
+    input logic [31:0] opsum_fifo_push_matrix_i,
 
     output logic PE_stall_matrix_o [31:0][31:0], // 32*32 PE array stall matrix
     output logic PE_en_matrix_o [31:0][31:0]  // 32*32 PE array enable matrix
@@ -40,6 +40,13 @@ end
 
 always_comb begin
     if(preheat_state_i)begin
+        for(i=0; i<32; i++) begin
+            for(j=0; j<32; j++) begin
+                PE_en_matrix_o[i][j] = 1'b0; // 預熱階段不需要 啟動 pe 計算
+            end
+        end
+    end
+    else begin
         for(i=0; i<32; i++) begin
             for(j=0; j<32; j++) begin
                 PE_en_matrix_o[i][j] = 1'b0; // 預熱階段不需要 啟動 pe 計算
