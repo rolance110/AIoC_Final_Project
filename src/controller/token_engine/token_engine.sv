@@ -45,6 +45,13 @@ module token_engine (
 
 
 ///* output
+
+
+//* to GLB
+    output logic [3:0] glb_web_o,
+    output logic [31:0] glb_addr_o,
+    output logic [31:0] glb_write_data_o,
+
 //* to PE
     output logic PE_en_matrix_o [31:0][31:0],
     output logic PE_stall_matrix_o [31:0][31:0],
@@ -240,7 +247,8 @@ L2C_preheat #(
 /* Normal Loop */
 
 
-
+logic [31:0] ipsum_glb_read_addr_matrix [31:0];
+logic [31:0] ipsum_pop_num_matrix [31:0];
 
 //* Layer 3 Controller ==============================================
 L3C_fifo_ctrl #(

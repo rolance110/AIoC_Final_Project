@@ -11,6 +11,7 @@
 ../src/controller/token_engine/L2C_preheat.sv
 ../src/controller/token_engine/L3C_fifo_ctrl.sv
 ../src/controller/token_engine/token_arbiter.sv
+../src/controller/token_engine/token_engine.sv
 
 ../src/CONV_unit/ifmap_fifo.sv
 ../src/CONV_unit/ifmap_fifo_bank.sv

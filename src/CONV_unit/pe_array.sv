@@ -10,11 +10,11 @@ module pe_array #(
 
     // 權重載入控制
     input  logic [7:0]     weight_in,  // 欲載入的 weight
-    input  logic [ROW-1:0][COL-1:0]               load_en,             // 啟用載入
+    input  logic           w_load_en[ROW-1:0][COL-1:0],             // 啟用載入
 
     // PE enable 控制（每個 PE 可被獨立 enable）
-    input  logic [ROW-1:0][COL-1:0] PE_en_matrix,
-    input logic [ROW-1:0][COL-1:0] PE_stall_matrix, // 每個 PE 的 stall 狀態
+    input  logic PE_en_matrix[ROW-1:0][COL-1:0] ,
+    input logic  PE_stall_matrix[ROW-1:0][COL-1:0], // 每個 PE 的 stall 狀態
 
     // 輸出結果（給 adder tree）
     output logic [15:0] mul_out_matrix [ROW-1:0][COL-1:0]
@@ -48,7 +48,7 @@ generate
                 .rst_n     (rst_n),
 
                 .w_in      (weight_in), // weight boardcast
-                .w_load_en (load_en[r][c]),
+                .w_load_en (w_load_en[r][c]),
 
                 .PE_en     (PE_en_matrix[r][c]),
                 .PE_stall  (PE_stall_matrix[r][c]),
