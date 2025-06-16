@@ -42,6 +42,9 @@ module token_engine (
 //* from GLB
     input  logic [31:0] glb_read_data_i,
 
+//* from opsum fifo
+    input logic [31:0] opsum_fifo_pop_data_matrix_i [31:0],
+
 
 
 ///* output
@@ -338,8 +341,10 @@ token_arbiter token_arbiter_dut (
     .ipsum_read_req_matrix_i(ipsum_read_req_matrix),
     .ifmap_read_addr_matrix_i(ifmap_read_addr_matrix),
     .ipsum_read_addr_matrix_i(ipsum_read_addr_matrix),
+
     .opsum_write_addr_matrix_i(opsum_write_addr_matrix),
     .opsum_write_web_matrix_i(opsum_write_web_matrix),
+    .opsum_fifo_pop_data_matrix_i(opsum_fifo_pop_data_matrix_i),
 
 //* output
     .glb_read_o(glb_read_req),
@@ -347,6 +352,7 @@ token_arbiter token_arbiter_dut (
     .glb_write_o(glb_write_req),
     .glb_write_addr_o(glb_write_addr),
     .glb_write_web_o(glb_write_web),
+    .glb_write_data_o(glb_write_data_o),
 
     .permit_ifmap_matrix_o(ifmap_permit_push_matrix),
     .permit_ipsum_matrix_o(ipsum_permit_push_matrix),

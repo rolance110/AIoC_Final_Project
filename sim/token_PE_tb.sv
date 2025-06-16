@@ -80,19 +80,27 @@ module token_PE_tb;
     // conv_unit 的輸出訊號
     logic [31:0]       opsum_pop_data [31:0];
     
+
+logic [31:0] opsum_fifo_pop_data_matrix_i[31:0];
+logic [31:0] glb_addr_o;
+logic [31:0] glb_write_data_o;
+logic [3:0] glb_web_o;
+
 initial begin
     $readmemh("../sim/memory.hex", u_SRAM.memory);
     $display("===== SRAM initialized from memory.hex =====");
  
 end
+logic [31:0] write_data;
     SRAM_64KB u_SRAM (
         .clk(clk),
         .rst_n(rst_n),
-        .WEB(4'b0000), // 假設寫使能為全 0
-        .addr(weight_GLB_base_addr_i[15:2]), // 使用地址的高 14 位
-        .write_data(32'd0),
-        .read_data()
+        .WEB(glb_web_o), // 假設寫使能為全 0
+        .addr(glb_addr_o), // 使用地址的高 14 位
+        .write_data(write_data),
+        .read_data(glb_read_data_i)
     );
+
 
     // 實例化 token_engine
     token_engine u_token_engine (
@@ -118,10 +126,20 @@ end
         .OC_real_i(OC_real_i),
         .On_real_i(On_real_i),
         .glb_read_data_i(glb_read_data_i),
+        .opsum_fifo_pop_data_matrix_i(opsum_pop_data),
+
+
+//* to GLB
+        .glb_web_o(glb_web_o),
+        .glb_addr_o(glb_addr_o),
+        .glb_write_data_o(glb_write_data_o),
+//* to conv.pe_array
         .PE_en_matrix_o(PE_en_matrix_o),
         .PE_stall_matrix_o(PE_stall_matrix_o),
+//* to conv.pe_array.weight 
         .weight_in_o(weight_in_o),
         .weight_load_en_matrix_o(weight_load_en_matrix_o),
+//* to FIFO
         .ifmap_fifo_reset_o(ifmap_fifo_reset_o),
         .ifmap_fifo_push_matrix_o(ifmap_fifo_push_matrix_o),
         .ifmap_fifo_push_mod_matrix_o(ifmap_fifo_push_mod_matrix_o),
@@ -137,6 +155,7 @@ end
         .opsum_fifo_push_mod_matrix_o(opsum_fifo_push_mod_matrix_o),
         .opsum_fifo_push_data_matrix_o(opsum_fifo_push_data_matrix_o),
         .opsum_fifo_pop_matrix_o(opsum_fifo_pop_matrix_o),
+//* from FIFO
         .ifmap_fifo_full_matrix_i(ifmap_fifo_full),
         .ifmap_fifo_empty_matrix_i(ifmap_fifo_empty),
         .ipsum_fifo_full_matrix_i(ipsum_fifo_full),
@@ -187,24 +206,24 @@ end
         // 初始化訊號
         rst_n = 0;
         pass_start_i = 0;
-        layer_type_i = 2'b00;
-        weight_GLB_base_addr_i = 32'h0;
+        layer_type_i = `POINTWISE;
+        weight_GLB_base_addr_i = 32'h1000_0000;
         ifmap_GLB_base_addr_i = 32'h0;
         ipsum_GLB_base_addr_i = 32'h0;
         bias_GLB_base_addr_i = 32'h0;
         opsum_GLB_base_addr_i = 32'h0;
         is_bias_i = 0;
-        tile_n_i = 32'd1;
-        in_C_i = 8'd3;
+        tile_n_i = 32'd20;
+        in_C_i = 8'd224;
         in_R_i = 8'd224;
         pad_R_i = 2'd0;
         pad_L_i = 2'd0;
-        out_C_i = 8'd3;
+        out_C_i = 8'd224;
         out_R_i = 8'd224;
-        IC_real_i = 8'd3;
-        OC_real_i = 8'd64;
-        On_real_i = 32'd64;
-        glb_read_data_i = 32'h0000_1111;
+        IC_real_i = 8'd32;
+        OC_real_i = 8'd32;
+        On_real_i = 32'd20;
+        glb_read_data_i = 32'd0;// read from SRAM
         ipsum_read_en = 0;
         ipsum_add_en = 0;
 
@@ -216,12 +235,20 @@ end
         #10 pass_start_i = 0;
 
         // 模擬運行一段時間
-        #1000 $finish;
+        #100000 $finish;
     end
 
     // 監控訊號（可選）
     initial begin
         $monitor("Time=%0t rst_n=%b pass_done_o=%b", $time, rst_n, pass_done_o);
     end
-
+initial begin
+    `ifdef FSDB
+        $fsdbDumpfile("../wave/top.fsdb");
+        $fsdbDumpvars(0, u_token_engine, u_conv_unit, u_SRAM);
+    `elsif FSDB_ALL
+        $fsdbDumpfile("../wave/top.fsdb");
+        $fsdbDumpvars("+struct", "+mda", "+all", u_token_engine, u_conv_unit, u_SRAM);
+    `endif
+end
 endmodule
