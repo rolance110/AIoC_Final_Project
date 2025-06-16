@@ -104,7 +104,6 @@ logic preheat_done;
 logic normal_loop_done;
 
 
-logic [3:0] weight_load_WEB;
 logic [31:0] weight_addr;
 
 
@@ -112,18 +111,18 @@ logic [1:0] weight_load_byte_type;
 
 
 logic [31:0] ifmap_fifo_pop_en;
-logic [31:0] ifmap_need_pop_matrix, ifmap_permit_push;
+logic [31:0] ifmap_need_pop_matrix, ifmap_permit_push_matrix;
 logic [31:0] ifmap_fifo_push_en;
 logic [31:0] ifmap_glb_read_addr;
 logic [31:0] ifmap_read_req_matrix;
 
 
-logic [31:0] ipsum_need_push, ipsum_need_pop, ipsum_permit_push;
+logic [31:0] ipsum_need_push, ipsum_need_pop, ipsum_permit_push_matrix;
 logic [31:0] ipsum_fifo_push_en;
 logic [31:0] ipsum_glb_read_req, ipsum_glb_read_addr;
 
 
-logic [31:0] opsum_need_push, opsum_need_pop, opsum_permit_pop;
+logic [31:0] opsum_need_push, opsum_need_pop, opsum_permit_pop_matrix;
 logic [31:0] opsum_fifo_pop_en, opsum_fifo_push_en;
 logic [3:0] opsum_pop_web [31:0];
 logic [31:0] opsum_glb_write_req, opsum_glb_write_addr, opsum_glb_write_web;
@@ -149,10 +148,14 @@ weight_load_controller weight_load_controller_dut(
     .weight_load_state_i(weight_load_state),
     .layer_type_i(layer_type_i),
     .weight_GLB_base_addr_i(weight_GLB_base_addr_i),
-    .weight_load_WEB_o(weight_load_WEB),
+    .glb_read_data_i(glb_read_data_i),
+ 
     .weight_addr_o(weight_addr),
     .weight_load_byte_type_o(weight_load_byte_type),
-    .weight_load_done_o(weight_load_done)
+    .weight_load_en_matrix_o(weight_load_en_matrix_o),       
+    .weight_load_done_o(weight_load_done),
+
+    .weight_in_o(weight_in_o)
 );
 
 pe_array_controller pe_array_controller(
@@ -339,22 +342,25 @@ L3C_fifo_ctrl #(
 token_arbiter token_arbiter_dut (
 
 //* input
+    .weight_load_state_i(weight_load_state),
+    .weight_addr_i(weight_addr),
+
     .opsum_write_req_matrix_i(opsum_write_req_matrix),
     .ifmap_read_req_matrix_i(ifmap_read_req_matrix),
     .ipsum_read_req_matrix_i(ipsum_read_req_matrix),
+    
     .ifmap_read_addr_matrix_i(ifmap_read_addr_matrix),
     .ipsum_read_addr_matrix_i(ipsum_read_addr_matrix),
-
     .opsum_write_addr_matrix_i(opsum_write_addr_matrix),
+
     .opsum_write_web_matrix_i(opsum_write_web_matrix),
     .opsum_fifo_pop_data_matrix_i(opsum_fifo_pop_data_matrix_i),
 
 //* output
     .glb_read_o(glb_read_req),
-    .glb_read_addr_o(glb_read_addr),
     .glb_write_o(glb_write_req),
-    .glb_write_addr_o(glb_write_addr),
-    .glb_write_web_o(glb_write_web),
+    .glb_addr_o(glb_addr_o),
+    .glb_write_web_o(glb_web_o),
     .glb_write_data_o(glb_write_data_o),
 
     .permit_ifmap_matrix_o(ifmap_permit_push_matrix),

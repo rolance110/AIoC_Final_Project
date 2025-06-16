@@ -25,7 +25,7 @@ module conv_unit (
 //* ifmap fifo
     input  logic [31:0]        push_ifmap_en,
     input  logic [31:0]        push_ifmap_mod,
-    input  logic [31:0]        push_ifmap_data, // broadcast 32-bit push data to 32 FIFOs
+    input  logic [31:0]        push_ifmap_data [31:0], // broadcast 32-bit push data to 32 FIFOs
     input  logic [31:0]        pop_ifmap_en,
 
 //* weight
@@ -39,7 +39,7 @@ module conv_unit (
 //* ipsum fifo 
     input  logic [31:0]        push_ipsum_en,
     input  logic [31:0]        push_ipsum_mod, //* (push mod 0: 16 bits push, 1: 32 bits push)
-    input  logic [31:0]        push_ipsum_data, // broadcast 32-bit push data to 32 FIFOs
+    input  logic [31:0]        push_ipsum_data [31:0], // broadcast 32-bit push data to 32 FIFOs
     input  logic [31:0]        pop_ipsum_en,
 
 //* reducer

@@ -96,14 +96,14 @@ ifmap_fifo_ctrl: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/ifmap_fifo_ctrl_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
-	+define+$(FSDB_DEF)
+	+define+$(FSDB_DEF) \
 
 token_PE_tb: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
-	vcs -R -sverilog $(root_dir)/$(sim_dir)/token_PE_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64 +memcbk  \
-	+incdir+$(root_dir)/$(inc_dir)\
- +notimingcheck\
-	+define+$(FSDB_DEF)
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/token_PE_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF) \
 
 # Utilities
 nWave: | $(wave_dir)

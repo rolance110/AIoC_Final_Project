@@ -2,7 +2,7 @@ Magic 271485
 Revision Verdi_W-2024.09-SP2
 
 ; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
-viewPort 0 0 1920 1043 212 63
+viewPort 1920 27 1920 983 262 65
 
 ; File list:
 ; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
@@ -16,24 +16,16 @@ signalSpacing 5
 
 ; windowTimeUnit is used for zoom, cursor & marker
 ; waveform viewport range
-zoom 15334381.405511 15441618.594489
-cursor 15388000.000000
+zoom 9964.218752 10745.781248
+cursor 10365.000000
 marker 0.000000
 
 ; user define markers
 ; userMarker time_pos marker_name color linestyle
-userMarker 15435000 M8 ID_GREEN5 long_dashed
-userMarker 7845000 M7 ID_GREEN5 long_dashed
-userMarker 10375000 tile5 ID_GREEN5 long_dashed
-userMarker 5315000 tile4 ID_GREEN5 long_dashed
-userMarker 2745000 tile3 ID_GREEN5 long_dashed
-userMarker 55000 tile1 ID_GREEN5 long_dashed
-userMarker 12905000 tile6 ID_GREEN5 long_dashed
-
 ; visible top row signal index
-top 0
+top 114
 ; marker line index
-markerPos 26
+markerPos 154
 
 ; event list
 ; addEvent event_name event_expression
@@ -55,60 +47,161 @@ curSTATUS ByChange
 
 addGroup "G1"
 activeDirFile "" "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/wave/top.fsdb"
-addSignal -h 25 /Tile_Scheduler_tb/dut/clk
-addSignal -h 25 -UNSIGNED -HEX -holdScope layer_type_i[1:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope pad_B_i[1:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope pad_B_o[1:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope pad_L_i[1:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope pad_L_o[1:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope pad_R_i[1:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope pad_R_o[1:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope pad_T_i[1:0]
-addSignal -h 25 -holdScope dma_enable_o
-addSignal -h 25 -holdScope dma_interrupt_i
-addSignal -h 25 -UNSIGNED -holdScope cs_ts[3:0]
-addSignal -h 15 -holdScope uLD_en_i
-addSignal -h 25 -UNSIGNED -HEX -holdScope flags_i[3:0]
-addSignal -h 25 -holdScope pass_start_o
-addSignal -h 25 -holdScope pass_done_i
-addGroup "G7"
-addSignal -h 25 /Tile_Scheduler_tb/dut/DMA_bias_finish
-addSignal -h 25 -holdScope DMA_filter_finish
-addSignal -h 25 -holdScope DMA_ifmap_finish
-addSignal -h 25 -holdScope DMA_ipsum_finish
-addSignal -h 25 -holdScope DMA_opsum_finish
-addSignal -h 25 -holdScope DMA_ifmap_finish_buf
-addSignal -h 25 -holdScope DMA_ipsum_finish_buf
-addSignal -h 25 -holdScope DMA_opsum_finish_buf
+addSignal -h 15 /token_PE_tb/u_token_engine/Layer1_Controller/clk
+addSignal -h 15 -holdScope rst_n
+addSignal -h 15 -holdScope pass_start_i
+addSignal -h 15 -UNSIGNED -holdScope L1C_cs[2:0]
+addSignal -h 15 -UNSIGNED -holdScope L1C_ns[2:0]
 addGroup "G2"
-addSignal -h 25 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/On_real[6:0]
-addSignal -c ID_ORANGE5 -ls solid -lw 3 -h 25 -UNSIGNED -UDEC -holdScope IC_real[6:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope OC_real[6:0]
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_token_engine/weight_load_controller_dut/layer_type_i[1:0]
+addSignal -h 15 -holdScope weight_load_state_i
+addSignal -h 15 -UNSIGNED -UDEC -holdScope weight_num[31:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope weight_read_cnt[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope weight_GLB_base_addr_i[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope weight_addr_o[31:0]
+addSignal -h 15 -UNSIGNED -UDEC -holdScope weight_load_byte_type_o[1:0]
 addGroup "G3"
-addSignal -h 25 -UNSIGNED -UDEC /Tile_Scheduler_tb/dut/completed_On_cnt[31:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope completed_IC_cnt[6:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope completed_OC_cnt[6:0]
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_token_engine/glb_addr_o[31:0]
 addGroup "G4"
-addSignal -h 25 -UNSIGNED -HEX /Tile_Scheduler_tb/dut/max_On_cnt[31:0]
-addSignal -h 25 -UNSIGNED -HEX -holdScope max_On_cnt[31:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope remain_On[31:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope completed_On_cnt[31:0]
-addSignal -c ID_ORANGE5 -ls solid -lw 3 -h 25 -UNSIGNED -UDEC -holdScope remain_IC[6:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope remain_OC[6:0]
-addSignal -h 25 -holdScope reach_last_On_tile
-addSignal -h 25 -holdScope reach_last_D_tile
-addSignal -h 25 -holdScope reach_last_K_tile
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_SRAM/addr[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope addr_valid[13:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope read_data[31:0]
 addGroup "G5"
-addSignal -h 25 /Tile_Scheduler_tb/dut/layer_first_tile
-addSignal -h 25 -holdScope filter_en
-addSignal -h 25 -holdScope bias_en
-addSignal -h 25 -holdScope ipsum_en
-addSignal -c ID_ORANGE5 -ls solid -lw 4 -h 25 -UNSIGNED -UDEC -holdScope On_idx[6:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope d_idx[6:0]
-addSignal -h 25 -UNSIGNED -UDEC -holdScope k_idx[6:0]
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[0]/pe_inst/w_load_en
+addSignal -h 15 -UNSIGNED -HEX -holdScope w_in[7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope weight_reg[7:0]
 addGroup "G6"
-addSignal -h 25 /Tile_Scheduler_tb/dut/tile_reach_max_o
+addSignal -h 15 /token_PE_tb/u_conv_unit/weight_load_en[31:0]
+addGroup "G7"
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[1]/pe_inst/weight_reg[7:0]
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[31]/COL_LOOP[31]/pe_inst/weight_reg[7:0]
+addSignal -h 15 -holdScope w_load_en
 addGroup "G8"
+addSignal -h 15 /token_PE_tb/u_token_engine/L2C_init_fifo_pe_dut/ifmap_fifo_reset_o
+addSignal -h 15 -holdScope ipsum_fifo_reset_o
+addSignal -h 15 -holdScope opsum_fifo_reset_o
+addGroup "G9"
+addSignal -h 15 -UNSIGNED /token_PE_tb/u_token_engine/L2C_preheat_dut/cs[1:0]
+addSignal -h 15 /token_PE_tb/u_token_engine/u_L3C_fifo_ctrl/IFMAP_CTRL[0]/u_ifmap_fifo_ctrl/ifmap_need_pop_i
+addSignal -h 15 -UNSIGNED -HEX -holdScope pop_num_buf[31:0]
+addSignal -h 15 -UNSIGNED -holdScope cs[1:0]
+addSignal -h 15 -holdScope ifmap_fifo_empty_i
+addSignal -h 15 -holdScope ifmap_fifo_full_i
+addSignal -h 15 -holdScope ifmap_fifo_pop_o
+addSignal -h 15 -holdScope ifmap_read_req_o
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_token_engine/ifmap_permit_push_matrix[31:0]
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[0]/pe_inst/ifmap[7:0]
+addSignal -h 15 -holdScope PE_stall
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[1]/COL_LOOP[0]/pe_inst/ifmap[7:0]
+addSignal -h 15 -holdScope PE_stall
+addSignal -h 15 /token_PE_tb/u_token_engine/pe_array_controller/PE_stall_matrix_o[31:0]
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[1]/pe_inst/ifmap[7:0]
+addSignal -h 15 -holdScope PE_stall
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[0]/fifo_inst/mem[0:3]
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[1]/fifo_inst/mem[0:3]
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[2]/fifo_inst/mem[0:3]
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[3]/fifo_inst/mem[0:3]
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[0]/fifo_inst/push_en
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[1]/fifo_inst/push_en
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[2]/fifo_inst/push_en
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_token_engine/glb_read_data_i[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope glb_addr_o[31:0]
+addSignal -h 15 -holdScope ifmap_fifo_base_addr_matrix[31:0]
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[0]/pe_inst/ifmap[7:0]
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[1]/pe_inst/ifmap[7:0]
+addSignal -h 15 -UNSIGNED -HEX /token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[2]/pe_inst/ifmap[7:0]
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[3]/fifo_inst/push_en
+addGroup "G10"
+addSignal -h 15 /token_PE_tb/u_conv_unit/clk
+addSignal -h 15 /token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[0]/fifo_inst/empty
+addSignal -h 15 -holdScope full
+addSignal -h 15 -UNSIGNED -HEX -holdScope data_out_reg[7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope rd_ptr[1:0]
+addSignal -expanded -h 15 -holdScope mem[0:3]
+addSignal -h 15 -holdScope push_en
+addSignal -h 15 -UNSIGNED -HEX -holdScope push_data[31:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope wr_ptr[1:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope mem[0][7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope mem[1][7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope mem[2][7:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope mem[3][7:0]
+addGroup "G11"
+addSignal -h 15 -UNSIGNED /token_PE_tb/u_token_engine/u_L3C_fifo_ctrl/IFMAP_CTRL[0]/u_ifmap_fifo_ctrl/cs[1:0]
+addSignal -h 15 -UNSIGNED -HEX -holdScope req_cnt[2:0]
+addSignal -h 15 -holdScope ifmap_read_req_o
+addSignal -h 15 -holdScope ifmap_permit_push_i
+addSignal -h 15 -holdScope ifmap_fifo_push_mod_o
+addSignal -h 15 -UNSIGNED -HEX -holdScope ifmap_fifo_push_data_o[31:0]
+addSignal -h 15 -holdScope ifmap_fifo_push_o
+addSignal -h 15 -UNSIGNED -UDEC -holdScope read_ptr[15:0]
+addGroup "G12"
+addSignal -expanded -h 15 -UNSIGNED -HEX /token_PE_tb/u_token_engine/token_arbiter_dut/ifmap_read_req_matrix_i[31:0]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[31]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[30]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[29]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[28]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[27]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[26]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[25]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[24]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[23]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[22]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[21]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[20]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[19]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[18]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[17]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[16]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[15]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[14]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[13]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[12]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[11]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[10]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[9]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[8]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[7]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[6]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[5]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[4]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[3]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[2]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[1]
+addSignal -h 15 -holdScope ifmap_read_req_matrix_i[0]
+addSignal -expanded -h 15 -UNSIGNED -HEX -holdScope permit_ifmap_matrix_o[31:0]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[31]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[30]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[29]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[28]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[27]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[26]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[25]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[24]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[23]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[22]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[21]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[20]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[19]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[18]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[17]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[16]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[15]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[14]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[13]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[12]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[11]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[10]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[9]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[8]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[7]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[6]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[5]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[4]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[3]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[2]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[1]
+addSignal -h 15 -holdScope permit_ifmap_matrix_o[0]
+addGroup "G13"
 
 ; getSignalForm Scope Hierarchy Status
 ; active file of getSignalForm
@@ -117,14 +210,54 @@ activeDirFile "" "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/w
 GETSIGNALFORM_SCOPE_HIERARCHY_BEGIN
 getSignalForm close
 
-"/Tile_Scheduler_tb"
-"/Tile_Scheduler_tb/dut"
-"/Tile_Scheduler_tb/dut/dma_address_generator"
+"/token_PE_tb"
+"/token_PE_tb/u_SRAM"
+"/token_PE_tb/u_token_engine"
+"/token_PE_tb/u_token_engine/token_arbiter_dut"
 
 SCOPE_LIST_BEGIN
-"/Tile_Scheduler_tb"
-"/Tile_Scheduler_tb/dut"
-"/Tile_Scheduler_tb/dut/dma_address_generator"
+"/token_PE_tb"
+"/token_PE_tb/u_token_engine/weight_load_controller_dut"
+"/token_PE_tb/u_token_engine/Layer1_Controller"
+"/token_PE_tb/u_conv_unit"
+"/token_PE_tb/u_token_engine"
+"/token_PE_tb/u_token_engine/L2C_init_fifo_pe_dut"
+"/token_PE_tb/u_token_engine/token_arbiter_dut"
+"/token_PE_tb/u_token_engine/u_L3C_fifo_ctrl"
+"/token_PE_tb/u_SRAM"
+"/token_PE_tb/u_token_engine/pe_array_controller"
+"/token_PE_tb/u_conv_unit/u_pe_array"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[0]/pe_inst"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[0]"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[1]/pe_inst"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[1]"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[31]/COL_LOOP[31]"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[31]/COL_LOOP[31]/pe_inst"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[0]/fifo_inst"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[0]"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank"
+"/token_PE_tb/u_token_engine/L2C_preheat_dut"
+"/token_PE_tb/u_token_engine/u_L3C_fifo_ctrl/IFMAP_CTRL[0]"
+"/token_PE_tb/u_token_engine/u_L3C_fifo_ctrl/IFMAP_CTRL[0]/u_ifmap_fifo_ctrl"
+"/token_PE_tb/u_token_engine/u_L3C_fifo_ctrl/IFMAP_CTRL[1]/u_ifmap_fifo_ctrl"
+"/token_PE_tb/u_token_engine/u_L3C_fifo_ctrl/IFMAP_CTRL[1]"
+"/token_PE_tb/u_conv_unit/u_reducer"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[1]/COL_LOOP[0]/pe_inst"
+"/token_PE_tb/u_conv_unit/u_opsum_fifo_bank"
+"/token_PE_tb/u_conv_unit/u_ipsum_fifo_bank"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[1]"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[1]/COL_LOOP[0]"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[1]/COL_LOOP[1]/pe_inst"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[1]/COL_LOOP[1]"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[1]/fifo_inst"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[2]/fifo_inst"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[3]/fifo_inst"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[2]"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[1]"
+"/token_PE_tb/u_conv_unit/u_ifmap_fifo_bank/FIFO_ARRAY[3]"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[2]/pe_inst"
+"/token_PE_tb/u_conv_unit/u_pe_array/ROW_LOOP[0]/COL_LOOP[2]"
 SCOPE_LIST_END
 
 GETSIGNALFORM_SCOPE_HIERARCHY_END

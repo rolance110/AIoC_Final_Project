@@ -86,6 +86,17 @@ logic [31:0] glb_addr_o;
 logic [31:0] glb_write_data_o;
 logic [3:0] glb_web_o;
 
+    initial begin
+        `ifdef FSDB
+            $fsdbDumpfile("../wave/top.fsdb");
+            $fsdbDumpvars(0, u_token_engine, u_conv_unit, u_SRAM);
+        `elsif FSDB_ALL
+            $fsdbDumpfile("../wave/top.fsdb");
+            $fsdbDumpvars("+struct", "+mda", "+all", u_token_engine, u_conv_unit, u_SRAM);
+        `endif
+    end
+
+
 initial begin
     $readmemh("../sim/memory.hex", u_SRAM.memory);
     $display("===== SRAM initialized from memory.hex =====");
@@ -171,7 +182,7 @@ logic [31:0] write_data;
         .layer_type(layer_type_i), // 與 token_engine 共用相同的 layer_type_i
         .push_ifmap_en(ifmap_fifo_push_matrix_o),
         .push_ifmap_mod(ifmap_fifo_push_mod_matrix_o),
-        .push_ifmap_data(ifmap_fifo_push_data_matrix_o[0]), // 使用第 0 個資料元素
+        .push_ifmap_data(ifmap_fifo_push_data_matrix_o), 
         .pop_ifmap_en(ifmap_fifo_pop_matrix_o),
         .weight_in(weight_in_o),
         .weight_load_en(weight_load_en_matrix_o),
@@ -179,7 +190,7 @@ logic [31:0] write_data;
         .PE_stall_matrix(PE_stall_matrix_o),
         .push_ipsum_en(ipsum_fifo_push_matrix_o),
         .push_ipsum_mod(ipsum_fifo_push_mod_matrix_o),
-        .push_ipsum_data(ipsum_fifo_push_data_matrix_o[0]), // 使用第 0 個資料元素
+        .push_ipsum_data(ipsum_fifo_push_data_matrix_o), 
         .pop_ipsum_en(ipsum_fifo_pop_matrix_o),
         .ipsum_read_en(ipsum_read_en),
         .ipsum_add_en(ipsum_add_en),
@@ -207,7 +218,7 @@ logic [31:0] write_data;
         rst_n = 0;
         pass_start_i = 0;
         layer_type_i = `POINTWISE;
-        weight_GLB_base_addr_i = 32'h1000_0000;
+        weight_GLB_base_addr_i = 32'h0000_1000;
         ifmap_GLB_base_addr_i = 32'h0;
         ipsum_GLB_base_addr_i = 32'h0;
         bias_GLB_base_addr_i = 32'h0;
@@ -223,7 +234,7 @@ logic [31:0] write_data;
         IC_real_i = 8'd32;
         OC_real_i = 8'd32;
         On_real_i = 32'd20;
-        glb_read_data_i = 32'd0;// read from SRAM
+        // glb_read_data_i = 32'd0;// read from SRAM
         ipsum_read_en = 0;
         ipsum_add_en = 0;
 
@@ -242,13 +253,5 @@ logic [31:0] write_data;
     initial begin
         $monitor("Time=%0t rst_n=%b pass_done_o=%b", $time, rst_n, pass_done_o);
     end
-initial begin
-    `ifdef FSDB
-        $fsdbDumpfile("../wave/top.fsdb");
-        $fsdbDumpvars(0, u_token_engine, u_conv_unit, u_SRAM);
-    `elsif FSDB_ALL
-        $fsdbDumpfile("../wave/top.fsdb");
-        $fsdbDumpvars("+struct", "+mda", "+all", u_token_engine, u_conv_unit, u_SRAM);
-    `endif
-end
+
 endmodule

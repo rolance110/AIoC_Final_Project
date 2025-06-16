@@ -5,29 +5,19 @@ module weight_load_controller(
     input logic weight_load_state_i,
     input logic [1:0] layer_type_i, // 00: conv, 01: dwconv, 10: fc, 11: pool
     input logic [31:0] weight_GLB_base_addr_i, // base address of weight in GLB
-
+    input logic [31:0] glb_read_data_i,
 //* to GLB
-    output logic [3:0] weight_load_WEB_o, // read enable to GLB (1 = write, 0 = read)
     output logic [31:0] weight_addr_o, // (count by byte) address  to GLB
     output logic [1:0] weight_load_byte_type_o,
 //* to PE
-    output logic w_load_en_matrix_o [31:0][31:0],
-
-    output logic weight_load_done_o 
+    output logic weight_load_en_matrix_o [31:0][31:0], 
+    output logic weight_load_done_o,
+    output logic [7:0] weight_in_o
 );
 
 logic [31:0] weight_num; // total number of weights to load 
 logic [31:0] weight_read_cnt; // counter for loaded weights
 
-
-
-// weight_load_WEB_o
-always_ff@(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-        weight_load_WEB_o <= 4'b0000; // default read mode
-    else if (weight_load_state_i)
-        weight_load_WEB_o <= 4'b0000; // when start loading weight, set to read mode
-end
 
 always_comb begin
     case(layer_type_i)
@@ -52,7 +42,7 @@ end
     weight_read_cnt         |  0  |  0  |  1  |  2  |  3  |  .......  |num-1|   num  | finish |
     weight_addr_o           |  x  |  x  |  B  | B+1 | B+2 | ......... | B+31| B_last |
     weight_load_byte_type_o |     |  x  |  x  |  B  | B+1 | B+2 |
-    w_load_en_matrix_o      |     |     |     | 1   |  1  |  1  | ... | 1   |    1   |   1    |
+    weight_load_en_matrix_o      |     |     |     | 1   |  1  |  1  | ... | 1   |    1   |   1    |
     weight_data             |     |     |  D1 |  D2 |  D3 |  D4 | ... | ... | ...    | D_last |
 
     weight_load_done_o      |
@@ -94,12 +84,24 @@ always_ff@(posedge clk or negedge rst_n) begin
     end
 end
 
+always_comb begin
+    case (weight_load_byte_type_o)
+        `LOAD_1BYTE: weight_in_o = glb_read_data_i[7:0]; // load first byte
+        `LOAD_2BYTE: weight_in_o = glb_read_data_i[15:8]; // load second byte
+        `LOAD_3BYTE: weight_in_o = glb_read_data_i[23:16]; // load third byte
+        `LOAD_4BYTE: weight_in_o = glb_read_data_i[31:24]; // load fourth byte
+        default: weight_in_o = 8'h00; // default to first byte for any other count
+    endcase
+end
+
+
+
 integer i, j;
 always_ff@(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         for (i = 0; i < 32; i = i + 1)
             for (j = 0; j < 32; j = j + 1)
-                w_load_en_matrix_o[i][j] <= 1'b0;
+                weight_load_en_matrix_o[i][j] <= 1'b0;
     end 
     else if (weight_load_state_i) begin
         case(layer_type_i)
@@ -107,9 +109,9 @@ always_ff@(posedge clk or negedge rst_n) begin
             for (i = 0; i < 32; i = i + 1) begin
                 for (j = 0; j < 32; j = j + 1) begin
                     if (weight_read_cnt == (i * 32 + j + 1 + 1)) // +1 is wait for SRAM read delay 1 cycle
-                        w_load_en_matrix_o[i][j] <= 1'b1;
+                        weight_load_en_matrix_o[i][j] <= 1'b1;
                     else
-                        w_load_en_matrix_o[i][j] <= 1'b0;
+                        weight_load_en_matrix_o[i][j] <= 1'b0;
                 end
             end
         end
@@ -119,11 +121,18 @@ always_ff@(posedge clk or negedge rst_n) begin
         default: begin // for other layer types, set all to 0
             for (i = 0; i < 32; i = i + 1) begin
                 for (j = 0; j < 32; j = j + 1) begin
-                    w_load_en_matrix_o[i][j] <= 1'b0;
+                    weight_load_en_matrix_o[i][j] <= 1'b0;
                 end
             end
         end
         endcase
+    end
+    else begin
+        for (i = 0; i < 32; i = i + 1) begin
+            for (j = 0; j < 32; j = j + 1) begin
+                weight_load_en_matrix_o[i][j] <= 1'b0; // reset when not loading weights
+            end
+        end
     end
 end
 

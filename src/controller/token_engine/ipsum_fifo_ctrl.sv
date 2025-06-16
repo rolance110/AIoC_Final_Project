@@ -62,16 +62,18 @@ end
 always_comb begin
     unique case (cs)
         IDLE: begin
-            if (ipsum_need_pop_i)
+            if (ipsum_need_pop_i && !ipsum_fifo_empty_i)
                 ns = POP;
+            else if (ipsum_need_pop_i)
+                ns = PUSH;
             else
                 ns = IDLE;
         end
         POP: begin
-            if (pop_cnt == (pop_num_buf-31'd1))
-                ns = IDLE;
-            else if (ipsum_fifo_empty_i)
+            if (ipsum_fifo_empty_i)
                 ns = PUSH;
+            else if (pop_cnt == (pop_num_buf-31'd1))
+                ns = IDLE;
             else
                 ns = POP;
         end
@@ -97,7 +99,7 @@ always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || ipsum_fifo_reset_i)
         read_ptr <= 16'd0;
     else if (ipsum_fifo_push_o)
-        read_ptr <= read_ptr + 16'd2; // 每次 push 2 bytes
+        read_ptr <= read_ptr + 16'd1;
 end
  
 assign ipsum_glb_read_addr_o = ipsum_fifo_base_addr_i + read_ptr;

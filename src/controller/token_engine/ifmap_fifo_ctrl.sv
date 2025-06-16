@@ -62,16 +62,18 @@ end
 always_comb begin
     unique case (cs)
         IDLE: begin
-            if (ifmap_need_pop_i)
+            if (ifmap_need_pop_i && !ifmap_fifo_empty_i)
                 ns = POP;
+            else if (ifmap_need_pop_i)
+                ns = PUSH;
             else
                 ns = IDLE;
         end
         POP: begin
-            if (pop_cnt == (pop_num_buf-31'd1))
-                ns = IDLE;
-            else if (ifmap_fifo_empty_i)
+            if (ifmap_fifo_empty_i)
                 ns = PUSH;
+            else if (pop_cnt == (pop_num_buf-31'd1))
+                ns = IDLE;
             else
                 ns = POP;
         end
@@ -96,18 +98,72 @@ end
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || ifmap_fifo_reset_i)
         read_ptr <= 16'd0;
-    else if (ifmap_fifo_push_o)
+    else if (ifmap_permit_push_i)
         read_ptr <= read_ptr + 16'd1;
 end
  
 assign ifmap_glb_read_addr_o = ifmap_fifo_base_addr_i + read_ptr;
 
+logic [2:0] req_cnt;
+
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        req_cnt <= 3'd0;
+    else if (cs == IDLE || cs == POP)
+        req_cnt <= 3'd0; // Reset request count in IDLE state
+    else if (ifmap_permit_push_i)
+        req_cnt <= req_cnt + 3'd1; // 0 1 2 3 4 4 4 0 0
+end
+
 // Arbiter Request
-assign ifmap_read_req_o = (cs == PUSH) && !ifmap_fifo_full_i;
+assign ifmap_read_req_o = (cs == PUSH) && !ifmap_fifo_full_i && (req_cnt < 3'd4);
 
 // PUSH 控制
-assign ifmap_fifo_push_o   = (cs == PUSH) && ifmap_permit_push_i && !ifmap_fifo_full_i;
-assign ifmap_fifo_push_data_o = ifmap_glb_read_data_i;
+// (permit, addr) |-> (en, data)
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        ifmap_fifo_push_o <= 1'b0;
+    else if(ifmap_permit_push_i && !ifmap_fifo_full_i)
+        ifmap_fifo_push_o <= 1'b1;
+    else
+        ifmap_fifo_push_o <= 1'b0;
+end
+
+logic [1:0] ifmap_glb_load_byte_type_o;
+
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        ifmap_glb_load_byte_type_o <= 2'b00;
+    else begin
+        case(ifmap_glb_read_addr_o[1:0])
+            2'b00: ifmap_glb_load_byte_type_o <= `LOAD_1BYTE; // load first byte
+            2'b01: ifmap_glb_load_byte_type_o <= `LOAD_2BYTE; // load second byte
+            2'b10: ifmap_glb_load_byte_type_o <= `LOAD_3BYTE; // load third byte
+            2'b11: ifmap_glb_load_byte_type_o <= `LOAD_4BYTE; // load fourth byte
+            default: ifmap_glb_load_byte_type_o <= 2'b00; // default to first byte for any other count
+        endcase
+    end
+end
+
+always_comb begin
+    if(ifmap_fifo_push_mod_o == 1'b0)
+        case (ifmap_glb_load_byte_type_o)
+            `LOAD_1BYTE: ifmap_fifo_push_data_o = {24'd0,ifmap_glb_read_data_i[7:0]}; // load first byte
+            `LOAD_2BYTE: ifmap_fifo_push_data_o = {24'd0,ifmap_glb_read_data_i[15:8]}; // load second byte
+            `LOAD_3BYTE: ifmap_fifo_push_data_o = {24'd0,ifmap_glb_read_data_i[23:16]}; // load third byte
+            `LOAD_4BYTE: ifmap_fifo_push_data_o = {24'd0,ifmap_glb_read_data_i[31:24]}; // load fourth byte
+            default: ifmap_fifo_push_data_o = 32'h00; // default to first byte for any other count
+        endcase
+    else // burst mod
+        ifmap_fifo_push_data_o = ifmap_glb_read_data_i;
+end
+
+
+
+
+
+
+
 assign ifmap_fifo_push_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可自行加 burst 條件）
 
 // POP 控制

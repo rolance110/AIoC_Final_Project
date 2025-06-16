@@ -15,7 +15,7 @@ module ifmap_fifo_bank #(
     // Push interfaces (one-hot per FIFO)
     input  logic [31:0]    push_ifmap_en,        // per-FIFO push enable
     input  logic [31:0]    push_ifmap_mod,       // per-FIFO mode: 0=8-bit,1=32-bit burst
-    input  logic [31:0] push_ifmap_data ,   // broadcast 32-bit push data to 32 FIFOs
+    input  logic [31:0] push_ifmap_data [31:0],   // broadcast 32-bit push data to 32 FIFOs
     output logic [31:0]    ifmap_fifo_full,      // per-FIFO full flag
 
     // Pop interfaces
@@ -35,7 +35,7 @@ module ifmap_fifo_bank #(
                 .rst_n     (rst_n),
                 .push_en   (push_ifmap_en[i]),
                 .push_mod  (push_ifmap_mod[i]),
-                .push_data (push_ifmap_data),
+                .push_data (push_ifmap_data[i]),
                 .full      (ifmap_fifo_full[i]),
                 .pop_en    (pop_ifmap_en[i]),
                 .pop_data  (pop_ifmap_data[i]),

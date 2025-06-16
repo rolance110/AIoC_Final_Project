@@ -41,21 +41,16 @@ module L2C_init_fifo_pe #(
     output logic opsum_fifo_reset_o  // reset signal for all opsum FIFO
 );
 
-always_ff@(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin
-        ifmap_fifo_reset_o <= 1'b0;
-        ipsum_fifo_reset_o <= 1'b0;
-        opsum_fifo_reset_o <= 1'b0;
-    end
-    else if(init_fifo_pe_state_i)begin
-        ifmap_fifo_reset_o <= 1'b1;
-        ipsum_fifo_reset_o <= 1'b1;
-        opsum_fifo_reset_o <= 1'b1;
+always_comb begin
+    if(init_fifo_pe_state_i)begin
+        ifmap_fifo_reset_o = 1'b1;
+        ipsum_fifo_reset_o = 1'b1;
+        opsum_fifo_reset_o = 1'b1;
     end
     else begin
-        ifmap_fifo_reset_o <= 1'b0;
-        ipsum_fifo_reset_o <= 1'b0;
-        opsum_fifo_reset_o <= 1'b0;
+        ifmap_fifo_reset_o = 1'b0;
+        ipsum_fifo_reset_o = 1'b0;
+        opsum_fifo_reset_o = 1'b0;
     end
 end
 
@@ -177,11 +172,7 @@ always_ff@(posedge clk or negedge rst_n)begin
         ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i+pad_R_i+pad_L_i) + (in_C_i+pad_R_i+pad_L_i);
         ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i+pad_R_i+pad_L_i) + 2*(in_C_i+pad_R_i+pad_L_i);       
     end
-    else begin
-        for(j=0; j<32; j++)begin
-            ifmap_fifo_base_addr_o[j] <= 32'd0;
-        end
-    end
+
 end
 integer i1, i2;
 // ipsum_glb_base_addr_i

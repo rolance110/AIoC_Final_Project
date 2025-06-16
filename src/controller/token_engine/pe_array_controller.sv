@@ -24,7 +24,7 @@ integer row1, col1;
 always_comb begin
     if(preheat_state_i)begin
         for(row1=0; row1<32; row1++) begin
-            for(col1=0; col1<32; col1++) begin
+            for(col1=0; col1<32; col1++) begin    
                 PE_stall_matrix_o[row1][col1] = ifmap_fifo_pop_matrix_i[col1];
             end
         end

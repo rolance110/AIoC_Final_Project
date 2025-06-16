@@ -19,6 +19,7 @@ module L2C_preheat #(
 
     typedef enum logic [1:0] {
         IDLE,
+        SET_POP_NUM,
         WAIT_DONE,
         DONE
     } state_e;
@@ -39,9 +40,12 @@ module L2C_preheat #(
         case (cs)
             IDLE:begin
                 if(start_preheat_i)
-                    ns = WAIT_DONE;
+                    ns = SET_POP_NUM;
                 else 
                     ns = IDLE;
+            end
+            SET_POP_NUM: begin
+                ns = WAIT_DONE;
             end
             WAIT_DONE: begin
                 if(&ifmap_fifo_done_matrix_i)
@@ -60,71 +64,66 @@ module L2C_preheat #(
 // 根據 layer_type 決定每個 FIFO 要 pop 幾次
 //========================================================
 integer i, j;
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        for (i = 0; i < 32; i++)
-            ifmap_pop_num_o[i]  <= 32'd0;
-    end 
-    else if ((cs == WAIT_DONE) && (layer_type_i == `POINTWISE)) begin
+always_comb begin
+    if ((cs == SET_POP_NUM) && (layer_type_i == `POINTWISE)) begin
         for(j = 0; j < 32; j++)begin
-            ifmap_pop_num_o[j] <= 32'd1;
+            ifmap_pop_num_o[j] = 32'd1;
         end
     end
-    else if ((cs == WAIT_DONE) && (layer_type_i == `DEPTHWISE)) begin
-        ifmap_pop_num_o[0]  <= 32'd3;
-        ifmap_pop_num_o[1]  <= 32'd3;
-        ifmap_pop_num_o[2]  <= 32'd3;
+    else if ((cs == SET_POP_NUM) && (layer_type_i == `DEPTHWISE)) begin
+        ifmap_pop_num_o[0]  = 32'd3;
+        ifmap_pop_num_o[1]  = 32'd3;
+        ifmap_pop_num_o[2]  = 32'd3;
 
-        ifmap_pop_num_o[3]  <= 32'd6;
-        ifmap_pop_num_o[4]  <= 32'd6;
-        ifmap_pop_num_o[5]  <= 32'd6;
+        ifmap_pop_num_o[3]  = 32'd6;
+        ifmap_pop_num_o[4]  = 32'd6;
+        ifmap_pop_num_o[5]  = 32'd6;
 
-        ifmap_pop_num_o[6]  <= 32'd9;
-        ifmap_pop_num_o[7]  <= 32'd9;
-        ifmap_pop_num_o[8]  <= 32'd9;
+        ifmap_pop_num_o[6]  = 32'd9;
+        ifmap_pop_num_o[7]  = 32'd9;
+        ifmap_pop_num_o[8]  = 32'd9;
 
-        ifmap_pop_num_o[9]  <= 32'd12;
-        ifmap_pop_num_o[10] <= 32'd12;
-        ifmap_pop_num_o[11] <= 32'd12;
+        ifmap_pop_num_o[9]  = 32'd12;
+        ifmap_pop_num_o[10] = 32'd12;
+        ifmap_pop_num_o[11] = 32'd12;
 
-        ifmap_pop_num_o[12] <= 32'd15;
-        ifmap_pop_num_o[13] <= 32'd15;
-        ifmap_pop_num_o[14] <= 32'd15;
+        ifmap_pop_num_o[12] = 32'd15;
+        ifmap_pop_num_o[13] = 32'd15;
+        ifmap_pop_num_o[14] = 32'd15;
 
-        ifmap_pop_num_o[15] <= 32'd18;
-        ifmap_pop_num_o[16] <= 32'd18;
-        ifmap_pop_num_o[17] <= 32'd18;
+        ifmap_pop_num_o[15] = 32'd18;
+        ifmap_pop_num_o[16] = 32'd18;
+        ifmap_pop_num_o[17] = 32'd18;
 
-        ifmap_pop_num_o[18] <= 32'd21;
-        ifmap_pop_num_o[19] <= 32'd21;
-        ifmap_pop_num_o[20] <= 32'd21;
+        ifmap_pop_num_o[18] = 32'd21;
+        ifmap_pop_num_o[19] = 32'd21;
+        ifmap_pop_num_o[20] = 32'd21;
 
-        ifmap_pop_num_o[21] <= 32'd24;
-        ifmap_pop_num_o[22] <= 32'd24;
-        ifmap_pop_num_o[23] <= 32'd24;
+        ifmap_pop_num_o[21] = 32'd24;
+        ifmap_pop_num_o[22] = 32'd24;
+        ifmap_pop_num_o[23] = 32'd24;
 
-        ifmap_pop_num_o[24] <= 32'd27;
-        ifmap_pop_num_o[25] <= 32'd27;
-        ifmap_pop_num_o[26] <= 32'd27;   
+        ifmap_pop_num_o[24] = 32'd27;
+        ifmap_pop_num_o[25] = 32'd27;
+        ifmap_pop_num_o[26] = 32'd27;   
 
-        ifmap_pop_num_o[27] <= 32'd30;
-        ifmap_pop_num_o[28] <= 32'd30;
-        ifmap_pop_num_o[29] <= 32'd30;
+        ifmap_pop_num_o[27] = 32'd30;
+        ifmap_pop_num_o[28] = 32'd30;
+        ifmap_pop_num_o[29] = 32'd30;
     end
-    else if (cs == DONE) begin
+    else begin
         for (i = 0; i < NUM_IFMAP_FIFO; i++) begin
-            ifmap_pop_num_o[i]  <= 32'd0;
+            ifmap_pop_num_o[i]  = 32'd0;
         end
     end
+
 end
 
-always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) 
-        ifmap_need_pop_o <= 32'd0;
-    else if (cs == WAIT_DONE) 
-        ifmap_need_pop_o <= 32'hFFFF_FFFF;
+always_comb begin
+    if (cs == SET_POP_NUM) 
+        ifmap_need_pop_o = 32'hFFFF_FFFF;
     else 
-        ifmap_need_pop_o <= 32'b0;
+        ifmap_need_pop_o = 32'b0;
 end
 
 
