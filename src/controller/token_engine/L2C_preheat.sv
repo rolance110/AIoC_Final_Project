@@ -11,9 +11,14 @@ module L2C_preheat #(
     input  logic               start_preheat_i,
     input  logic [1:0]         layer_type_i,    // 00: pw, 01: dw, others: future
     input  logic [31:0] ifmap_fifo_done_matrix_i,
-
+    input logic [31:0] ipsum_fifo_done_matrix_i,
+    
     output logic [31:0] ifmap_need_pop_o,
     output logic [31:0] ifmap_pop_num_o [31:0],
+    output logic [31:0] ipsum_need_pop_o,
+    output logic [31:0] ipsum_pop_num_o [31:0],
+
+
     output logic preheat_done_o
 );
 
@@ -48,7 +53,7 @@ module L2C_preheat #(
                 ns = WAIT_DONE;
             end
             WAIT_DONE: begin
-                if(&ifmap_fifo_done_matrix_i)
+                if(&ifmap_fifo_done_matrix_i && &ipsum_fifo_done_matrix_i)
                     ns = DONE;
                 else
                     ns = WAIT_DONE;
@@ -119,6 +124,24 @@ always_comb begin
 
 end
 
+integer i1, j1;
+always_comb begin
+    if ((cs == SET_POP_NUM)) begin
+        for(j1 = 0; j1 < 32; j1++)begin
+            ipsum_pop_num_o[j1] = 32'd1;
+        end
+    end
+    else begin
+        for (i1 = 0; i1 < NUM_IFMAP_FIFO; i1++) begin
+            ipsum_pop_num_o[i1]  = 32'd0;
+        end
+    end
+
+end
+
+
+
+
 always_comb begin
     if (cs == SET_POP_NUM) 
         ifmap_need_pop_o = 32'hFFFF_FFFF;
@@ -126,7 +149,12 @@ always_comb begin
         ifmap_need_pop_o = 32'b0;
 end
 
-
+always_comb begin
+    if (cs == SET_POP_NUM) 
+        ipsum_need_pop_o = 32'hFFFF_FFFF;
+    else 
+        ipsum_need_pop_o = 32'b0;
+end
 
 assign preheat_done_o = (cs == DONE);
 

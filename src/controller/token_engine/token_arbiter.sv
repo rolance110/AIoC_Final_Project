@@ -449,14 +449,8 @@ always_comb begin
             glb_read_addr = ifmap_read_addr_matrix_i[31];
             permit_ifmap_matrix_o = 32'b10000000_00000000_00000000_00000000; // permit_ifmap_matrix_o[31] = 1'b1
         end
-        else begin
-            glb_read_o  = 1'b0;
-            glb_read_addr = 32'd0;
-            permit_ifmap_matrix_o  = 32'd0;
-        end
-    end
-    else if (!glb_write_o && !glb_read_o) begin // ipsum
-        if (ipsum_read_req_matrix_i[0]) begin
+    //todo: ipsum
+        else if (ipsum_read_req_matrix_i[0]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[0];
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_00000001; // permit_ipsum_matrix_o[0] = 1'b1
@@ -619,15 +613,9 @@ always_comb begin
         else begin
             glb_read_o  = 1'b0;
             glb_read_addr = 32'd0;
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o  = 32'd0;
         end
-    end
-
-    else begin
-        glb_read_o  = 1'b0;
-        glb_read_addr = 32'd0;
-        permit_ifmap_matrix_o  = 32'd0;
-        permit_ipsum_matrix_o  = 32'd0;
     end
 end
 

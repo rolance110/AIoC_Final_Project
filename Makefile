@@ -108,7 +108,7 @@ token_PE_tb: | $(bld_dir) $(wave_dir)
 # Utilities
 nWave: | $(wave_dir)
 	cd $(wave_dir); \
-	nWave -ssf ../wave/top.fsdb &
+	nWave -ssf ../wave/top.fsdb & \
 
 verdi: | $(wave_dir)
 	cd $(wave_dir); \

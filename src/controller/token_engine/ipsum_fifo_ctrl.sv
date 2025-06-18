@@ -98,18 +98,68 @@ end
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || ipsum_fifo_reset_i)
         read_ptr <= 16'd0;
-    else if (ipsum_fifo_push_o)
-        read_ptr <= read_ptr + 16'd1;
+    else if (ipsum_permit_push_i)
+        read_ptr <= read_ptr + 16'd2; // half word push (2 bytes)
 end
  
 assign ipsum_glb_read_addr_o = ipsum_fifo_base_addr_i + read_ptr;
 
+logic [2:0] req_cnt;
+
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        req_cnt <= 3'd0;
+    else if (cs == IDLE || cs == POP)
+        req_cnt <= 3'd0; // Reset request count in IDLE state
+    else if (ipsum_permit_push_i)
+        req_cnt <= req_cnt + 3'd1; // 0 1 2 3 4 4 4 0 0
+end
+
 // Arbiter Request
-assign ipsum_read_req_o = (cs == PUSH) && !ipsum_fifo_full_i;
+assign ipsum_read_req_o = (cs == PUSH) && !ipsum_fifo_full_i && (req_cnt < 3'd2); // 2 data
 
 // PUSH 控制
-assign ipsum_fifo_push_o   = (cs == PUSH) && ipsum_permit_push_i && !ipsum_fifo_full_i;
-assign ipsum_fifo_push_data_o = ipsum_glb_read_data_i;
+// (permit, addr) |-> (en, data)
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        ipsum_fifo_push_o <= 1'b0;
+    else if(ipsum_permit_push_i && !ipsum_fifo_full_i)
+        ipsum_fifo_push_o <= 1'b1;
+    else
+        ipsum_fifo_push_o <= 1'b0;
+end
+
+logic [1:0] ipsum_glb_load_byte_type_o;
+
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        ipsum_glb_load_byte_type_o <= 2'b00;
+    else begin
+        case(ipsum_glb_read_addr_o[1])
+            1'b0: ipsum_glb_load_byte_type_o <= `LOAD_1BYTE; // load first half word
+            1'b1: ipsum_glb_load_byte_type_o <= `LOAD_2BYTE; // load second half word
+            default: ipsum_glb_load_byte_type_o <= 1'b0; // default to first byte for any other count
+        endcase
+    end
+end
+
+always_comb begin
+    if(ipsum_fifo_push_mod_o == 1'b0)
+        case (ipsum_glb_load_byte_type_o)
+            `LOAD_1BYTE: ipsum_fifo_push_data_o = {16'd0,ipsum_glb_read_data_i[15:0]}; // load first half word
+            `LOAD_2BYTE: ipsum_fifo_push_data_o = {16'd0,ipsum_glb_read_data_i[31:16]}; // load second half word
+            default: ipsum_fifo_push_data_o = 32'h00; // default to first byte for any other count
+        endcase
+    else // burst mod
+        ipsum_fifo_push_data_o = ipsum_glb_read_data_i;
+end
+
+
+
+
+
+
+
 assign ipsum_fifo_push_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可自行加 burst 條件）
 
 // POP 控制

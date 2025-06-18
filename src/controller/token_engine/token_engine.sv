@@ -94,52 +94,68 @@ module token_engine (
     input  logic [31:0]        opsum_fifo_empty_matrix_i
 );
 
-// L1 Controller
-logic weight_load_state;
+// 狀態相關訊號 (State-related signals)
 logic init_fifo_pe_state;
-logic preheat_state;
 logic normal_loop_state;
-logic weight_load_done;
-logic preheat_done;
+logic preheat_state;
+logic weight_load_state;
+
+// 完成旗標訊號 (Done flags)
 logic normal_loop_done;
+logic preheat_done;
+logic weight_load_done;
 
-
+// 權重相關訊號 (Weight-related signals)
 logic [31:0] weight_addr;
+logic [1:0]  weight_load_byte_type;
 
-
-logic [1:0] weight_load_byte_type;
-
-
+// IFMAP 相關訊號 (IFMAP-related signals)
 logic [31:0] ifmap_fifo_pop_en;
-logic [31:0] ifmap_need_pop_matrix, ifmap_permit_push_matrix;
 logic [31:0] ifmap_fifo_push_en;
 logic [31:0] ifmap_glb_read_addr;
+logic [31:0] ifmap_need_pop_matrix;
+logic [31:0] ifmap_permit_push_matrix;
+logic [31:0] ifmap_pop_num_matrix [31:0];
+logic [31:0] ifmap_read_addr_matrix [31:0];
 logic [31:0] ifmap_read_req_matrix;
 
-
-logic [31:0] ipsum_need_push, ipsum_need_pop, ipsum_permit_push_matrix;
+// IPSUM 相關訊號 (IPSUM-related signals)
 logic [31:0] ipsum_fifo_push_en;
-logic [31:0] ipsum_glb_read_req, ipsum_glb_read_addr;
-
-
-logic [31:0] opsum_need_push, opsum_need_pop, opsum_permit_pop_matrix;
-logic [31:0] opsum_fifo_pop_en, opsum_fifo_push_en;
-logic [3:0] opsum_pop_web [31:0];
-logic [31:0] opsum_glb_write_req, opsum_glb_write_addr, opsum_glb_write_web;
-
-logic [31:0] opsum_write_req_matrix, ipsum_read_req_matrix;
+logic [31:0] ipsum_glb_read_addr;
+logic [31:0] ipsum_glb_read_req;
+logic [31:0] ipsum_need_pop;
+logic [31:0] ipsum_need_push;
+logic [31:0] ipsum_permit_push_matrix;
+logic [31:0] ipsum_pop_num_matrix [31:0];
 logic [31:0] ipsum_read_addr_matrix [31:0];
-logic [31:0] ifmap_read_addr_matrix [31:0];
-logic [3:0] opsum_write_web_matrix [31:0];
+logic [31:0] ipsum_read_req_matrix;
+
+// OPSUM 相關訊號 (OPSUM-related signals)
+logic [31:0] opsum_fifo_pop_en;
+logic [31:0] opsum_fifo_push_en;
+logic [31:0] opsum_glb_write_addr;
+logic [31:0] opsum_glb_write_req;
+logic [3:0]  opsum_glb_write_web;
+logic [31:0] opsum_need_pop;
+logic [31:0] opsum_need_push;
+logic [31:0] opsum_permit_pop_matrix;
+logic [3:0]  opsum_pop_web [31:0];
 logic [31:0] opsum_write_addr_matrix [31:0];
-logic        glb_read_req, glb_write_req;
-logic [31:0] glb_read_addr, glb_write_addr;
-logic [3:0]  glb_read_web, glb_write_web;
-logic [31:0] permit_ifmap, permit_ipsum, permit_opsum;
-logic [31:0] ifmap_pop_num_matrix [31:0];
+logic [3:0]  opsum_write_web_matrix [31:0];
+logic [31:0] opsum_write_req_matrix;
 
+// Global 相關訊號 (Global-related signals)
+logic        glb_read_req;
+logic        glb_write_req;
+logic [31:0] glb_read_addr;
+logic [31:0] glb_write_addr;
+logic [3:0]  glb_read_web;
+logic [3:0]  glb_write_web;
 
-
+// 許可相關訊號 (Permit-related signals)
+logic [31:0] permit_ifmap;
+logic [31:0] permit_ipsum;
+logic [31:0] permit_opsum;
 
 
 
@@ -238,6 +254,9 @@ L2C_init_fifo_pe #(
     .opsum_fifo_reset_o(opsum_fifo_reset_o) // reset signal for opsum FIFO
 );
 logic [31:0] ifmap_fifo_done_matrix;
+logic [31:0] ipsum_fifo_done_matrix;
+logic [31:0] ipsum_need_pop_matrix;
+
 L2C_preheat #(
     .NUM_IFMAP_FIFO(32)
 ) L2C_preheat_dut (
@@ -246,9 +265,12 @@ L2C_preheat #(
     .start_preheat_i(preheat_state),
     .layer_type_i(layer_type_i),
     .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix),
+    .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix),
 
     .ifmap_need_pop_o(ifmap_need_pop_matrix),
     .ifmap_pop_num_o(ifmap_pop_num_matrix),
+    .ipsum_need_pop_o(ipsum_need_pop_matrix),
+    .ipsum_pop_num_o(ipsum_pop_num_matrix),
     .preheat_done_o(preheat_done)
 
 );
@@ -257,8 +279,6 @@ L2C_preheat #(
 
 
 logic [31:0] ipsum_glb_read_addr_matrix [31:0];
-logic [31:0] ipsum_pop_num_matrix [31:0];
-
 //* Layer 3 Controller ==============================================
 L3C_fifo_ctrl #(
     .IC_MAX(32),
@@ -326,8 +346,8 @@ L3C_fifo_ctrl #(
     .ifmap_read_req_matrix_o(ifmap_read_req_matrix),
     .ifmap_glb_read_addr_matrix_o(ifmap_read_addr_matrix),
 
-    .ipsum_read_req_matrix_o(ipsum_read_req_matrix_o),
-    .ipsum_glb_read_addr_matrix_o(ipsum_glb_read_addr_matrix),
+    .ipsum_read_req_matrix_o(ipsum_read_req_matrix),
+    .ipsum_glb_read_addr_matrix_o(ipsum_read_addr_matrix),
 
     .opsum_glb_write_req_matrix_o(opsum_write_req_matrix),
     .opsum_glb_write_addr_matrix_o(opsum_write_addr_matrix),

@@ -84,7 +84,7 @@ module ifmap_fifo #(
         end
         else if(push_en)begin
             if(push_mod == 1'b0 && !full)
-                count <= count + 1; // Increment count for single push
+                count <= count + 3'd1; // Increment count for single push
             else if(push_mod == 1'b1 && empty)
                 count <= 3'd4;
         end
