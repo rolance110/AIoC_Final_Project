@@ -85,7 +85,7 @@ always_comb begin
                 if_ns = POP;
         end
         PUSH: begin
-            if(fifo_glb_busy_i)
+            if(fifo_glb_busy_i && ifmap_fifo_full_i)
                 if_ns = WAIT;
             else if (ifmap_fifo_full_i)
                 if_ns = POP;

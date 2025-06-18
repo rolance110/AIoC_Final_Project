@@ -146,22 +146,23 @@ generate
 endgenerate
 
 
-
+logic [31:0] opsum_need_push_matrix_i;
+logic [31:0] opsum_push_num_matrix_i [31:0];
+logic [31:0] opsum_permit_pop_matrix_i;
+logic [31:0] opsum_glb_base_addr_matrix_i [31:0];
 generate
     for (i = 0; i < 32; i++) begin : OPSUM_CTRL
-        opsum_fifo_ctrl u_opsum_ctrl (
+        opsum_fifo_ctrl u_opsum_fifo_ctrl (
             .clk(clk),
             .rst_n(rst_n),
-            //* busy
-            .fifo_glb_busy_i(fifo_glb_busy_i), // FIFO <=> GLB 是否忙碌
-            
+            .fifo_glb_busy_i(fifo_glb_busy_i),
             .opsum_fifo_reset_i(opsum_fifo_reset_i),
-            // .opsum_need_push_i(opsum_need_push_matrix_i[i]),
-            .opsum_need_pop_i(opsum_need_pop_matrix_i[i]),
+            .opsum_need_push_i(opsum_need_push_matrix_i[i]),
+            .opsum_push_num_i(opsum_push_num_matrix_i[i]),
             .opsum_permit_pop_i(opsum_permit_pop_matrix_i[i]),
             .opsum_fifo_empty_i(opsum_fifo_empty_matrix_i[i]),
             .opsum_fifo_full_i(opsum_fifo_full_matrix_i[i]),
-            .opsum_glb_base_addr_i(opsum_fifo_base_addr_matrix_i[i]),
+            .opsum_glb_base_addr_i(opsum_glb_base_addr_matrix_i[i]),
             .opsum_fifo_push_o(opsum_fifo_push_matrix_o[i]),
             .opsum_fifo_pop_o(opsum_fifo_pop_matrix_o[i]),
             .opsum_glb_write_req_o(opsum_glb_write_req_matrix_o[i]),
@@ -170,5 +171,6 @@ generate
         );
     end
 endgenerate
+
 
 endmodule
