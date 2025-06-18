@@ -2,6 +2,7 @@ module opsum_fifo_ctrl (
     input  logic        clk,
     input  logic        rst_n,
 
+    input logic fifo_glb_busy_i,
     // 控制來源來自 L2
     input  logic        opsum_fifo_reset_i,    // FIFO reset
     input  logic        opsum_need_pop_i,      // L2 指令：請嘗試 pop 出一筆資料 (FIFO -> arbiter)

@@ -2,6 +2,10 @@ module ifmap_fifo_ctrl (
     input  logic        clk,
     input  logic        rst_n,
 
+    //* busy
+    input logic fifo_glb_busy_i, // FIFO <=> GLB 是否忙碌
+
+
     // From L2 Controller
     input  logic        ifmap_fifo_reset_i, // Reset FIFO
     input  logic        ifmap_need_pop_i,   // 新任務觸發
@@ -42,10 +46,11 @@ logic [31:0] pop_num_buf;
 typedef enum logic [1:0] {
     IDLE,
     POP,
-    PUSH
+    PUSH,
+    WAIT
 } state_t;
 
-state_t cs, ns;
+state_t if_cs, if_ns;
 logic [15:0] read_ptr;
 logic [4:0]  pop_cnt;
 logic        refill_mode;
@@ -53,44 +58,54 @@ logic        refill_mode;
 // 狀態記憶
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
-        cs <= IDLE;
+        if_cs <= IDLE;
     else
-        cs <= ns;
+        if_cs <= if_ns;
 end
 
 // 狀態轉移
 always_comb begin
-    unique case (cs)
+    unique case (if_cs)
         IDLE: begin
             if (ifmap_need_pop_i && !ifmap_fifo_empty_i)
-                ns = POP;
+                if_ns = POP;
             else if (ifmap_need_pop_i)
-                ns = PUSH;
+                if_ns = PUSH;
             else
-                ns = IDLE;
+                if_ns = IDLE;
         end
         POP: begin
             if (ifmap_fifo_empty_i)
-                ns = PUSH;
+                if_ns = PUSH;
             else if (pop_cnt == (pop_num_buf-31'd1))
-                ns = IDLE;
+                if_ns = IDLE;
+            else if(fifo_glb_busy_i)
+                if_ns = WAIT;
             else
-                ns = POP;
+                if_ns = POP;
         end
         PUSH: begin
-            if (ifmap_fifo_full_i)
-                ns = POP;
+            if(fifo_glb_busy_i)
+                if_ns = WAIT;
+            else if (ifmap_fifo_full_i)
+                if_ns = POP;
             else
-                ns = PUSH;
+                if_ns = PUSH;
         end
-        default: ns = IDLE;
+        WAIT: begin
+            if (!fifo_glb_busy_i)
+                if_ns = POP;
+            else
+                if_ns = WAIT;
+        end
+        default: if_ns = IDLE;
     endcase
 end
 
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         pop_num_buf <= 31'd0;
-    else if (cs == IDLE)
+    else if (if_cs == IDLE)
         pop_num_buf <= ifmap_pop_num_i;
 end
 
@@ -109,14 +124,14 @@ logic [2:0] req_cnt;
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         req_cnt <= 3'd0;
-    else if (cs == IDLE || cs == POP)
+    else if (if_cs == IDLE || if_cs == POP)
         req_cnt <= 3'd0; // Reset request count in IDLE state
     else if (ifmap_permit_push_i)
         req_cnt <= req_cnt + 3'd1; // 0 1 2 3 4 4 4 0 0
 end
 
 // Arbiter Request
-assign ifmap_read_req_o = (cs == PUSH) && !ifmap_fifo_full_i && (req_cnt < 3'd4);
+assign ifmap_read_req_o = (if_cs == PUSH) && !ifmap_fifo_full_i && (req_cnt < 3'd4);
 
 // PUSH 控制
 // (permit, addr) |-> (en, data)
@@ -167,17 +182,17 @@ end
 assign ifmap_fifo_push_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可自行加 burst 條件）
 
 // POP 控制
-assign ifmap_fifo_pop_o = (cs == POP) && !ifmap_fifo_empty_i;
+assign ifmap_fifo_pop_o = (if_cs == POP) && !ifmap_fifo_empty_i;
 
 // pop count 累加
 always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n || cs == IDLE)
+    if (!rst_n || if_cs == IDLE)
         pop_cnt <= 5'd0;
     else if (ifmap_fifo_pop_o)
         pop_cnt <= pop_cnt + 5'd1;
 end
 
 // 完成條件
-assign ifmap_fifo_done_o = (cs == IDLE);
+assign ifmap_fifo_done_o = (if_cs == IDLE);
 
 endmodule

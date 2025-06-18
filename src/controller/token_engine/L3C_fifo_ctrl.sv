@@ -5,6 +5,9 @@ module L3C_fifo_ctrl #(
     input  logic        clk,
     input  logic        rst_n,
 
+    // Busy Signals
+    input  logic        fifo_glb_busy_i, // FIFO <=> GLB 是否忙碌
+
     // Reset Control for FIFOs
     input  logic        ifmap_fifo_reset_i,
     input  logic        ipsum_fifo_reset_i,
@@ -79,6 +82,8 @@ generate
         ifmap_fifo_ctrl u_ifmap_fifo_ctrl (
             .clk(clk),
             .rst_n(rst_n),
+            //* busy
+            .fifo_glb_busy_i(fifo_glb_busy_i),
             // From L2 Controller
             .ifmap_fifo_reset_i(ifmap_fifo_reset_i), // Reset FIFO
             .ifmap_need_pop_i(ifmap_need_pop_matrix_i[i]),   // 新任務觸發
@@ -111,6 +116,8 @@ generate
         ipsum_fifo_ctrl u_ipsum_fifo_ctrl (
             .clk(clk),
             .rst_n(rst_n),
+            //* busy
+            .fifo_glb_busy_i(fifo_glb_busy_i), // FIFO <=> GLB 是否忙碌
             // From L2 Controller
             .ipsum_fifo_reset_i(ipsum_fifo_reset_i), // Reset FIFO
             .ipsum_need_pop_i(ipsum_need_pop_matrix_i[i]),   // 新任務觸發
@@ -145,6 +152,9 @@ generate
         opsum_fifo_ctrl u_opsum_ctrl (
             .clk(clk),
             .rst_n(rst_n),
+            //* busy
+            .fifo_glb_busy_i(fifo_glb_busy_i), // FIFO <=> GLB 是否忙碌
+            
             .opsum_fifo_reset_i(opsum_fifo_reset_i),
             // .opsum_need_push_i(opsum_need_push_matrix_i[i]),
             .opsum_need_pop_i(opsum_need_pop_matrix_i[i]),

@@ -276,6 +276,41 @@ L2C_preheat #(
 );
 
 /* Normal Loop */
+// L2C_normal_loop L2C_normal_loop(
+//     .clk(clk),
+//     .rst_n(rst_n),
+
+//     .start_normal_loop_i(start_normal_loop_i),
+//     .layer_type_i(layer_type_i),
+
+
+// //* Tile Infomation
+//     .tile_n_i(tile_n_i),
+
+// //* FIFO Done
+//     .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix_i),
+//     .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix_i),
+//     .opsum_fifo_done_matrix_i(opsum_fifo_done_matrix_i),
+
+
+// //* L3 Controller 
+//     .ifmap_need_pop_matrix_o(ifmap_need_pop_matrix_o), // 每個 ifmap FIFO 需要 pop 的訊號
+//     .ifmap_pop_num_matrix_o(ifmap_pop_num_matrix_o), // 每個 ifmap FIFO 需要 pop 的數量
+
+//     .ipsum_need_pop_matrix_o(ipsum_need_pop_matrix_o), // 每個 ipsum FIFO 需要 pop 的訊號
+//     .ipsum_pop_num_matrix_o(ipsum_pop_num_matrix_o), // 每個 ipsum FIFO 需要 pop 的數量
+
+//     .opsum_need_push_matrix_o(opsum_need_push_matrix_o), // 每個 opsum FIFO 需要 push 的訊號
+//     // output logic [31:0] opsum_push_num_o [31:0], // opsum only need push 1 time
+
+//     .normal_loop_done_o(normal_loop_done_o) // normal loop 完成訊號
+// );
+
+
+
+
+
+
 
 
 logic [31:0] ipsum_glb_read_addr_matrix [31:0];
@@ -291,6 +326,10 @@ L3C_fifo_ctrl #(
     .ifmap_fifo_reset_i(ifmap_fifo_reset_o),
     .ipsum_fifo_reset_i(ipsum_fifo_reset_o),
     .opsum_fifo_reset_i(opsum_fifo_reset_o),
+
+
+//* busy
+    .fifo_glb_busy_i(glb_read_req || glb_write_req), //fixme FIFO <=> GLB 是否忙碌
 
 // L2 need 
     .ifmap_need_pop_matrix_i(ifmap_need_pop_matrix),

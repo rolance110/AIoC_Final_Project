@@ -29,39 +29,39 @@ module L2C_preheat #(
         DONE
     } state_e;
 
-    state_e cs, ns;
+    state_e pre_cs, pre_ns;
 
     //========================================================
     // 狀態轉移
     //========================================================
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
-            cs <= IDLE;
+            pre_cs <= IDLE;
         else
-            cs <= ns;
+            pre_cs <= pre_ns;
     end
 
     always_comb begin
-        case (cs)
+        case (pre_cs)
             IDLE:begin
                 if(start_preheat_i)
-                    ns = SET_POP_NUM;
+                    pre_ns = SET_POP_NUM;
                 else 
-                    ns = IDLE;
+                    pre_ns = IDLE;
             end
             SET_POP_NUM: begin
-                ns = WAIT_DONE;
+                pre_ns = WAIT_DONE;
             end
             WAIT_DONE: begin
                 if(&ifmap_fifo_done_matrix_i && &ipsum_fifo_done_matrix_i)
-                    ns = DONE;
+                    pre_ns = DONE;
                 else
-                    ns = WAIT_DONE;
+                    pre_ns = WAIT_DONE;
             end
             DONE:
-                ns = IDLE;
+                pre_ns = IDLE;
             default:
-                ns = IDLE;
+                pre_ns = IDLE;
         endcase
     end
 
@@ -70,12 +70,12 @@ module L2C_preheat #(
 //========================================================
 integer i, j;
 always_comb begin
-    if ((cs == SET_POP_NUM) && (layer_type_i == `POINTWISE)) begin
+    if ((pre_cs == SET_POP_NUM) && (layer_type_i == `POINTWISE)) begin
         for(j = 0; j < 32; j++)begin
             ifmap_pop_num_o[j] = 32'd1;
         end
     end
-    else if ((cs == SET_POP_NUM) && (layer_type_i == `DEPTHWISE)) begin
+    else if ((pre_cs == SET_POP_NUM) && (layer_type_i == `DEPTHWISE)) begin
         ifmap_pop_num_o[0]  = 32'd3;
         ifmap_pop_num_o[1]  = 32'd3;
         ifmap_pop_num_o[2]  = 32'd3;
@@ -126,7 +126,7 @@ end
 
 integer i1, j1;
 always_comb begin
-    if ((cs == SET_POP_NUM)) begin
+    if ((pre_cs == SET_POP_NUM)) begin
         for(j1 = 0; j1 < 32; j1++)begin
             ipsum_pop_num_o[j1] = 32'd1;
         end
@@ -143,19 +143,19 @@ end
 
 
 always_comb begin
-    if (cs == SET_POP_NUM) 
+    if (pre_cs == SET_POP_NUM) 
         ifmap_need_pop_o = 32'hFFFF_FFFF;
     else 
         ifmap_need_pop_o = 32'b0;
 end
 
 always_comb begin
-    if (cs == SET_POP_NUM) 
+    if (pre_cs == SET_POP_NUM) 
         ipsum_need_pop_o = 32'hFFFF_FFFF;
     else 
         ipsum_need_pop_o = 32'b0;
 end
 
-assign preheat_done_o = (cs == DONE);
+assign preheat_done_o = (pre_cs == DONE);
 
 endmodule
