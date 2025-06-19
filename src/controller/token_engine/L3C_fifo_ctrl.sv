@@ -155,19 +155,27 @@ generate
         opsum_fifo_ctrl u_opsum_fifo_ctrl (
             .clk(clk),
             .rst_n(rst_n),
+
             .fifo_glb_busy_i(fifo_glb_busy_i),
             .opsum_fifo_reset_i(opsum_fifo_reset_i),
+
             .opsum_need_push_i(opsum_need_push_matrix_i[i]),
             .opsum_push_num_i(opsum_push_num_matrix_i[i]),
+
             .opsum_permit_pop_i(opsum_permit_pop_matrix_i[i]),
+
             .opsum_fifo_empty_i(opsum_fifo_empty_matrix_i[i]),
             .opsum_fifo_full_i(opsum_fifo_full_matrix_i[i]),
+
             .opsum_glb_base_addr_i(opsum_glb_base_addr_matrix_i[i]),
             .opsum_fifo_push_o(opsum_fifo_push_matrix_o[i]),
             .opsum_fifo_pop_o(opsum_fifo_pop_matrix_o[i]),
-            .opsum_glb_write_req_o(opsum_glb_write_req_matrix_o[i]),
+
+            .opsum_write_req_o(opsum_glb_write_req_matrix_o[i]),
             .opsum_glb_write_addr_o(opsum_glb_write_addr_matrix_o[i]),
-            .opsum_glb_write_web_o(opsum_glb_write_web_matrix_o[i])
+            .opsum_glb_write_web_o(opsum_glb_write_web_matrix_o[i]),
+
+            .opsum_fifo_done_o(opsum_fifo_done_matrix_o[i])
         );
     end
 endgenerate

@@ -105,10 +105,27 @@ token_PE_tb: | $(bld_dir) $(wave_dir)
 	+notimingcheck \
 	+define+$(FSDB_DEF) \
 
+opsum_fifo_ctrl_tb: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/opsum_fifo_ctrl_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF) \
+
+
+
 # Utilities
 nWave: | $(wave_dir)
+	@echo "Launching nWave in background..."
 	cd $(wave_dir); \
-	nWave -ssf ../wave/top.fsdb & \
+	nohup nWave -ssf ../wave/top.fsdb > nWave.log 2>&1 &
+
+
+nWave_rc:
+	@echo "Launching nWave+signal.rc in background..."
+	cd $(wave_dir); \
+	nohup nWave -ssf ../wave/top.fsdb -sswr ../wave/signal.rc > nWave.log 2>&1 &
+
 
 verdi: | $(wave_dir)
 	cd $(wave_dir); \

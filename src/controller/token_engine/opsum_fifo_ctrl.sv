@@ -31,10 +31,11 @@ module opsum_fifo_ctrl (
     output logic        opsum_fifo_push_o,
 
     // 寫入 GLB token
-    output logic        opsum_glb_write_req_o,
     output logic [31:0] opsum_glb_write_addr_o,
     output logic [3:0]  opsum_glb_write_web_o,    // 每個位元對應一個 byte 的寫入使能
-    output logic [31:0] opsum_fifo_pop_data_o    // pop 出的資料
+    output logic [31:0] opsum_fifo_pop_data_o,    // pop 出的資料
+
+    output logic opsum_fifo_done_o
 );
 
 logic pop_all_to_GLB;
@@ -84,7 +85,7 @@ always_comb begin
                 op_ns = PUSH;
         end
         POP: begin
-            if((push_cnt == (push_num_buf-31'd1)) && opsum_fifo_empty_i)
+            if((push_cnt == push_num_buf) && opsum_fifo_empty_i)
                 op_ns = IDLE; // push 已經完成，且 fifo 也已經 pop 完畢
             else if (fifo_glb_busy_i && opsum_fifo_empty_i)
                 op_ns = WAIT;
@@ -134,6 +135,12 @@ end
 
 // Arbiter Request
 assign opsum_write_req_o = (op_cs == POP) && !opsum_fifo_empty_i && (req_cnt < 3'd4);
+// PUSH 由外部 module 控制
+always_comb begin
+    opsum_fifo_pop_o = (op_cs == POP) && opsum_permit_pop_i && !opsum_fifo_empty_i;
+end
+
+
 
 // PUSH 由外部 module 控制
 always_comb begin

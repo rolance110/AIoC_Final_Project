@@ -1,5 +1,8 @@
+`timescale 1ns / 1ps
+`include "../include/define.svh"
 module opsum_fifo_ctrl_tb;
 
+    parameter CYCLE = 10; // Clock cycle time in ns
     // Clock and reset
     logic clk;
     logic rst_n;
@@ -36,23 +39,34 @@ module opsum_fifo_ctrl_tb;
     opsum_fifo_ctrl u_opsum_fifo_ctrl (
         .clk(clk),
         .rst_n(rst_n),
+        
         .fifo_glb_busy_i(fifo_glb_busy_i),
         .opsum_fifo_reset_i(1'b0),          // No FIFO reset in this test
         .opsum_need_push_i(opsum_need_push_i),
+
         .opsum_push_num_i(opsum_push_num_i),
+
         .opsum_permit_pop_i(opsum_permit_pop_i),
+
         .opsum_fifo_empty_i(empty),
         .opsum_fifo_full_i(full),
+
         .opsum_fifo_pop_data_i(pop_data[15:0]), // Only 16-bit data from FIFO
+
         .opsum_glb_base_addr_i(opsum_glb_base_addr_i),
+
         .opsum_write_req_o(opsum_write_req_o),
+
         .opsum_fifo_pop_o(opsum_fifo_pop_o),
         .opsum_fifo_pop_mod_o(opsum_fifo_pop_mod_o),
         .opsum_fifo_push_o(opsum_fifo_push_o),
-        .opsum_glb_write_req_o(opsum_glb_write_req_o),
+
+        .opsum_write_req_o(opsum_glb_write_req_o),
         .opsum_glb_write_addr_o(opsum_glb_write_addr_o),
         .opsum_glb_write_web_o(opsum_glb_write_web_o),
+
         .opsum_fifo_pop_data_o(opsum_fifo_pop_data_o),
+
         .opsum_fifo_done_o(opsum_fifo_done_o)
     );
 
@@ -88,38 +102,41 @@ module opsum_fifo_ctrl_tb;
 
         // Apply reset
         #10 rst_n = 1;
-        #10;
+        #15;
 
-        // Test Case 1: Single push and pop
+        //* Test Case 1: Single push and pop
         $display("Test Case 1: Single push and pop");
         opsum_push_num_i = 1;
         opsum_need_push_i = 1;
         push_data = 16'hAAAA;
-        #10;
+        #11;
         opsum_need_push_i = 0;
         @(posedge clk); // Wait for push to occur
         opsum_permit_pop_i = 1;
-        #10;
+        #11;
         opsum_permit_pop_i = 0;
+        //* next case
         @(posedge clk);
         assert(opsum_glb_write_req_o == 1 && opsum_fifo_pop_data_o == 32'h0000_AAAA && opsum_glb_write_addr_o == 32'h1000_0000 && opsum_glb_write_web_o == 4'b0011) else $error("Test Case 1 failed: Incorrect GLB write");
-        #10;
+        #10.1;
         assert(opsum_fifo_done_o == 1) else $error("Test Case 1 failed: Done signal not asserted");
+        #100
 
-        // Test Case 2: Push two entries until full, then pop
+        //* Test Case 2: Push two entries until full, then pop
         $display("Test Case 2: Push until full, then pop");
-        #20;
+        #20.5;
         opsum_push_num_i = 2;
         opsum_need_push_i = 1;
+        @(posedge clk);
         push_data = 16'h1111;
-        #10;
+        #10.5;
         push_data = 16'h2222;
-        #10;
+        #10.5;
         opsum_need_push_i = 0;
         @(posedge clk);
         assert(full == 1) else $error("Test Case 2 failed: FIFO not full");
         opsum_permit_pop_i = 1;
-        #20; // Two pops
+        #(2*CYCLE + 1);
         opsum_permit_pop_i = 0;
         @(posedge clk);
         assert(opsum_fifo_done_o == 1) else $error("Test Case 2 failed: Done signal not asserted");
@@ -130,14 +147,14 @@ module opsum_fifo_ctrl_tb;
         opsum_push_num_i = 3;
         opsum_need_push_i = 1;
         push_data = 16'h3333;
-        #10;
+        #10.1;
         opsum_permit_pop_i = 1;
-        #10;
+        #10.1;
         opsum_permit_pop_i = 0;
         push_data = 16'h4444;
-        #10;
+        #10.1;
         push_data = 16'h5555;
-        #10;
+        #10.1;
         opsum_need_push_i = 0;
         opsum_permit_pop_i = 1;
         #30; // Pop remaining data
@@ -175,10 +192,10 @@ module opsum_fifo_ctrl_tb;
     initial begin
         `ifdef FSDB
             $fsdbDumpfile("../wave/top.fsdb");
-            $fsdbDumpvars(0, u_token_engine, u_conv_unit, u_SRAM);
+            $fsdbDumpvars(0, u_opsum_fifo , u_opsum_fifo_ctrl);
         `elsif FSDB_ALL
             $fsdbDumpfile("../wave/top.fsdb");
-            $fsdbDumpvars("+struct", "+mda", "+all", u_token_engine, u_conv_unit, u_SRAM);
+            $fsdbDumpvars("+struct", "+mda", "+all", u_opsum_fifo , u_opsum_fifo_ctrl);
         `endif
     end
 endmodule
