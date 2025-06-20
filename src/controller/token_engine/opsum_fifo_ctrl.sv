@@ -19,7 +19,7 @@ module opsum_fifo_ctrl (
     input  logic        opsum_fifo_full_i,
 
     // FIFO POP data input for processing => GLB write
-    input  logic [15:0] opsum_fifo_pop_data_i,
+    input  logic [31:0] opsum_fifo_pop_data_i,
 
     // GLB base address（由 Token Engine 統一給予）
     input  logic [31:0] opsum_glb_base_addr_i,
@@ -158,8 +158,8 @@ end
 always_comb begin
     if(opsum_fifo_pop_mod_o == 1'b0)
         case (opsum_glb_write_type_o)
-            1'b0: opsum_glb_write_data_o = {16'd0,opsum_fifo_pop_data_i}; // load first byte
-            1'b1: opsum_glb_write_data_o = {opsum_fifo_pop_data_i,16'd0}; // load second byte
+            1'b0: opsum_glb_write_data_o = {16'd0,opsum_fifo_pop_data_i[15:0]}; // load first byte
+            1'b1: opsum_glb_write_data_o = {opsum_fifo_pop_data_i[15:0],16'd0}; // load second byte
             default: opsum_glb_write_data_o = 32'h00; // default to first byte for any other count
         endcase
     else // burst mod

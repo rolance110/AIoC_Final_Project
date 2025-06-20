@@ -34,7 +34,7 @@ module L3C_fifo_ctrl #(
     input  logic [31:0] opsum_fifo_full_matrix_i,
     input  logic [31:0] opsum_fifo_empty_matrix_i,
 
-    input logic [15:0] opsum_fifo_pop_data_matrix_i [31:0], // fixme: opsum_fifo_pop_data_matrix_o
+    input logic [31:0] opsum_fifo_pop_data_matrix_i [31:0], // fixme: opsum_fifo_pop_data_matrix_o
 
     // Base Address for FIFOs
     input  logic [31:0] ifmap_fifo_base_addr_matrix_i [31:0],
