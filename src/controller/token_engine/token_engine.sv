@@ -43,7 +43,7 @@ module token_engine (
     input  logic [31:0] glb_read_data_i,
 
 //* from opsum fifo
-    input logic [15:0] opsum_fifo_pop_data_matrix_i [31:0],
+    input logic [31:0] opsum_fifo_pop_data_matrix_i [31:0],
 
 
 
