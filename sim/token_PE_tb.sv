@@ -78,7 +78,7 @@ module token_PE_tb;
     logic [31:0]       opsum_pop_mod;
 
     // conv_unit 的輸出訊號
-    logic [31:0]       opsum_pop_data [31:0];
+    logic [15:0]       opsum_pop_data [31:0];
     
 
 logic [31:0] opsum_fifo_pop_data_matrix_i[31:0];
