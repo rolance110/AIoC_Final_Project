@@ -277,7 +277,7 @@ L2C_normal_loop L2C_normal_loop(
     .clk(clk),
     .rst_n(rst_n),
 
-    .start_normal_loop_i(start_normal_loop), // 啟動 normal loop
+    .normal_loop_state_i(normal_loop_state), // 啟動 normal loop
     .layer_type_i(layer_type_i),
 
 

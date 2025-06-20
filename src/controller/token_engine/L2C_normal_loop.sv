@@ -6,7 +6,7 @@ module L2C_normal_loop(
     input logic clk,
     input logic rst_n,
 
-    input logic start_normal_loop_i, // 啟動 normal loop
+    input logic normal_loop_state_i, // 啟動 normal loop
     input logic [1:0] layer_type_i,  
 
 
@@ -53,7 +53,7 @@ module L2C_normal_loop(
     always_comb begin
         case (nl_cs)
             IDLE:begin
-                if(start_normal_loop_i)
+                if(normal_loop_state_i)
                     nl_ns = SET_NUM;
                 else 
                     nl_ns = IDLE;
