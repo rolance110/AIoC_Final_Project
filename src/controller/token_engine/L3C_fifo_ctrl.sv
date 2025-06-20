@@ -34,6 +34,8 @@ module L3C_fifo_ctrl #(
     input  logic [31:0] opsum_fifo_full_matrix_i,
     input  logic [31:0] opsum_fifo_empty_matrix_i,
 
+    input logic [15:0] opsum_fifo_pop_data_matrix_i [31:0], // fixme: opsum_fifo_pop_data_matrix_o
+
     // Base Address for FIFOs
     input  logic [31:0] ifmap_fifo_base_addr_matrix_i [31:0],
     input  logic [31:0] ipsum_fifo_base_addr_matrix_i [31:0],
@@ -73,6 +75,7 @@ module L3C_fifo_ctrl #(
     output logic [31:0] opsum_glb_write_req_matrix_o,
     output logic [31:0] opsum_glb_write_addr_matrix_o [31:0],
     output logic [3:0]  opsum_glb_write_web_matrix_o [31:0],
+    output logic [31:0] opsum_glb_write_data_matrix_o [31:0],
 
     // Done Signals
     output logic [31:0] ifmap_fifo_done_matrix_o,
@@ -160,8 +163,8 @@ generate
             .rst_n(rst_n),
 
             .fifo_glb_busy_i(fifo_glb_busy_i),
-            .opsum_fifo_reset_i(opsum_fifo_reset_i),
 
+            .opsum_fifo_reset_i(opsum_fifo_reset_i),
             .opsum_need_push_i(opsum_need_push_matrix_i[i]),
             .opsum_push_num_i(opsum_push_num_matrix_i[i]),
 
@@ -173,14 +176,17 @@ generate
             .opsum_fifo_empty_i(opsum_fifo_empty_matrix_i[i]),
             .opsum_fifo_full_i(opsum_fifo_full_matrix_i[i]),
 
+            .opsum_fifo_pop_data_i(opsum_fifo_pop_data_matrix_i[i]),//fixme:
+
             .opsum_glb_base_addr_i(opsum_fifo_base_addr_matrix_i[i]),
             .opsum_fifo_push_o(opsum_fifo_push_matrix_o[i]),
             .opsum_fifo_pop_o(opsum_fifo_pop_matrix_o[i]),
+            .opsum_fifo_pop_mod_o(opsum_fifo_pop_mod_matrix_o[i]),
 
             .opsum_write_req_o(opsum_glb_write_req_matrix_o[i]),
             .opsum_glb_write_addr_o(opsum_glb_write_addr_matrix_o[i]),
             .opsum_glb_write_web_o(opsum_glb_write_web_matrix_o[i]),
-
+            .opsum_glb_write_data_o(opsum_glb_write_data_matrix_o[i]), // fixme
             .opsum_fifo_done_o(opsum_fifo_done_matrix_o[i])
         );
     end

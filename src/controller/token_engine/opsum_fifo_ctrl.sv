@@ -35,7 +35,7 @@ module opsum_fifo_ctrl (
     // 寫入 GLB token
     output logic [31:0] opsum_glb_write_addr_o,
     output logic [3:0]  opsum_glb_write_web_o,    // 每個位元對應一個 byte 的寫入使能
-    output logic [31:0] opsum_fifo_pop_data_o,    // pop 出的資料
+    output logic [31:0] opsum_glb_write_data_o,    // pop 出的資料
 
     output logic opsum_fifo_done_o
 );
@@ -158,12 +158,12 @@ end
 always_comb begin
     if(opsum_fifo_pop_mod_o == 1'b0)
         case (opsum_glb_write_type_o)
-            1'b0: opsum_fifo_pop_data_o = {16'd0,opsum_fifo_pop_data_i}; // load first byte
-            1'b1: opsum_fifo_pop_data_o = {opsum_fifo_pop_data_i,16'd0}; // load second byte
-            default: opsum_fifo_pop_data_o = 32'h00; // default to first byte for any other count
+            1'b0: opsum_glb_write_data_o = {16'd0,opsum_fifo_pop_data_i}; // load first byte
+            1'b1: opsum_glb_write_data_o = {opsum_fifo_pop_data_i,16'd0}; // load second byte
+            default: opsum_glb_write_data_o = 32'h00; // default to first byte for any other count
         endcase
     else // burst mod
-        opsum_fifo_pop_data_o = opsum_fifo_pop_data_i;
+        opsum_glb_write_data_o = opsum_fifo_pop_data_i;
 end
 //web
 always_comb begin

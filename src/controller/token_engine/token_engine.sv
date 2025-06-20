@@ -43,7 +43,7 @@ module token_engine (
     input  logic [31:0] glb_read_data_i,
 
 //* from opsum fifo
-    input logic [31:0] opsum_fifo_pop_data_matrix_i [31:0],
+    input logic [15:0] opsum_fifo_pop_data_matrix_i [31:0],
 
 
 
@@ -332,7 +332,7 @@ opsum_fifo_mask opsum_fifo_mask(
     .opsum_fifo_push_mask_o(opsum_fifo_push_mask)
 );
 
-
+logic [31:0] opsum_glb_write_data_matrix [31:0]; // opsum FIFO pop data to GLB write data
 //* Layer 3 Controller ==============================================
 L3C_fifo_ctrl #(
     .IC_MAX(32),
@@ -370,6 +370,8 @@ L3C_fifo_ctrl #(
     .ipsum_fifo_empty_matrix_i(ipsum_fifo_empty_matrix_i),
     .opsum_fifo_full_matrix_i(opsum_fifo_full_matrix_i),
     .opsum_fifo_empty_matrix_i(opsum_fifo_empty_matrix_i),
+
+    .opsum_fifo_pop_data_matrix_i(opsum_fifo_pop_data_matrix_i), // opsum FIFO pop data input for processing
 
 // base address matrix
     .ifmap_fifo_base_addr_matrix_i(ifmap_fifo_base_addr_matrix),
@@ -414,6 +416,7 @@ L3C_fifo_ctrl #(
     .opsum_glb_write_req_matrix_o(opsum_write_req_matrix),
     .opsum_glb_write_addr_matrix_o(opsum_write_addr_matrix),
     .opsum_glb_write_web_matrix_o(opsum_write_web_matrix),
+    .opsum_glb_write_data_matrix_o(opsum_write_data_matrix),
 
 // done
     .ifmap_fifo_done_matrix_o(ifmap_fifo_done_matrix),
@@ -436,7 +439,7 @@ token_arbiter token_arbiter_dut (
     .opsum_write_addr_matrix_i(opsum_write_addr_matrix),
 
     .opsum_write_web_matrix_i(opsum_write_web_matrix),
-    .opsum_fifo_pop_data_matrix_i(opsum_fifo_pop_data_matrix_i),
+    .opsum_fifo_pop_data_matrix_i(opsum_glb_write_data_matrix),
 
 //* output
     .glb_read_o(glb_read_req),
