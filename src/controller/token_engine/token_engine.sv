@@ -276,7 +276,7 @@ L2C_normal_loop L2C_normal_loop(
     .clk(clk),
     .rst_n(rst_n),
 
-    .start_normal_loop_i(start_normal_loop_i), // 啟動 normal loop
+    .start_normal_loop_i(start_normal_loop), // 啟動 normal loop
     .layer_type_i(layer_type_i),
 
 
@@ -284,9 +284,9 @@ L2C_normal_loop L2C_normal_loop(
     .tile_n_i(tile_n_i), // tile 的數量
 
 //* FIFO Done
-    .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix_i), // 每個 ifmap FIFO 是否完成
-    .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix_i), // 每個 ipsum FIFO 是否完成
-    .opsum_fifo_done_matrix_i(opsum_fifo_done_matrix_i), // 每個 opsum FIFO 是否完成
+    .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix), // 每個 ifmap FIFO 是否完成
+    .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix), // 每個 ipsum FIFO 是否完成
+    .opsum_fifo_done_matrix_i(opsum_fifo_done_matrix), // 每個 opsum FIFO 是否完成
 
 
 //* L3 Controller
@@ -320,8 +320,8 @@ opsum_fifo_mask opsum_fifo_mask(
 
     .layer_type_i(layer_type_i), // 0: conv, 1: fc
     // 控制訊號
-    .opsum_fifo_reset_i(opsum_fifo_reset_i),
-    .normal_loop_state_i(normal_loop_state_i),
+    .opsum_fifo_reset_i(opsum_fifo_reset),
+    .normal_loop_state_i(normal_loop_state),
 
     // 參數：實際要啟用的 FIFO 數量 (0～32)
     .OC_real_i(OC_real_i),
@@ -381,7 +381,7 @@ L3C_fifo_ctrl #(
 // arbiter permit
     .ifmap_permit_push_matrix_i(ifmap_permit_push_matrix),
     .ipsum_permit_push_matrix_i(ipsum_permit_push_matrix),
-    .opsum_permit_pop_matrix_i(opsum_permit_pop),
+    .opsum_permit_pop_matrix_i(opsum_permit_pop_matrix),
 
 // GLB read data in (need pre-processed by FIFO ctrl)
     .ifmap_glb_read_data_i(glb_read_data_i),
