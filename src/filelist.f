@@ -9,6 +9,7 @@
 ../src/controller/token_engine/Layer1_Controller.sv
 ../src/controller/token_engine/L2C_init_fifo_pe.sv
 ../src/controller/token_engine/L2C_preheat.sv
+../src/controller/token_engine/L2C_normal_loop.sv
 ../src/controller/token_engine/L3C_fifo_ctrl.sv
 ../src/controller/token_engine/token_arbiter.sv
 ../src/controller/token_engine/token_engine.sv

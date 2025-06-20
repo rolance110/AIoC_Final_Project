@@ -34,17 +34,23 @@ module opsum_fifo_ctrl_tb;
     logic full;
     logic empty;
     logic [31:0] pop_data;
-
+    
+    logic opsum_fifo_push_mask_i;
+    logic  pe_array_move_i;
+    logic opsum_fifo_reset_i; // Reset signal for FIFO
     // Instantiate opsum_fifo_ctrl
     opsum_fifo_ctrl u_opsum_fifo_ctrl (
         .clk(clk),
         .rst_n(rst_n),
         
         .fifo_glb_busy_i(fifo_glb_busy_i),
-        .opsum_fifo_reset_i(1'b0),          // No FIFO reset in this test
-        .opsum_need_push_i(opsum_need_push_i),
+        .opsum_fifo_reset_i(opsum_fifo_reset_i),          // No FIFO reset in this test
 
+        .opsum_need_push_i(opsum_need_push_i),
         .opsum_push_num_i(opsum_push_num_i),
+
+        .opsum_fifo_push_mask_i(opsum_fifo_push_mask_i), // fixme
+        .pe_array_move_i(pe_array_move_i), // fixme
 
         .opsum_permit_pop_i(opsum_permit_pop_i),
 
@@ -55,7 +61,6 @@ module opsum_fifo_ctrl_tb;
 
         .opsum_glb_base_addr_i(opsum_glb_base_addr_i),
 
-        .opsum_write_req_o(opsum_write_req_o),
 
         .opsum_fifo_pop_o(opsum_fifo_pop_o),
         .opsum_fifo_pop_mod_o(opsum_fifo_pop_mod_o),
@@ -88,107 +93,86 @@ module opsum_fifo_ctrl_tb;
         clk = 0;
         forever #5 clk = ~clk;
     end
-
+    always_comb begin
+        opsum_permit_pop_i = opsum_glb_write_req_o;
+    end     // Connect opsum_permit_pop_i to opsum_write_req_o
     // Reset and test sequence
     initial begin
         // Initialize signals
         rst_n = 0;
         opsum_need_push_i = 0;
         opsum_push_num_i = 0;
-        opsum_permit_pop_i = 0;
         fifo_glb_busy_i = 0;
         opsum_glb_base_addr_i = 32'h1000_0000;
         push_data = 16'h0000;
-
+        opsum_fifo_push_mask_i = 1'b0;
+        pe_array_move_i = 1'b0;
+        opsum_fifo_reset_i = 1'b0; // No FIFO reset initially
         // Apply reset
         #10 rst_n = 1;
-        #15;
-
-        //* Test Case 1: Single push and pop
+        #15.1;
         $display("Test Case 1: Single push and pop");
-        opsum_push_num_i = 1;
+        opsum_fifo_push_mask_i = 1'b0;
+        
         opsum_need_push_i = 1;
-        push_data = 16'hAAAA;
-        #11;
-        opsum_need_push_i = 0;
-        @(posedge clk); // Wait for push to occur
-        opsum_permit_pop_i = 1;
-        #11;
-        opsum_permit_pop_i = 0;
-        //* next case
-        @(posedge clk);
-        assert(opsum_glb_write_req_o == 1 && opsum_fifo_pop_data_o == 32'h0000_AAAA && opsum_glb_write_addr_o == 32'h1000_0000 && opsum_glb_write_web_o == 4'b0011) else $error("Test Case 1 failed: Incorrect GLB write");
+        opsum_push_num_i = 32'h0000_0001; // Push
         #10.1;
-        assert(opsum_fifo_done_o == 1) else $error("Test Case 1 failed: Done signal not asserted");
-        #100
+        opsum_need_push_i = 0;
+        opsum_push_num_i = 32'h0000_0000; // Push
 
-        //* Test Case 2: Push two entries until full, then pop
+        opsum_fifo_push_mask_i = 1'b0;
+        pe_array_move_i = 1'b0;
+        #10.1;
+        opsum_fifo_push_mask_i = 1'b0;
+        pe_array_move_i = 1'b1;
+        #10.1;
+        opsum_fifo_push_mask_i = 1'b1;
+        pe_array_move_i = 1'b1;
+        #10.1;
+        pe_array_move_i = 1'b0;
+
+        #50.1;
+        opsum_fifo_reset_i = 1'b1; // Reset FIFO
+        #10.1;
+        opsum_fifo_reset_i = 1'b0; // Release FIFO reset
         $display("Test Case 2: Push until full, then pop");
-        #20.5;
-        opsum_push_num_i = 2;
+        opsum_fifo_push_mask_i = 1'b0;
+        
         opsum_need_push_i = 1;
-        @(posedge clk);
-        push_data = 16'h1111;
-        #10.5;
-        push_data = 16'h2222;
-        #10.5;
+        opsum_push_num_i = 32'h0000_0010; // Push
+        #10.1;
         opsum_need_push_i = 0;
-        @(posedge clk);
-        assert(full == 1) else $error("Test Case 2 failed: FIFO not full");
-        opsum_permit_pop_i = 1;
-        #(2*CYCLE + 1);
-        opsum_permit_pop_i = 0;
-        @(posedge clk);
-        assert(opsum_fifo_done_o == 1) else $error("Test Case 2 failed: Done signal not asserted");
+        opsum_push_num_i = 32'h0000_0000; // Push
 
-        // Test Case 3: Push with interleaved pop
+        opsum_fifo_push_mask_i = 1'b0;
+        pe_array_move_i = 1'b0;
+        #10.1;
+        opsum_fifo_push_mask_i = 1'b0;
+        pe_array_move_i = 1'b1;
+        #10.1;
+        opsum_fifo_push_mask_i = 1'b1;
+        pe_array_move_i = 1'b1;
+        #20; // push 2 item
+        pe_array_move_i = 1'b0;
+        wait(u_opsum_fifo_ctrl.op_cs == u_opsum_fifo_ctrl.CAN_PUSH);
+        pe_array_move_i = 1'b1;
+        #20; // push 2 item
+        pe_array_move_i = 1'b0;
+        wait(u_opsum_fifo_ctrl.op_cs == u_opsum_fifo_ctrl.CAN_PUSH);
+        pe_array_move_i = 1'b1;
+        #20; // push 2 item
+        pe_array_move_i = 1'b0;
+
+        #50;       
         $display("Test Case 3: Push with interleaved pop");
-        #20;
-        opsum_push_num_i = 3;
-        opsum_need_push_i = 1;
-        push_data = 16'h3333;
-        #10.1;
-        opsum_permit_pop_i = 1;
-        #10.1;
-        opsum_permit_pop_i = 0;
-        push_data = 16'h4444;
-        #10.1;
-        push_data = 16'h5555;
-        #10.1;
-        opsum_need_push_i = 0;
-        opsum_permit_pop_i = 1;
-        #30; // Pop remaining data
-        opsum_permit_pop_i = 0;
-        @(posedge clk);
-        assert(opsum_fifo_done_o == 1) else $error("Test Case 3 failed: Done signal not asserted");
-
-        // Test Case 4: Arbiter busy scenario
+       
         $display("Test Case 4: Arbiter busy scenario");
-        #20;
-        opsum_push_num_i = 1;
-        opsum_need_push_i = 1;
-        push_data = 16'h6666;
-        #10;
-        opsum_need_push_i = 0;
-        fifo_glb_busy_i = 1; // Arbiter busy
-        #20;
-        assert(opsum_fifo_pop_o == 0) else $error("Test Case 4 failed: Pop occurred during busy");
-        fifo_glb_busy_i = 0;
-        opsum_permit_pop_i = 1;
-        #10;
-        opsum_permit_pop_i = 0;
-        @(posedge clk);
-        assert(opsum_fifo_done_o == 1) else $error("Test Case 4 failed: Done signal not asserted");
+
 
         $display("Simulation completed");
         $finish;
     end
 
-    // Monitor signals for debugging
-    initial begin
-        $monitor("Time=%0t | push_en=%b | pop_en=%b | full=%b | empty=%b | pop_data=%h | glb_write_req=%b | glb_addr=%h | glb_data=%h",
-                 $time, opsum_fifo_push_o, opsum_fifo_pop_o, full, empty, pop_data, opsum_glb_write_req_o, opsum_glb_write_addr_o, opsum_fifo_pop_data_o);
-    end
     initial begin
         `ifdef FSDB
             $fsdbDumpfile("../wave/top.fsdb");

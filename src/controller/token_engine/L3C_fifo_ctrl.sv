@@ -13,6 +13,9 @@ module L3C_fifo_ctrl #(
     input  logic        ipsum_fifo_reset_i,
     input  logic        opsum_fifo_reset_i,
 
+    // todo: opsum_fifo_push_mask
+    input logic [31:0] opsum_fifo_push_mask_i,
+
     // L2 Needs (Pop Requests)
     input  logic [31:0] ifmap_need_pop_matrix_i,
     input  logic [31:0] ifmap_pop_num_matrix_i [31:0],
@@ -20,7 +23,8 @@ module L3C_fifo_ctrl #(
     input  logic [31:0] ipsum_need_pop_matrix_i,
     input  logic [31:0] ipsum_pop_num_matrix_i [31:0],
 
-    input  logic [31:0] opsum_need_pop_matrix_i,
+    input logic [31:0] opsum_need_push_matrix_i,
+    input logic [31:0] opsum_push_num_matrix_i [31:0],
 
     // FIFO Status (Full/Empty)
     input  logic [31:0] ifmap_fifo_full_matrix_i,
@@ -145,11 +149,10 @@ generate
     end
 endgenerate
 
+logic pe_array_move_i;
 
-logic [31:0] opsum_need_push_matrix_i;
-logic [31:0] opsum_push_num_matrix_i [31:0];
-logic [31:0] opsum_permit_pop_matrix_i;
-logic [31:0] opsum_glb_base_addr_matrix_i [31:0];
+
+
 generate
     for (i = 0; i < 32; i++) begin : OPSUM_CTRL
         opsum_fifo_ctrl u_opsum_fifo_ctrl (
@@ -162,12 +165,15 @@ generate
             .opsum_need_push_i(opsum_need_push_matrix_i[i]),
             .opsum_push_num_i(opsum_push_num_matrix_i[i]),
 
+            .opsum_fifo_push_mask_i(opsum_fifo_push_mask_i[i]), // fixme
+            .pe_array_move_i(pe_array_move_i), // fixme
+
             .opsum_permit_pop_i(opsum_permit_pop_matrix_i[i]),
 
             .opsum_fifo_empty_i(opsum_fifo_empty_matrix_i[i]),
             .opsum_fifo_full_i(opsum_fifo_full_matrix_i[i]),
 
-            .opsum_glb_base_addr_i(opsum_glb_base_addr_matrix_i[i]),
+            .opsum_glb_base_addr_i(opsum_fifo_base_addr_matrix_i[i]),
             .opsum_fifo_push_o(opsum_fifo_push_matrix_o[i]),
             .opsum_fifo_pop_o(opsum_fifo_pop_matrix_o[i]),
 

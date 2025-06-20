@@ -27,7 +27,7 @@ module L2C_normal_loop(
     output logic [31:0] ipsum_pop_num_matrix_o [31:0], // 每個 ipsum FIFO 需要 pop 的數量
     
     output logic [31:0] opsum_need_push_matrix_o, // 每個 opsum FIFO 需要 push 的訊號
-    // output logic [31:0] opsum_push_num_o [31:0], // opsum only need push 1 time
+    output logic [31:0] opsum_push_num_matrix_o [31:0], // opsum only need push 1 time
 
     output logic normal_loop_done_o // normal loop 完成訊號
 );
@@ -107,7 +107,20 @@ always_comb begin
 
 end
 
+integer i2, j2;
+always_comb begin
+    if ((nl_cs == SET_NUM)) begin
+        for(j2 = 0; j2 < 32; j2++)begin
+            opsum_push_num_matrix_o[j2] = 32'd1;// fixme: 代定
+        end
+    end
+    else begin
+        for (i2 = 0; i2 < 32; i2++) begin
+            opsum_push_num_matrix_o[i2]  = 32'd0;
+        end
+    end
 
+end
 
 
 always_comb begin

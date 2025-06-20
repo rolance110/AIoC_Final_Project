@@ -6,9 +6,11 @@ module opsum_fifo_ctrl (
     // 控制來源來自 L2
     input  logic        opsum_fifo_reset_i,    // FIFO reset
     input  logic        opsum_need_push_i,      // L2 指令：請嘗試 pop 出一筆資料 (FIFO -> arbiter)
-
     input  logic [31:0] opsum_push_num_i,       // 本次需 push 幾筆資料
 
+    input logic opsum_fifo_push_mask_i, //todo: FIFO enable mask, 1: enable, 0: disable
+    input logic pe_array_move_i,        //todo: PE array move enable, & mask => push_en  
+    
     // Arbiter grant: 你現在可以寫入 GLB
     input  logic        opsum_permit_pop_i,
 
@@ -45,9 +47,9 @@ logic [31:0] push_num_buf;
     
 typedef enum logic [1:0] {
     IDLE,
+    CAN_PUSH,
     POP,
-    PUSH,
-    WAIT
+    DONE
 } state_t;
 
 state_t op_cs, op_ns;
@@ -67,38 +69,32 @@ end
 always_comb begin
     unique case (op_cs)
         IDLE: begin
-            if (opsum_need_push_i && !opsum_fifo_full_i)
-                op_ns = PUSH;
-            else if (opsum_need_push_i) // fifo is full, need pop first
-                op_ns = POP;
+            if (opsum_need_push_i)
+                op_ns = CAN_PUSH;
             else
                 op_ns = IDLE;
         end
-        PUSH: begin
+        CAN_PUSH: begin
             if (opsum_fifo_full_i)
                 op_ns = POP;
-            else if (push_cnt == (push_num_buf-31'd1))
+            else if (push_cnt == push_num_buf)
                 op_ns = POP; // push 的數量已達到要求, 把剩餘的 fifo data pop 乾淨
-            else if (fifo_glb_busy_i)
-                op_ns = WAIT;
             else
-                op_ns = PUSH;
+                op_ns = CAN_PUSH;
         end
         POP: begin
             if((push_cnt == push_num_buf) && opsum_fifo_empty_i)
-                op_ns = IDLE; // push 已經完成，且 fifo 也已經 pop 完畢
-            else if (fifo_glb_busy_i && opsum_fifo_empty_i)
-                op_ns = WAIT;
+                op_ns = DONE; // push 已經完成，且 fifo 也已經 pop 完畢
             else if (opsum_fifo_empty_i)
-                op_ns = PUSH;
+                op_ns = CAN_PUSH;
             else
                 op_ns = POP;
         end
-        WAIT: begin
-            if (!fifo_glb_busy_i)
-                op_ns = POP;
+        DONE: begin
+            if(opsum_fifo_reset_i)
+                op_ns = IDLE;
             else
-                op_ns = WAIT;
+                op_ns = DONE; // 保持在 DONE 狀態，直到重置
         end
         default: op_ns = IDLE;
     endcase
@@ -127,7 +123,7 @@ logic [2:0] req_cnt;
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         req_cnt <= 3'd0;
-    else if (op_cs == IDLE || op_cs == PUSH)
+    else if (op_cs == IDLE || op_cs == CAN_PUSH)
         req_cnt <= 3'd0; // Reset request count in IDLE state
     else if (opsum_permit_pop_i)
         req_cnt <= req_cnt + 3'd1; // 0 1 2 3 4 4 4 0 0
@@ -135,17 +131,15 @@ end
 
 // Arbiter Request
 assign opsum_write_req_o = (op_cs == POP) && !opsum_fifo_empty_i && (req_cnt < 3'd4);
-// PUSH 由外部 module 控制
+// CAN_PUSH 由外部 module 控制
 always_comb begin
     opsum_fifo_pop_o = (op_cs == POP) && opsum_permit_pop_i && !opsum_fifo_empty_i;
 end
 
 
 
-// PUSH 由外部 module 控制
-always_comb begin
-    opsum_fifo_push_o = (op_cs == PUSH) && opsum_need_push_i && !opsum_fifo_full_i;
-end
+// CAN_PUSH 由外部 module 控制
+assign opsum_fifo_push_o = /*(op_cs == CAN_PUSH) && */opsum_fifo_push_mask_i && pe_array_move_i && !opsum_fifo_full_i;
 
 logic opsum_glb_write_type_o; // 0: lower 16 bits, 1: higher 16 bits
 

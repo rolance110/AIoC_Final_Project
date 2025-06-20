@@ -110,9 +110,6 @@ logic [31:0] weight_addr;
 logic [1:0]  weight_load_byte_type;
 
 // IFMAP 相關訊號 (IFMAP-related signals)
-logic [31:0] ifmap_fifo_pop_en;
-logic [31:0] ifmap_fifo_push_en;
-logic [31:0] ifmap_glb_read_addr;
 logic [31:0] ifmap_need_pop_matrix;
 logic [31:0] ifmap_permit_push_matrix;
 logic [31:0] ifmap_pop_num_matrix [31:0];
@@ -120,24 +117,15 @@ logic [31:0] ifmap_read_addr_matrix [31:0];
 logic [31:0] ifmap_read_req_matrix;
 
 // IPSUM 相關訊號 (IPSUM-related signals)
-logic [31:0] ipsum_fifo_push_en;
-logic [31:0] ipsum_glb_read_addr;
-logic [31:0] ipsum_glb_read_req;
-logic [31:0] ipsum_need_pop;
-logic [31:0] ipsum_need_push;
 logic [31:0] ipsum_permit_push_matrix;
 logic [31:0] ipsum_pop_num_matrix [31:0];
 logic [31:0] ipsum_read_addr_matrix [31:0];
 logic [31:0] ipsum_read_req_matrix;
 
 // OPSUM 相關訊號 (OPSUM-related signals)
-logic [31:0] opsum_fifo_pop_en;
-logic [31:0] opsum_fifo_push_en;
-logic [31:0] opsum_glb_write_addr;
-logic [31:0] opsum_glb_write_req;
-logic [3:0]  opsum_glb_write_web;
-logic [31:0] opsum_need_pop;
-logic [31:0] opsum_need_push;
+logic [31:0] opsum_need_push_matrix;
+logic [31:0] opsum_push_num_matrix [31:0];
+
 logic [31:0] opsum_permit_pop_matrix;
 logic [3:0]  opsum_pop_web [31:0];
 logic [31:0] opsum_write_addr_matrix [31:0];
@@ -147,15 +135,8 @@ logic [31:0] opsum_write_req_matrix;
 // Global 相關訊號 (Global-related signals)
 logic        glb_read_req;
 logic        glb_write_req;
-logic [31:0] glb_read_addr;
-logic [31:0] glb_write_addr;
-logic [3:0]  glb_read_web;
-logic [3:0]  glb_write_web;
 
-// 許可相關訊號 (Permit-related signals)
-logic [31:0] permit_ifmap;
-logic [31:0] permit_ipsum;
-logic [31:0] permit_opsum;
+
 
 
 
@@ -257,6 +238,12 @@ logic [31:0] ifmap_fifo_done_matrix;
 logic [31:0] ipsum_fifo_done_matrix;
 logic [31:0] ipsum_need_pop_matrix;
 
+
+logic [31:0] ifmap_need_pop_pre_matrix;
+logic [31:0] ifmap_pop_num_pre_matrix [31:0];
+logic [31:0] ipsum_need_pop_pre_matrix;
+logic [31:0] ipsum_pop_num_pre_matrix [31:0];
+
 L2C_preheat #(
     .NUM_IFMAP_FIFO(32)
 ) L2C_preheat_dut (
@@ -267,53 +254,63 @@ L2C_preheat #(
     .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix),
     .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix),
 
-    .ifmap_need_pop_o(ifmap_need_pop_matrix),
-    .ifmap_pop_num_o(ifmap_pop_num_matrix),
-    .ipsum_need_pop_o(ipsum_need_pop_matrix),
-    .ipsum_pop_num_o(ipsum_pop_num_matrix),
+    .ifmap_need_pop_o(ifmap_need_pop_pre_matrix),
+    .ifmap_pop_num_o(ifmap_pop_num_pre_matrix),
+    .ipsum_need_pop_o(ipsum_need_pop_pre_matrix),
+    .ipsum_pop_num_o(ipsum_pop_num_pre_matrix),
     .preheat_done_o(preheat_done)
 
 );
 
+logic [31:0] ifmap_need_pop_nor_matrix; // 每個 ifmap FIFO 需要 pop 的訊號
+logic [31:0] ifmap_pop_num_nor_matrix [31:0]; // 每個 ifmap FIFO 需要 pop 的數量
+    
+logic [31:0] ipsum_need_pop_nor_matrix; // 每個 ipsum FIFO 需要 pop 的訊號
+logic [31:0] ipsum_pop_num_nor_matrix [31:0]; // 每個 ipsum FIFO 需要 pop 的數量
+    
+logic [31:0] opsum_need_push_nor_matrix; // 每個 opsum FIFO 需要 push 的訊號
+logic [31:0] opsum_push_num_nor_matrix [31:0];
+
 /* Normal Loop */
-// L2C_normal_loop L2C_normal_loop(
-//     .clk(clk),
-//     .rst_n(rst_n),
+L2C_normal_loop L2C_normal_loop(
+    .clk(clk),
+    .rst_n(rst_n),
 
-//     .start_normal_loop_i(start_normal_loop_i),
-//     .layer_type_i(layer_type_i),
-
-
-// //* Tile Infomation
-//     .tile_n_i(tile_n_i),
-
-// //* FIFO Done
-//     .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix_i),
-//     .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix_i),
-//     .opsum_fifo_done_matrix_i(opsum_fifo_done_matrix_i),
+    .start_normal_loop_i(start_normal_loop_i), // 啟動 normal loop
+    .layer_type_i(layer_type_i),
 
 
-// //* L3 Controller 
-//     .ifmap_need_pop_matrix_o(ifmap_need_pop_matrix_o), // 每個 ifmap FIFO 需要 pop 的訊號
-//     .ifmap_pop_num_matrix_o(ifmap_pop_num_matrix_o), // 每個 ifmap FIFO 需要 pop 的數量
+//* Tile Infomation
+    .tile_n_i(tile_n_i), // tile 的數量
 
-//     .ipsum_need_pop_matrix_o(ipsum_need_pop_matrix_o), // 每個 ipsum FIFO 需要 pop 的訊號
-//     .ipsum_pop_num_matrix_o(ipsum_pop_num_matrix_o), // 每個 ipsum FIFO 需要 pop 的數量
-
-//     .opsum_need_push_matrix_o(opsum_need_push_matrix_o), // 每個 opsum FIFO 需要 push 的訊號
-//     // output logic [31:0] opsum_push_num_o [31:0], // opsum only need push 1 time
-
-//     .normal_loop_done_o(normal_loop_done_o) // normal loop 完成訊號
-// );
+//* FIFO Done
+    .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix_i), // 每個 ifmap FIFO 是否完成
+    .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix_i), // 每個 ipsum FIFO 是否完成
+    .opsum_fifo_done_matrix_i(opsum_fifo_done_matrix_i), // 每個 opsum FIFO 是否完成
 
 
+//* L3 Controller
+    .ifmap_need_pop_matrix_o(ifmap_need_pop_nor_matrix), // 每個 ifmap FIFO 需要 pop 的訊號
+    .ifmap_pop_num_matrix_o(ifmap_pop_num_nor_matrix), // 每個 ifmap FIFO 需要 pop 的數量
+
+    .ipsum_need_pop_matrix_o(ipsum_need_pop_nor_matrix), // 每個 ipsum FIFO 需要 pop 的訊號
+    .ipsum_pop_num_matrix_o(ipsum_pop_num_nor_matrix), // 每個 ipsum FIFO 需要 pop 的數量
+
+    .opsum_need_push_matrix_o(opsum_need_push_nor_matrix), // 每個 opsum FIFO 需要 push 的訊號
+    .opsum_push_num_matrix_o(opsum_push_num_nor_matrix), // opsum only need push 1 time
+
+    .normal_loop_done_o(normal_loop_done) // normal loop 完成訊號
+);
 
 
+assign ifmap_need_pop_matrix = preheat_state? ifmap_need_pop_pre_matrix: ifmap_need_pop_nor_matrix;
+assign ifmap_pop_num_matrix = preheat_state? ifmap_pop_num_pre_matrix: ifmap_pop_num_nor_matrix;
+assign ipsum_need_pop_matrix = preheat_state? ipsum_need_pop_pre_matrix: ipsum_need_pop_nor_matrix;
+assign ipsum_pop_num_matrix = preheat_state? ipsum_pop_num_pre_matrix: ipsum_pop_num_nor_matrix;
+assign opsum_need_push_matrix = opsum_need_push_nor_matrix;
+assign opsum_push_num_matrix = opsum_push_num_nor_matrix;
 
-
-
-
-logic [31:0] ipsum_glb_read_addr_matrix [31:0];
+logic [31:0] opsum_fifo_push_mask;
 //* Layer 3 Controller ==============================================
 L3C_fifo_ctrl #(
     .IC_MAX(32),
@@ -331,6 +328,9 @@ L3C_fifo_ctrl #(
 //* busy
     .fifo_glb_busy_i(glb_read_req || glb_write_req), //fixme FIFO <=> GLB 是否忙碌
 
+// todo: opsum_fifo_push_mask
+    .opsum_fifo_push_mask_i(opsum_fifo_push_mask), // todo: opsum FIFO enable mask, 1: enable, 0: disable
+
 // L2 need 
     .ifmap_need_pop_matrix_i(ifmap_need_pop_matrix),
     .ifmap_pop_num_matrix_i(ifmap_pop_num_matrix),
@@ -338,7 +338,8 @@ L3C_fifo_ctrl #(
     .ipsum_need_pop_matrix_i(ipsum_need_pop_matrix),
     .ipsum_pop_num_matrix_i(ipsum_pop_num_matrix),
 
-    .opsum_need_pop_matrix_i(opsum_need_pop_matrix),
+    .opsum_need_push_matrix_i(opsum_need_push_matrix),
+    .opsum_push_num_matrix_i(opsum_push_num_matrix), // opsum only need push 1 time
 
 // FIFO
     .ifmap_fifo_full_matrix_i(ifmap_fifo_full_matrix_i),
