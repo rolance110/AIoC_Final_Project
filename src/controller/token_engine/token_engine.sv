@@ -321,7 +321,7 @@ opsum_fifo_mask opsum_fifo_mask(
 
     .layer_type_i(layer_type_i), // 0: conv, 1: fc
     // 控制訊號
-    .opsum_fifo_reset_i(opsum_fifo_reset),
+    .opsum_fifo_reset_i(opsum_fifo_reset_o),
     .normal_loop_state_i(normal_loop_state),
 
     // 參數：實際要啟用的 FIFO 數量 (0～32)
