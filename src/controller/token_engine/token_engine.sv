@@ -236,6 +236,7 @@ L2C_init_fifo_pe #(
 );
 logic [31:0] ifmap_fifo_done_matrix;
 logic [31:0] ipsum_fifo_done_matrix;
+logic [31:0] opsum_fifo_done_matrix;
 logic [31:0] ipsum_need_pop_matrix;
 
 

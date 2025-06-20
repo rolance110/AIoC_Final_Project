@@ -3,7 +3,7 @@ module opsum_fifo_mask (
     input  logic        rst_n,
 
 
-    input logic       layer_type_i, // 0: conv, 1: fc
+    input logic  [1:0]     layer_type_i, // 0: conv, 1: fc
     // 控制訊號
     input  logic        opsum_fifo_reset_i,
     input  logic        normal_loop_state_i,
