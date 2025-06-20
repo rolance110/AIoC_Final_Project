@@ -150,7 +150,7 @@ generate
 endgenerate
 
 logic pe_array_move_i;
-
+assign pe_array_move_i = &ifmap_fifo_pop_matrix_o; // bound with ifmap_fifo_pop_matrix_o
 
 
 generate

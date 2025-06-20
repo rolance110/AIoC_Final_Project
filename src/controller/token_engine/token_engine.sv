@@ -311,6 +311,28 @@ assign opsum_need_push_matrix = opsum_need_push_nor_matrix;
 assign opsum_push_num_matrix = opsum_push_num_nor_matrix;
 
 logic [31:0] opsum_fifo_push_mask;
+
+
+opsum_fifo_mask opsum_fifo_mask(
+    .clk(clk),
+    .rst_n(rst_n),
+
+
+    .layer_type_i(layer_type_i), // 0: conv, 1: fc
+    // 控制訊號
+    .opsum_fifo_reset_i(opsum_fifo_reset_i),
+    .normal_loop_state_i(normal_loop_state_i),
+
+    // 參數：實際要啟用的 FIFO 數量 (0～32)
+    .OC_real_i(OC_real_i),
+    // ifmap_fifo_pop 事件，只要任一位有 pop 則視為「pop 一次」
+    .ifmap_fifo_pop_matrix_i(ifmap_fifo_pop_matrix_o),
+
+    // 最終哪幾個 opsum_fifo 可以 push
+    .opsum_fifo_push_mask_o(opsum_fifo_push_mask)
+);
+
+
 //* Layer 3 Controller ==============================================
 L3C_fifo_ctrl #(
     .IC_MAX(32),
