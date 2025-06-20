@@ -332,7 +332,7 @@ opsum_fifo_mask opsum_fifo_mask(
     .opsum_fifo_push_mask_o(opsum_fifo_push_mask)
 );
 
-logic [31:0] opsum_glb_write_data_matrix [31:0]; // opsum FIFO pop data to GLB write data
+logic [31:0] opsum_write_data_matrix [31:0]; // opsum FIFO pop data to GLB write data
 //* Layer 3 Controller ==============================================
 L3C_fifo_ctrl #(
     .IC_MAX(32),
@@ -439,7 +439,7 @@ token_arbiter token_arbiter_dut (
     .opsum_write_addr_matrix_i(opsum_write_addr_matrix),
 
     .opsum_write_web_matrix_i(opsum_write_web_matrix),
-    .opsum_fifo_pop_data_matrix_i(opsum_glb_write_data_matrix),
+    .opsum_fifo_pop_data_matrix_i(opsum_write_data_matrix),
 
 //* output
     .glb_read_o(glb_read_req),
