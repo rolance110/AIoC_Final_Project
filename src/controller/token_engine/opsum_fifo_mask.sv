@@ -27,8 +27,8 @@ module opsum_fifo_mask (
         else if (layer_type_i == `POINTWISE)
             if (opsum_fifo_reset_i)
                 init_mask <= 32'h1;               // reset 時先開啟第 0 號 FIFO
-            else if (preheat_done_i)
-                init_mask <= 32'h3; // preheat_done_i 時，開啟前 2 個 FIFO
+            // else if (preheat_done_i)
+            //     init_mask <= 32'h3; // preheat_done_i 時，開啟前 2 個 FIFO // 改成不用 先 push 1 次
             else if (normal_loop_state_i && |ifmap_fifo_pop_matrix_i)
                 init_mask <= (init_mask << 1) | 32'h1;
         else if (layer_type_i == `DEPTHWISE)

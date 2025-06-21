@@ -55,30 +55,30 @@ module opsum_fifo #(
     end
 
     // === Read data ===
-    // always_ff @(posedge clk or negedge rst_n) begin
-    //     if (!rst_n)
-    //         pop_data <= 32'd0;
-    //     else if (pop_en && !empty) begin
-    //         if (pop_mod == 1'b0)
-    //             pop_data <= {16'd0, mem[rd_ptr]};
-    //         else if (pop_mod == 1'b1 && full) //todo: only full can pop 32-bit
-    //             pop_data <= {mem[1], mem[0]};
-    //     end
-    // end
-
-    always_comb begin
-        if (pop_en && !empty) begin
-            if (pop_mod == 1'b0) // pop 16-bit
-                pop_data = {16'd0, mem[rd_ptr]};
-            else if (pop_mod == 1'b1 && full) // pop 32-bit
-                pop_data ={mem[1], mem[0]};
-            else
-                pop_data = 32'd0; // default case
-        end 
-        else begin
-            pop_data = 32'd0; // no pop operation
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            pop_data <= 32'd0;
+        else if (pop_en && !empty) begin
+            if (pop_mod == 1'b0)
+                pop_data <= {16'd0, mem[rd_ptr]};
+            else if (pop_mod == 1'b1 && full) //todo: only full can pop 32-bit
+                pop_data <= {mem[1], mem[0]};
         end
     end
+
+    // always_comb begin
+    //     if (pop_en && !empty) begin
+    //         if (pop_mod == 1'b0) // pop 16-bit
+    //             pop_data = {16'd0, mem[rd_ptr]};
+    //         else if (pop_mod == 1'b1 && full) // pop 32-bit
+    //             pop_data ={mem[1], mem[0]};
+    //         else
+    //             pop_data = 32'd0; // default case
+    //     end 
+    //     else begin
+    //         pop_data = 32'd0; // no pop operation
+    //     end
+    // end
 
     // === Count ===
     always_ff @(posedge clk or negedge rst_n) begin

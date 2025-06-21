@@ -466,7 +466,8 @@ L3C_fifo_ctrl #(
 );
 
 token_arbiter token_arbiter_dut (
-
+    .clk(clk),
+    .rst_n(rst_n),
 //* input
     .weight_load_state_i(weight_load_state),
     .weight_addr_i(weight_addr),

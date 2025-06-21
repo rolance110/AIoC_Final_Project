@@ -114,9 +114,9 @@ end
 
     // 讀取地址管理
 always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n || opsum_fifo_reset_i)
-        write_ptr <= 16'd0;
-    else if (opsum_permit_pop_i)
+    if (!rst_n)
+        write_ptr <= -16'd2;
+    else if (opsum_fifo_pop_o)
         write_ptr <= write_ptr + 16'd2; // opsum 2 byte
 end
  
@@ -136,8 +136,17 @@ end
 // Arbiter Request
 assign opsum_write_req_o = (op_cs == POP) && !opsum_fifo_empty_i && (req_cnt < 3'd4);
 // CAN_PUSH 由外部 module 控制
+logic no_delay_opsum_fifo_pop_o;
+logic delay_opsum_fifo_pop_o;
 always_comb begin
     opsum_fifo_pop_o = (op_cs == POP) && opsum_permit_pop_i && !opsum_fifo_empty_i;
+end
+
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        delay_opsum_fifo_pop_o <= 1'b0;
+    else
+        delay_opsum_fifo_pop_o <= opsum_fifo_pop_o; // 設置 pop buffer
 end
 
 
@@ -147,16 +156,12 @@ assign opsum_fifo_push_o = /*(*/((op_cs == CAN_PUSH) && pe_array_move_i) /*|| ((
 
 logic opsum_glb_write_type_o; // 0: lower 16 bits, 1: higher 16 bits
 
-always_ff@(posedge clk or negedge rst_n) begin
-    if (!rst_n)
-        opsum_glb_write_type_o <= 1'b0;
-    else begin
-        case(opsum_glb_write_addr_o)
-            1'b0: opsum_glb_write_type_o <= 1'b0; // load lower 16 bits
-            1'b1: opsum_glb_write_type_o <= 1'b1; // load higher 16 bits
-            default: opsum_glb_write_type_o <= 1'b0;
-        endcase
-    end
+always_comb begin
+    case(opsum_glb_write_addr_o[1])
+        1'b0: opsum_glb_write_type_o = 1'b0; // load lower 16 bits
+        1'b1: opsum_glb_write_type_o = 1'b1; // load higher 16 bits
+        default: opsum_glb_write_type_o = 1'b0;
+    endcase
 end
 
 always_comb begin
