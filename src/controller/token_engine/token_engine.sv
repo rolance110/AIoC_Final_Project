@@ -137,7 +137,7 @@ logic        glb_read_req;
 logic        glb_write_req;
 
 
-
+logic pe_array_move;
 
 
 weight_load_controller weight_load_controller_dut(
@@ -167,6 +167,8 @@ pe_array_controller pe_array_controller(
     .ifmap_fifo_pop_matrix_i(ifmap_fifo_pop_matrix_o),
     .ipsum_fifo_pop_matrix_i(ipsum_fifo_pop_matrix_o),
     .opsum_fifo_push_matrix_i(opsum_fifo_push_matrix_o),
+
+    .pe_array_move_i(pe_array_move), // PE array move enable
 
 //* output
     .PE_stall_matrix_o(PE_stall_matrix_o),
@@ -245,6 +247,7 @@ logic [31:0] ifmap_pop_num_pre_matrix [31:0];
 logic [31:0] ipsum_need_pop_pre_matrix;
 logic [31:0] ipsum_pop_num_pre_matrix [31:0];
 
+logic after_preheat_opsum_push_one;
 L2C_preheat #(
     .NUM_IFMAP_FIFO(32)
 ) L2C_preheat_dut (
@@ -255,10 +258,14 @@ L2C_preheat #(
     .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix),
     .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix),
 
+
+
     .ifmap_need_pop_o(ifmap_need_pop_pre_matrix),
     .ifmap_pop_num_o(ifmap_pop_num_pre_matrix),
     .ipsum_need_pop_o(ipsum_need_pop_pre_matrix),
     .ipsum_pop_num_o(ipsum_pop_num_pre_matrix),
+
+    .after_preheat_opsum_push_one_o(after_preheat_opsum_push_one), // 只要有一個 opsum FIFO 可以 push，就會觸發
     .preheat_done_o(preheat_done)
 
 );
@@ -283,7 +290,7 @@ L2C_normal_loop L2C_normal_loop(
 
 //* Tile Infomation
     .tile_n_i(tile_n_i), // tile 的數量
-
+    .On_real_i(On_real_i), // 實際要啟用的 opsum FIFO 數量
 //* FIFO Done
     .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix), // 每個 ifmap FIFO 是否完成
     .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix), // 每個 ipsum FIFO 是否完成
@@ -311,10 +318,35 @@ assign ipsum_pop_num_matrix = preheat_state? ipsum_pop_num_pre_matrix: ipsum_pop
 assign opsum_need_push_matrix = opsum_need_push_nor_matrix;
 assign opsum_push_num_matrix = opsum_push_num_nor_matrix;
 
-logic [31:0] opsum_fifo_push_mask;
+logic [31:0] ipsum_fifo_mask;
+logic [31:0] opsum_fifo_mask;
 
 
-opsum_fifo_mask opsum_fifo_mask(
+
+ipsum_fifo_mask u_ipsum_fifo_mask(
+    .clk(clk),
+    .rst_n(rst_n),
+
+
+    .layer_type_i(layer_type_i), // 0: conv, 1: fc
+    // 控制訊號
+    .ipsum_fifo_reset_i(ipsum_fifo_reset_o),
+    .preheat_state_i(preheat_state),
+    .preheat_done_i(preheat_done), // preheat 結束後 opsum 會已經 push 一次
+    .normal_loop_state_i(normal_loop_state),
+    
+    // 參數：實際要啟用的 FIFO 數量 (0～32)
+    .OC_real_i(OC_real_i),
+    // ifmap_fifo_pop 事件，只要任一位有 pop 則視為「pop 一次」
+    .ifmap_fifo_pop_matrix_i(ifmap_fifo_pop_matrix_o),
+    
+    // 最終哪幾個 ipsum_fifo 可以 push
+    .ipsum_fifo_mask_o(ipsum_fifo_mask)
+);
+
+
+
+opsum_fifo_mask u_opsum_fifo_mask(
     .clk(clk),
     .rst_n(rst_n),
 
@@ -322,7 +354,11 @@ opsum_fifo_mask opsum_fifo_mask(
     .layer_type_i(layer_type_i), // 0: conv, 1: fc
     // 控制訊號
     .opsum_fifo_reset_i(opsum_fifo_reset_o),
+    .preheat_done_i(preheat_done), // preheat 結束後 opsum 會已經 push 一次
     .normal_loop_state_i(normal_loop_state),
+
+    .after_preheat_opsum_push_one_i(after_preheat_opsum_push_one), // 只要有一個 opsum FIFO 可以 push，就會觸發
+
 
     // 參數：實際要啟用的 FIFO 數量 (0～32)
     .OC_real_i(OC_real_i),
@@ -330,7 +366,7 @@ opsum_fifo_mask opsum_fifo_mask(
     .ifmap_fifo_pop_matrix_i(ifmap_fifo_pop_matrix_o),
 
     // 最終哪幾個 opsum_fifo 可以 push
-    .opsum_fifo_push_mask_o(opsum_fifo_push_mask)
+    .opsum_fifo_mask_o(opsum_fifo_mask)
 );
 
 logic [31:0] opsum_write_data_matrix [31:0]; // opsum FIFO pop data to GLB write data
@@ -351,9 +387,11 @@ L3C_fifo_ctrl #(
 //* busy
     .fifo_glb_busy_i(glb_read_req || glb_write_req), //fixme FIFO <=> GLB 是否忙碌
 
-// todo: opsum_fifo_push_mask
-    .opsum_fifo_push_mask_i(opsum_fifo_push_mask), // todo: opsum FIFO enable mask, 1: enable, 0: disable
-
+// todo: mask
+    .preheat_state_i(preheat_state), // todo: preheat state
+    .ipsum_fifo_mask_i(ipsum_fifo_mask), // todo: ipsum FIFO enable mask, 1: enable, 0: disable
+    .opsum_fifo_mask_i(opsum_fifo_mask), // todo: opsum FIFO enable mask, 1: enable, 0: disable
+    .after_preheat_opsum_push_one_i(after_preheat_opsum_push_one), // 只要有一個 opsum FIFO 可以 push，就會觸發
 // L2 need 
     .ifmap_need_pop_matrix_i(ifmap_need_pop_matrix),
     .ifmap_pop_num_matrix_i(ifmap_pop_num_matrix),
@@ -422,7 +460,9 @@ L3C_fifo_ctrl #(
 // done
     .ifmap_fifo_done_matrix_o(ifmap_fifo_done_matrix),
     .ipsum_fifo_done_matrix_o(ipsum_fifo_done_matrix),
-    .opsum_fifo_done_matrix_o(opsum_fifo_done_matrix)
+    .opsum_fifo_done_matrix_o(opsum_fifo_done_matrix),
+
+    .pe_array_move_o(pe_array_move) // PE array move enable
 );
 
 token_arbiter token_arbiter_dut (

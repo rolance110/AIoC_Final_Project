@@ -10,6 +10,8 @@
 ../src/controller/token_engine/L2C_init_fifo_pe.sv
 ../src/controller/token_engine/L2C_preheat.sv
 ../src/controller/token_engine/L2C_normal_loop.sv
+../src/controller/token_engine/ipsum_fifo_mask.sv
+
 ../src/controller/token_engine/opsum_fifo_mask.sv
 ../src/controller/token_engine/L3C_fifo_ctrl.sv
 ../src/controller/token_engine/token_arbiter.sv

@@ -35,8 +35,8 @@ module pe (
             ifmap_out <= 8'd0;
         else if (PE_stall)
             ifmap_out <= ifmap;
-        else
-            ifmap_out <= 8'd0;
+        // else
+        //     ifmap_out <= 8'd0;
     end
 
 

@@ -72,6 +72,13 @@ module ifmap_fifo #(
         else if (pop_en && !empty)
             data_out_reg <= mem[rd_ptr];
     end
+    // always_comb begin
+    //     if (pop_en && !empty)
+    //         data_out_reg = mem[rd_ptr];
+    //     else
+    //         data_out_reg = 7'd0; // Reset output if not popping
+    // end
+
 
     // todo Count update // 1 2 3 4 
     // Count: The number of valid entries in the FIFO
@@ -86,7 +93,7 @@ module ifmap_fifo #(
             if(push_mod == 1'b0 && !full)
                 count <= count + 3'd1; // Increment count for single push
             else if(push_mod == 1'b1 && empty)
-                count <= 3'd4;
+                count <= 3'd4; // 1 time 4 data
         end
         else if(pop_en && !empty)
             count <= count - 3'd1;

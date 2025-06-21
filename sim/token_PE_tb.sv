@@ -108,7 +108,7 @@ logic [31:0] write_data;
         .rst_n(rst_n),
         .WEB(glb_web_o), // 假設寫使能為全 0
         .addr(glb_addr_o), // 使用地址的高 14 位
-        .write_data(write_data),
+        .write_data(glb_write_data_o),
         .read_data(glb_read_data_i)
     );
 
@@ -224,7 +224,7 @@ logic [31:0] write_data;
         bias_GLB_base_addr_i = 32'h0;
         opsum_GLB_base_addr_i = 32'h0;
         is_bias_i = 0;
-        tile_n_i = 32'd20;
+        tile_n_i = 32'd50;
         in_C_i = 8'd224;
         in_R_i = 8'd224;
         pad_R_i = 2'd0;
@@ -233,7 +233,7 @@ logic [31:0] write_data;
         out_R_i = 8'd224;
         IC_real_i = 8'd32;
         OC_real_i = 8'd32;
-        On_real_i = 32'd20;
+        On_real_i = 32'd50;
         // glb_read_data_i = 32'd0;// read from SRAM
         ipsum_read_en = 0;
         ipsum_add_en = 0;

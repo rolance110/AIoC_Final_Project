@@ -35,6 +35,11 @@ module ifmap_fifo_ctrl (
     output logic        ifmap_read_req_o,
     output logic [31:0] ifmap_glb_read_addr_o,
 
+
+    //* for PE array move 
+    output logic  ifmap_is_POP_state_o,
+    input logic pe_array_move_i, // PE array move enable
+
     // 完成訊號
     output logic        ifmap_fifo_done_o
 );
@@ -45,14 +50,14 @@ logic [31:0] pop_num_buf;
     
 typedef enum logic [1:0] {
     IDLE,
-    POP,
+    CAN_POP,
     PUSH,
     WAIT
 } state_t;
 
 state_t if_cs, if_ns;
 logic [15:0] read_ptr;
-logic [4:0]  pop_cnt;
+logic [31:0]  pop_cnt;
 logic        refill_mode;
 
 // 狀態記憶
@@ -68,13 +73,13 @@ always_comb begin
     unique case (if_cs)
         IDLE: begin
             if (ifmap_need_pop_i && !ifmap_fifo_empty_i)
-                if_ns = POP;
+                if_ns = CAN_POP;
             else if (ifmap_need_pop_i)
                 if_ns = PUSH;
             else
                 if_ns = IDLE;
         end
-        POP: begin
+        CAN_POP: begin
             if (ifmap_fifo_empty_i)
                 if_ns = PUSH;
             else if (pop_cnt == (pop_num_buf-31'd1))
@@ -82,19 +87,19 @@ always_comb begin
             else if(fifo_glb_busy_i)
                 if_ns = WAIT;
             else
-                if_ns = POP;
+                if_ns = CAN_POP;
         end
         PUSH: begin
             if(fifo_glb_busy_i && ifmap_fifo_full_i)
                 if_ns = WAIT;
             else if (ifmap_fifo_full_i)
-                if_ns = POP;
+                if_ns = CAN_POP;
             else
                 if_ns = PUSH;
         end
         WAIT: begin
             if (!fifo_glb_busy_i)
-                if_ns = POP;
+                if_ns = CAN_POP;
             else
                 if_ns = WAIT;
         end
@@ -105,7 +110,7 @@ end
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         pop_num_buf <= 31'd0;
-    else if (if_cs == IDLE)
+    else if (ifmap_need_pop_i)
         pop_num_buf <= ifmap_pop_num_i;
 end
 
@@ -124,7 +129,7 @@ logic [2:0] req_cnt;
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         req_cnt <= 3'd0;
-    else if (if_cs == IDLE || if_cs == POP)
+    else if (if_cs == IDLE || if_cs == CAN_POP)
         req_cnt <= 3'd0; // Reset request count in IDLE state
     else if (ifmap_permit_push_i)
         req_cnt <= req_cnt + 3'd1; // 0 1 2 3 4 4 4 0 0
@@ -181,18 +186,19 @@ end
 
 assign ifmap_fifo_push_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可自行加 burst 條件）
 
-// POP 控制
-assign ifmap_fifo_pop_o = (if_cs == POP) && !ifmap_fifo_empty_i;
+// CAN_POP 控制
+assign ifmap_fifo_pop_o = (if_cs == CAN_POP) && !ifmap_fifo_empty_i && pe_array_move_i;
 
 // pop count 累加
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || if_cs == IDLE)
         pop_cnt <= 5'd0;
     else if (ifmap_fifo_pop_o)
-        pop_cnt <= pop_cnt + 5'd1;
+        pop_cnt <= pop_cnt + 32'd1;
 end
 
 // 完成條件
 assign ifmap_fifo_done_o = (if_cs == IDLE);
+assign ifmap_is_POP_state_o = (if_cs == CAN_POP);
 
 endmodule

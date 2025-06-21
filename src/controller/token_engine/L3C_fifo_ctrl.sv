@@ -13,8 +13,12 @@ module L3C_fifo_ctrl #(
     input  logic        ipsum_fifo_reset_i,
     input  logic        opsum_fifo_reset_i,
 
-    // todo: opsum_fifo_push_mask
-    input logic [31:0] opsum_fifo_push_mask_i,
+    // todo: fifo_mask
+    input preheat_state_i,
+    input logic [31:0] ipsum_fifo_mask_i, // ipsum FIFO mask
+
+    input logic [31:0] opsum_fifo_mask_i,
+    input logic after_preheat_opsum_push_one_i, // 只要有一個 opsum FIFO 可以 push，就會觸發
 
     // L2 Needs (Pop Requests)
     input  logic [31:0] ifmap_need_pop_matrix_i,
@@ -80,8 +84,29 @@ module L3C_fifo_ctrl #(
     // Done Signals
     output logic [31:0] ifmap_fifo_done_matrix_o,
     output logic [31:0] ipsum_fifo_done_matrix_o,
-    output logic [31:0] opsum_fifo_done_matrix_o
+    output logic [31:0] opsum_fifo_done_matrix_o,
+
+    //* pe array move enable
+    output logic pe_array_move_o
 );
+
+logic [31:0] ifmap_is_POP_state_matrix;
+logic [31:0] ipsum_is_POP_state_matrix;
+logic [31:0] opsum_is_PUSH_state_matrix;
+
+assign ifmap_fifo_ready = &((ifmap_is_POP_state_matrix & ~ifmap_fifo_empty_matrix_i) | ifmap_fifo_done_matrix_o); // bound with ifmap_fifo_pop_matrix_o
+assign ipsum_fifo_ready = &((ipsum_is_POP_state_matrix & ~ipsum_fifo_empty_matrix_i) | ipsum_fifo_done_matrix_o); // bound with ipsum_fifo_pop_matrix_o
+assign opsum_fifo_ready = &((opsum_is_PUSH_state_matrix & ~opsum_fifo_full_matrix_i) | opsum_fifo_done_matrix_o); // bound with opsum_fifo_push_matrix_o
+
+assign pe_array_move_o = ifmap_fifo_ready & ipsum_fifo_ready & opsum_fifo_ready; // PE array move enable
+
+// logic pe_array_move_i;
+// assign pe_array_move_i = &ifmap_fifo_pop_matrix_o ; // bound with ifmap_fifo_pop_matrix_o
+// // assign pe_array_move_i = 
+// //     & (ipsum_fifo_pop_matrix_o | ipsum_fifo_done_matrix_o);
+
+
+
 
 genvar i;
 generate
@@ -111,6 +136,10 @@ generate
             // Arbiter
             .ifmap_read_req_o(ifmap_read_req_matrix_o[i]),
             .ifmap_glb_read_addr_o(ifmap_glb_read_addr_matrix_o[i]),
+            //* for PE array move
+            .ifmap_is_POP_state_o(ifmap_is_POP_state_matrix[i]),
+            .pe_array_move_i(preheat_state_i | pe_array_move_o), // PE array move enable
+            
             // to L2C Task done signal
             .ifmap_fifo_done_o(ifmap_fifo_done_matrix_o[i])
             );
@@ -129,6 +158,9 @@ generate
             .ipsum_fifo_reset_i(ipsum_fifo_reset_i), // Reset FIFO
             .ipsum_need_pop_i(ipsum_need_pop_matrix_i[i]),   // 新任務觸發
             .ipsum_pop_num_i(ipsum_pop_num_matrix_i[i]),    // 本次需 pop 幾次
+            .ipsum_fifo_mask_i(ipsum_fifo_mask_i[i]), // fixme
+
+            
             // From Arbiter
             .ipsum_permit_push_i(ipsum_permit_push_matrix_i[i]),
             // FIFO state
@@ -146,14 +178,15 @@ generate
             // Arbiter
             .ipsum_read_req_o(ipsum_read_req_matrix_o[i]),
             .ipsum_glb_read_addr_o(ipsum_glb_read_addr_matrix_o[i]),
+            //* for PE array move
+            .ipsum_is_POP_state_o(ipsum_is_POP_state_matrix[i]),
+            .pe_array_move_i(preheat_state_i | pe_array_move_o), // PE array move enable
+            
             // to L2C Task done signal
             .ipsum_fifo_done_o(ipsum_fifo_done_matrix_o[i])
             );
     end
 endgenerate
-
-logic pe_array_move_i;
-assign pe_array_move_i = &ifmap_fifo_pop_matrix_o; // bound with ifmap_fifo_pop_matrix_o
 
 
 generate
@@ -168,9 +201,12 @@ generate
             .opsum_need_push_i(opsum_need_push_matrix_i[i]),
             .opsum_push_num_i(opsum_push_num_matrix_i[i]),
 
-            .opsum_fifo_push_mask_i(opsum_fifo_push_mask_i[i]), // fixme
-            .pe_array_move_i(pe_array_move_i), // fixme
-
+            .opsum_fifo_mask_i(opsum_fifo_mask_i[i]), // fixme
+            
+            //* for pe array move
+            .opsum_is_PUSH_state_o(opsum_is_PUSH_state_matrix[i]),
+            .pe_array_move_i(pe_array_move_o), // fixme
+            .after_preheat_opsum_push_one_i(after_preheat_opsum_push_one_i),
             .opsum_permit_pop_i(opsum_permit_pop_matrix_i[i]),
 
             .opsum_fifo_empty_i(opsum_fifo_empty_matrix_i[i]),

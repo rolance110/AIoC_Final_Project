@@ -44,6 +44,8 @@ assign init_fifo_pe_state_o = (L1C_cs == INIT_FIFO_PE);
 assign preheat_state_o     = (L1C_cs == PREHEAT);
 assign normal_loop_state_o = (L1C_cs == NORMAL_LOOP);
 
+
+assign all_row_finish = 1'b1;
 always_comb begin
     case(L1C_cs)
         PASS_IDLE: begin

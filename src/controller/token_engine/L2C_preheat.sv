@@ -18,6 +18,7 @@ module L2C_preheat #(
     output logic [31:0] ipsum_need_pop_o,
     output logic [31:0] ipsum_pop_num_o [31:0],
 
+    output logic after_preheat_opsum_push_one_o, // 只要有一個 opsum FIFO 可以 push，就會觸發
 
     output logic preheat_done_o
 );
@@ -64,6 +65,16 @@ module L2C_preheat #(
                 pre_ns = IDLE;
         endcase
     end
+
+
+
+always_comb begin
+    if (pre_cs == DONE) 
+        after_preheat_opsum_push_one_o = 1'b1; // 只要有一個 opsum FIFO 可以 push，就會觸發
+    else 
+        after_preheat_opsum_push_one_o = 1'b0;
+end
+
 
 //========================================================
 // 根據 layer_type 決定每個 FIFO 要 pop 幾次

@@ -12,6 +12,7 @@ module L2C_normal_loop(
 
 //* Tile Infomation
     input logic [31:0] tile_n_i, // tile 的數量
+    input logic [31:0] On_real_i,
 
 //* FIFO Done
     input logic [31:0] ifmap_fifo_done_matrix_i, // 每個 ifmap FIFO 是否完成
@@ -73,6 +74,7 @@ module L2C_normal_loop(
                 nl_ns = IDLE;
         endcase
     end
+assign normal_loop_done_o = (nl_cs == DONE);
 
 //========================================================
 // 根據 layer_type 決定每個 FIFO 要 pop 幾次
@@ -81,7 +83,7 @@ integer i, j;
 always_comb begin
     if (nl_cs == SET_NUM) begin
         for(j = 0; j < 32; j++)begin
-            ifmap_pop_num_matrix_o[j] = 32'd1; // fixme: 代定 
+            ifmap_pop_num_matrix_o[j] = tile_n_i - 32'd1; // fixme: 代定 
         end
     end
     else begin
@@ -95,8 +97,9 @@ end
 integer i1, j1;
 always_comb begin
     if ((nl_cs == SET_NUM)) begin
-        for(j1 = 0; j1 < 32; j1++)begin
-            ipsum_pop_num_matrix_o[j1] = 32'd1;// fixme: 代定
+        ipsum_pop_num_matrix_o[0] = On_real_i - 32'd1;// fixme: 代定
+        for(j1 = 1; j1 < 32; j1++)begin
+            ipsum_pop_num_matrix_o[j1] = On_real_i;// fixme: 代定
         end
     end
     else begin
@@ -110,8 +113,9 @@ end
 integer i2, j2;
 always_comb begin
     if ((nl_cs == SET_NUM)) begin
+        // opsum_push_num_matrix_o[0] = On_real_i - 32'd1;// fixme: 代定
         for(j2 = 0; j2 < 32; j2++)begin
-            opsum_push_num_matrix_o[j2] = 32'd1;// fixme: 代定
+            opsum_push_num_matrix_o[j2] = On_real_i;// fixme: 代定
         end
     end
     else begin
@@ -144,6 +148,5 @@ always_comb begin
         opsum_need_push_matrix_o = 32'b0;
 end
 
-assign preheat_done_o = (nl_cs == DONE);
 
 endmodule

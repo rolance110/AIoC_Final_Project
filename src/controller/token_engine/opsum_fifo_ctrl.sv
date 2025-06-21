@@ -8,9 +8,10 @@ module opsum_fifo_ctrl (
     input  logic        opsum_need_push_i,      // L2 指令：請嘗試 pop 出一筆資料 (FIFO -> arbiter)
     input  logic [31:0] opsum_push_num_i,       // 本次需 push 幾筆資料
 
-    input logic opsum_fifo_push_mask_i, //todo: FIFO enable mask, 1: enable, 0: disable
-    input logic pe_array_move_i,        //todo: PE array move enable, & mask => push_en  
+    input logic opsum_fifo_mask_i, //todo: FIFO enable mask, 1: enable, 0: disable
     
+    input logic after_preheat_opsum_push_one_i,
+
     // Arbiter grant: 你現在可以寫入 GLB
     input  logic        opsum_permit_pop_i,
 
@@ -37,6 +38,9 @@ module opsum_fifo_ctrl (
     output logic [3:0]  opsum_glb_write_web_o,    // 每個位元對應一個 byte 的寫入使能
     output logic [31:0] opsum_glb_write_data_o,    // pop 出的資料
 
+    output logic opsum_is_PUSH_state_o, // opsum 是否處於 PUSH 狀態
+    input logic pe_array_move_i,        //todo: PE array move enable, & mask => push_en  
+
     output logic opsum_fifo_done_o
 );
 
@@ -54,7 +58,7 @@ typedef enum logic [1:0] {
 
 state_t op_cs, op_ns;
 logic [15:0] write_ptr;
-logic [4:0]  push_cnt;
+logic [31:0]  push_cnt;
 
 
 // 狀態記憶
@@ -83,7 +87,7 @@ always_comb begin
                 op_ns = CAN_PUSH;
         end
         POP: begin
-            if((push_cnt == push_num_buf) && opsum_fifo_empty_i)
+            if((push_cnt >= push_num_buf) && opsum_fifo_empty_i) // fixme: PUSH -> POP 會多 push 1 次
                 op_ns = DONE; // push 已經完成，且 fifo 也已經 pop 完畢
             else if (opsum_fifo_empty_i)
                 op_ns = CAN_PUSH;
@@ -139,7 +143,7 @@ end
 
 
 // CAN_PUSH 由外部 module 控制
-assign opsum_fifo_push_o = /*(op_cs == CAN_PUSH) && */opsum_fifo_push_mask_i && pe_array_move_i && !opsum_fifo_full_i;
+assign opsum_fifo_push_o = /*(*/((op_cs == CAN_PUSH) && pe_array_move_i) /*|| ((op_cs == IDLE) && after_preheat_opsum_push_one_i))*/ && opsum_fifo_mask_i && !opsum_fifo_full_i;
 
 logic opsum_glb_write_type_o; // 0: lower 16 bits, 1: higher 16 bits
 
@@ -186,12 +190,13 @@ assign opsum_fifo_pop_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可
 // push count 累加
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || op_cs == IDLE)
-        push_cnt <= 5'd0;
+        push_cnt <= 32'd0;
     else if (opsum_fifo_push_o)
-        push_cnt <= push_cnt + 5'd1;
+        push_cnt <= push_cnt + 32'd1;
 end
 
 // 完成條件
-assign opsum_fifo_done_o = (op_cs == IDLE) && (push_cnt == push_num_buf);
+assign opsum_fifo_done_o = (op_cs == DONE);
 
+assign opsum_is_PUSH_state_o = (op_cs == CAN_PUSH);
 endmodule
