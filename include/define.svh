@@ -3,6 +3,13 @@
 `define DEFINE_LD
 
 
+`define ADDR_WIDTH     32 // GLB 地址寬度
+`define DATA_WIDTH     32 // GLB / PE 資料寬度 (4×8bit Pack or 1×32bit)
+`define BYTE_CNT_WIDTH 16 // pass_tile_n 寬度
+`define FLAG_WIDTH     4  // pass_flags 寬度
+`define IDX_WIDTH      4  // tile 索引 (K, D 方向各自用)
+`define TAG_WIDTH      3  // token_tag 寬度 (0~⌈tile_D/4⌉-1)
+`define FIFO_IDX_WIDTH 3  // 4-Channel Pack index (0~7)
 // Layer Decoder defines
 `define GLB_MAX_BYTES 64*1024 // Maximum number of bytes
 `define BYTES_I 1 // Input feature map bytes

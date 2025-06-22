@@ -10,7 +10,7 @@ module PE_array(
     input [`ROW_NUM*`COL_NUM*8 - 1 : 0] array_weight_in,// ROW1=0~255, ROW2=256~511 ... ROW32=7936~8191
     input [5:0] array_weight_en,//說明啟用幾個ROW
 
-    output logic [`ROW_NUM*16 - 1 : 0] array_opsum
+    output logic signed [`ROW_NUM*16 - 1 : 0] array_opsum
 );
   // --------------------------------------------------
   // 0) TODO 先設定enable signal，決定有幾個ROW會動作
@@ -43,7 +43,7 @@ module PE_array(
   // --------------------------------------------------
   // 2) TODO Instantiate 32×32 PEs, chain ifmap_out → next row ifmap_in
   // --------------------------------------------------
-  logic [15:0] prod_wire [0:`ROW_NUM-1][0:`COL_NUM-1];
+  logic signed [15:0] prod_wire [0:`ROW_NUM-1][0:`COL_NUM-1];
 
   generate
     for (r = 0; r < `ROW_NUM; r = r + 1) begin : ROWS
@@ -77,7 +77,7 @@ module PE_array(
   // 3) TODO 五層 RADDT，將每 row 32 個 prod → 1 個 sum
   // --------------------------------------------------
   // level1: 32→16
-  logic [15:0] sum1 [0:`ROW_NUM-1][0:15];
+  logic signed [15:0] sum1 [0:`ROW_NUM-1][0:15];
   generate
     for (r = 0; r < `ROW_NUM; r = r + 1) begin : L1
       for (c = 0; c < 16; c = c + 1) begin
@@ -87,7 +87,7 @@ module PE_array(
   endgenerate
 
   // level2: 16→8
-  logic [15:0] sum2 [0:`ROW_NUM-1][0:7];
+  logic signed [15:0] sum2 [0:`ROW_NUM-1][0:7];
   generate
     for (r = 0; r < `ROW_NUM; r = r + 1) begin : L2
       for (c = 0; c < 8; c = c + 1) begin
@@ -97,7 +97,7 @@ module PE_array(
   endgenerate
 
   // level3: 8→4
-  logic [15:0] sum3 [0:`ROW_NUM-1][0:3];
+  logic signed [15:0] sum3 [0:`ROW_NUM-1][0:3];
   generate
     for (r = 0; r < `ROW_NUM; r = r + 1) begin : L3
       for (c = 0; c < 4; c = c + 1) begin
@@ -107,7 +107,7 @@ module PE_array(
   endgenerate
 
   // level4: 4→2
-  logic [15:0] sum4 [0:`ROW_NUM-1][0:1];
+  logic signed [15:0] sum4 [0:`ROW_NUM-1][0:1];
   generate
     for (r = 0; r < `ROW_NUM; r = r + 1) begin : L4
       assign sum4[r][0] = sum3[r][0] + sum3[r][1];
@@ -118,7 +118,7 @@ module PE_array(
   // level5: 2→1 & pack
   generate
     for (r = 0; r < `ROW_NUM; r = r + 1) begin : L5
-      wire [15:0] row_sum = sum4[r][0] + sum4[r][1];
+      wire signed[15:0] row_sum = sum4[r][0] + sum4[r][1];
       assign array_opsum[r*16 +: 16] = row_sum;
     end
   endgenerate

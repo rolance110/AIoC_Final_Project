@@ -21,10 +21,10 @@ module Opsum_buffer(
     input [1:0] dw_out_times,//輸出幾筆opsum
 
     input store_opsum_f,//告知存計算結果
-    input [`ROW_NUM*16 - 1:0] opsum_in,//from Reducer
+    input signed [`ROW_NUM*16 - 1:0] opsum_in,//from Reducer
     input [5:0] row_en,
 
-    output logic [`ROW_NUM-1:0] opsum_out//send to GLB
+    output logic signed [`ROW_NUM-1:0] opsum_out//send to GLB
 );
 
   // 32 independent 4-deep, 16-bit FIFOs

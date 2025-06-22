@@ -25,6 +25,7 @@ always @(posedge CK) begin
         // 使用 bit-wise 遮罩進行選擇性寫入
         mem[W_ADDR] <= (mem[W_ADDR] & BWEB) | (D_IN & ~BWEB);
     end
+
 end
 
 // 讀取邏輯
@@ -32,7 +33,7 @@ always @(posedge CK) begin
     if (RE && CS && WEB)
         D_OUT <= mem[R_ADDR];
     else
-        D_OUT <= 32'hzzzzzzzz;
+        D_OUT <= 32'h0;
 end
 
 endmodule

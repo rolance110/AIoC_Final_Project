@@ -8,7 +8,7 @@ module conv_unit(
     //from GLB
     input [31:0] data_in,
     //to GLB
-    output logic [31:0] data_out,
+    output logic signed [31:0] data_out,
     //handshake(ifmap, weight, ipsum, opsum)
     output logic ready_w,
     output logic ready_if,
@@ -50,7 +50,8 @@ assign ipsum_load_time = (row_en << 1) - 7'd1;//一個ROW需要2個cycle才能�
 assign opsum_load_time = (row_en << 1) - 7'd1;//一個ROW需要2個cycle才能全部送回GLB(因為一筆ipsum = 16 bit)
 
 // TODO: 用來連接給各個module的data_input
-wire [31:0] weight_in, ifmap_in, ipsum_in, opsum2GLB;
+wire [31:0] weight_in, ifmap_in, ipsum_in;
+wire signed [31:0] opsum2GLB;
 assign weight_in = (cs == WEIGHT_LOAD) ? data_in : 32'd0;
 assign ifmap_in = (cs == IFMAP_LOAD) ? data_in : 32'd0;
 assign ipsum_in = (cs == IPSUM_LOAD) ? data_in : 32'd0;
@@ -628,7 +629,7 @@ Ipsum_buffer Ipsum_buffer(
 //opsum buffer
 //TODO: 因為進入cs = compute，下一個cycle ipsum才會在reducer跟prod做累加
 // 所以store_opsum_f 也需要配合在compute的下一個cycle開始儲存opsum
-logic [511:0] reducer2opsum;
+logic signed [511:0] reducer2opsum;
 logic store_opsum_f;
 
 always_ff @(posedge clk) begin
@@ -695,7 +696,7 @@ Opsum_buffer Opsum_buffer(
 //TODO: 增加DW的pass功能，讓他可以把所有ifmap擺定位再開始動作
 //可能需要改成三個ROW為一組的prod_out_en，因為在conv的時候，第一次都會需要等待他三個cycle就定位才能輸出
 wire prod_out_en;
-wire [511:0] array_opsum;
+wire signed [511:0] array_opsum;
 logic pe_pass_if;//哪幾個ROW要pass不做運算
 
 always_comb begin

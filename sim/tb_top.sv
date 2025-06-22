@@ -50,6 +50,7 @@ logic [`DATA_WIDTH-1:0] glb_write_data;
 logic                   glb_write_valid;
 logic                   WEB;
 logic [31:0]            BWEB;
+logic pass_done;
   /* ──────────────────────────────────────────────
    * 5. DUT 例化
    * ──────────────────────────────────────────── */
@@ -86,7 +87,8 @@ logic [31:0]            BWEB;
     // .tile_K_out(tile_K_out),   // Token Engine ↔ PE
     .in_C             (in_C),
     .in_R             (in_R),
-    .stride           (stride)
+    .stride           (stride),
+    .pass_done(pass_done)
   );
 
   /* ──────────────────────────────────────────────
@@ -114,33 +116,40 @@ initial begin
     /* === Default === */
     rst = 1;
 
-    pass_layer_type = 0;
+    pass_layer_type = 0;//0=pw, 1=dw
     #10
-    PASS_START = 1;
-    pass_tile_n = 400; // 一次 DRAM→GLB 要搬入的 Ifmap bytes 總數
-    pass_flags = 0; // Flags 控制：bit[0]=bias_en, bit[1]=relu_en, bit[2]=skip_en, …
+    PASS_START  = 1;
+    pass_tile_n = 32'd168; // 一次 DRAM→GLB 要搬入的 Ifmap bytes 總數
+    pass_flags  = 0; // Flags 控制：bit[0]=bias_en, bit[1]=relu_en, bit[2]=skip_en, …
     BASE_WEIGHT = 0; // GLB 中「此層 Weight 資料」的起始位址
-    BASE_IFMAP = 1023; // GLB 中「此層 Ifmap 資料」的起始位址
-    BASE_BIAS = 13824; // GLB 中「此層 Bias 資料」的起始位址
-    BASE_OPSUM = 15000; // GLB 中「此層 PSUM (Partial/Final) 資料」的起始位址
+    BASE_IFMAP  = 1024; // GLB 中「此層 Ifmap 資料」的起始位址
+    BASE_BIAS   = 13824; // GLB 中「此層 Bias 資料」的起始位址
+    BASE_OPSUM  = 15000; // GLB 中「此層 PSUM (Partial/Final) 資料」的起始位址
     out_C = 112;
     out_R = 112;
-    glb_read_valid = 1; // GLB 回應：「此筆 glb_read_data 有效」
+    glb_read_valid  = 1; // GLB 回應：「此筆 glb_read_data 有效」
     glb_write_ready = 1;
     tile_K_o = 32;
-    tile_D = 32;
+    tile_D   = 32;
     in_C = 112; //輸入特徵圖 Width column
     in_R = 112; //輸入特徵圖 Height row
     stride = 1; //stride
     /* === Reset deassert === */
     #(`CYCLE * 2) 
     rst = 1'b0;
-
-    #(`CYCLE * 50000)
-    $finish; // 結束模擬
+    wait(pass_done)
     $display("Simulation finished successfully.");
+    $finish; // 結束模擬
 
 end
+initial begin
+    #5000000
+    $display("Simulation finished fail.");
+    $finish; // 結束模擬
+
+end
+
+
 
   MEM32x16384 u_sram (
   .CK(clk),

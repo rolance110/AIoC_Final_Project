@@ -1,17 +1,17 @@
 `define ROW_NUM 32
 
 module Reducer(
-    input [`ROW_NUM*16 - 1:0] array2reducer,
-    input [`ROW_NUM*16 - 1:0] ipsum2reducer,
+    input signed [`ROW_NUM*16 - 1:0] array2reducer,
+    input signed [`ROW_NUM*16 - 1:0] ipsum2reducer,
     input DW_PW_sel,//選擇哪一種做法,  1 = PW mode, 0 = DW mode
 
-    output [`ROW_NUM*16 - 1:0] reducer2opsum
+    output signed [`ROW_NUM*16 - 1:0] reducer2opsum
 );
 
-wire [15:0] prod_in [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
-wire [15:0] ipsum_in [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
-wire [15:0] PW_SUM [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
-wire [15:0] DW_CONV_SUM [9:0]; // 16-bit wide, 10 deep
+wire signed [15:0] prod_in [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
+wire signed [15:0] ipsum_in [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
+wire signed [15:0] PW_SUM [`ROW_NUM-1:0]; // 16-bit wide, `ROW_NUM deep
+wire signed [15:0] DW_CONV_SUM [9:0]; // 16-bit wide, 10 deep
 
 genvar k;
 generate

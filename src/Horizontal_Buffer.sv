@@ -24,40 +24,80 @@ module Horizontal_Buffer(
 // storage for each PE’s weight
 logic [31:0] weight_mem [0:`ROW_NUM-1][0:7];
 logic [2:0] col_cnt;
-logic [5:0] row_cnt;
+logic [4:0] row_cnt;
 logic change_f_reg;
 
 wire [2:0] col_num = col_in[4:2];//最多一個ROW有8筆32bit
 
-wire handshake_f = ready_w && valid_w;
+wire handshake_f0 = (valid_w && ready_w) ? 1'b1 : 1'b0; // handshake signal for writing weights
+
+logic handshake_f;
+always_ff @(posedge clk) begin
+    if(reset) begin
+        handshake_f <= 1'b0;
+    end
+    else if(handshake_f0) begin
+        handshake_f <= 1'b1;
+    end
+end
+
+
+
+
+
+
+
+
+
 
 always_ff @(posedge clk) begin
-    if(reset || (valid_w == 1'd0)) begin
+    if(reset || (ready_w == 1'd0)) begin
        col_cnt <= 3'd0;
-       row_cnt <= 6'd0;
+       row_cnt <= 5'd0;
     end
     else begin
         case(DW_PW_sel)
             1'd0:begin
                 if(handshake_f) begin
                     if(row_cnt == row_en - 6'd1) begin
-                        row_cnt <= 6'd0;
+                        row_cnt <= 5'd0;
                     end
                     else
                         row_cnt <= row_cnt + 6'd1;
                 end
             end
             1'd1: begin
-                if(handshake_f) begin
-                    if(col_cnt == col_num) begin
-                        col_cnt <= 3'd0;
-                        if(row_cnt == row_en - 6'd1)//數量相同就可以歸零
-                            row_cnt <= 6'd0;
-                        else
-                            row_cnt <= row_cnt + 6'd1;//不怕她爆掉，就給他在else的時候清0即可
-                    end
-                    else
+                // if(handshake_f) begin
+                //     if(col_cnt == col_num) begin
+                //         col_cnt <= 3'd0;
+                //         if(row_cnt == row_en - 6'd1) begin//數量相同就可以歸零
+                //             row_cnt <= 5'd0;
+                //         end
+                //         else begin
+                //             row_cnt <= row_cnt + 6'd1;//不怕她爆掉，就給他在else的時候清0即可
+                //         end
+                //     end
+                //     else begin
+                //         col_cnt <= col_cnt + 3'd1;
+                //     end
+                // end
+                // else begin
+                //     col_cnt <= col_cnt;
+                // end
+
+                if(handshake_f && (col_cnt == col_num) && (row_cnt == row_en - 6'd1)) begin
+                    col_cnt <= 3'd0;
+                    row_cnt <= 5'd0;
+                end
+                else if(handshake_f && (col_cnt == col_num)) begin
+                    col_cnt <= 3'd0;
+                    row_cnt <= row_cnt + 6'd1;//不怕她爆掉，就給他在else的時候清0即可
+                end
+                else if(handshake_f) begin
                         col_cnt <= col_cnt + 3'd1;
+                end
+                else begin
+                    col_cnt <= col_cnt;
                 end
             end
         endcase

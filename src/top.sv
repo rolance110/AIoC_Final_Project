@@ -39,6 +39,7 @@ module top(
     input logic [7:0] in_C, //輸入特徵圖 Width column
     input logic [7:0] in_R, //輸入特徵圖 Height row
     input [1:0] stride
+    output logic pass_done
 );
 
     logic   [`DATA_WIDTH-1:0]  pe_psum_data;       // PSUM Buffer pop 出的累加結果
@@ -83,14 +84,16 @@ module top(
     logic [1:0] compute_num8;
     logic [1:0] compute_num9;
 
+    logic DW_PW_sel, dw_stride;
 
-    wire DW_PW_sel = 1'd1; // 假設使用 PW 模
+always_comb begin
+    DW_PW_sel = 1'd1; // 假設使用 PW 模
+    dw_stride = 1'd0;//stride = 1
+end
 
     /* =========================================================
      * 5. Pass Done Flag
      * =======================================================*/
-    logic pass_done;
-
 token_engine token_engine(
     .clk(clk),
     .rst(rst),
@@ -173,7 +176,7 @@ conv_unit conv_unit(
     .row_en(row_en),
     .dw_input_num(compute_num),
     .dw_row_end(change_row),
-    .dw_stride(stride)
+    .dw_stride(dw_stride)
 );
 
 endmodule

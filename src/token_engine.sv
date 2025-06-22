@@ -1,8 +1,8 @@
 //==============================================================================
 // Token Engine – 更新版 (SystemVerilog)
 // 
-//  date: 2025/06/10
-//  version: 未完成padding 
+//  date: 2025/06
+//  version:PWC徹徹底底完成(射精)
 // 
 //==============================================================================
 `include "../include/define.svh"
@@ -36,7 +36,7 @@ module token_engine (
     //==============================================================================
     output logic [`ADDR_WIDTH-1:0] glb_read_addr,      // 要讀取的 GLB 位址 (Ifmap / Weight / Bias)
     output logic                  glb_read_ready,     // 1clk 脈衝：開始一次 GLB Read 交易
-    input                    glb_read_valid,     // GLB 回應：「此筆 glb_read_data 有效」
+    input                     glb_read_valid,     // GLB 回應：「此筆 glb_read_data 有效」
     input   [`DATA_WIDTH-1:0] glb_read_data,      // GLB 回傳的資料 (4×8bit Ifmap/Weight Pack，或 1×Bias)
 
     //==============================================================================
@@ -70,7 +70,7 @@ module token_engine (
     //    – Token Engine 回 pe_psum_ready 表示可 pop 下一筆
     //==============================================================================
     input   [`DATA_WIDTH-1:0] pe_psum_data,       // PSUM Buffer pop 出的累加結果
-    input                    pe_psum_valid,      // PSUM Buffer 回：pe_psum_data 有效
+    input                     pe_psum_valid,      // PSUM Buffer 回：pe_psum_data 有效
     output logic                  pe_psum_ready,      // Token Engine 拉高後，PSUM Buffer 才 pop 出下一筆
     input pe_weight_ready,
     output logic pe_weight_valid,
@@ -145,10 +145,11 @@ module token_engine (
     logic [`DATA_WIDTH-1:0] data_2_pe_reg;
 
     // Counters 數送了幾個
+    logic                  read_bias_cnt;
     logic [5:0]            cnt_bias;          // 已推 Bias 的筆數
     logic [5:0]            cnt_ifmap;         // 已推 Ifmap
     logic [8:0]            cnt_weight;        // 已推 Weight
-    logic [5:0]            cnt_psum;          // 已 pop OPSUM 寫回的筆數
+    logic [6:0]            cnt_psum;          // 已 pop OPSUM 寫回的筆數
 
     logic [`ADDR_WIDTH-1:0] weight_addr;       // Weight 的位址計數器
     logic [`ADDR_WIDTH-1:0] ifmap_addr;        // Ifmap 的位址計數器
@@ -166,7 +167,7 @@ module token_engine (
     logic [8:0] opsum_hsk_cnt;
     logic [8:0] ifmap_hsk_cnt; // for depthwise enable open
     logic [5:0] d_cnt;
-    logic [7:0] n_cnt;
+    logic [9:0] n_cnt;
     logic [5:0] k_cnt;
     logic [7:0] col_en_cnt;
     logic [31:0] channel_base;
@@ -230,8 +231,25 @@ module token_engine (
     logic [31:0] BASE_IFMAP8;
     logic [31:0] BASE_IFMAP9;
 
+
+
+// //---------------------------------------------------
+// // bias_addr 0~31
+// //---------------------------------------------------
+
+logic [31:0] bias_addr0, bias_addr1, bias_addr2, bias_addr3;
+logic [31:0] bias_addr4, bias_addr5, bias_addr6, bias_addr7;
+logic [31:0] bias_addr8, bias_addr9, bias_addr10, bias_addr11;
+logic [31:0] bias_addr12, bias_addr13, bias_addr14, bias_addr15;
+logic [31:0] bias_addr16, bias_addr17, bias_addr18, bias_addr19;
+logic [31:0] bias_addr20, bias_addr21, bias_addr22, bias_addr23;
+logic [31:0] bias_addr24, bias_addr25, bias_addr26, bias_addr27;
+logic [31:0] bias_addr28, bias_addr29, bias_addr30, bias_addr31;
+
+
     logic [31:0] Bias_reg1;
-    logic [31:0] Bias_reg2;
+    // logic [31:0] Bias_reg2;
+        logic first_stride1;
 
 
 
@@ -245,6 +263,17 @@ module token_engine (
     assign BASE_IFMAP7 = BASE_IFMAP + in_c_tile_R * 7;
     assign BASE_IFMAP8 = BASE_IFMAP + in_c_tile_R * 8;
     assign BASE_IFMAP9 = BASE_IFMAP + in_c_tile_R * 9;
+
+
+
+    logic       first;              // 第一次 +1 特殊處理
+//read_bias_cnt
+always_ff @ (posedge clk) begin
+    if(rst) 
+        read_bias_cnt <= 1'b0;
+    else if (glb_read_valid && glb_read_ready)
+        read_bias_cnt <= read_bias_cnt + 1'b1;
+end
 
     //==========================================================================
     //CNT : 數總共送了幾筆，方便轉換狀態
@@ -293,12 +322,17 @@ module token_engine (
             end
         end
         else if (pass_layer_type == `DEPTHWISE) begin
-            if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
-                if (cnt_bias == (2*col_en/3)) begin // 假設每次搬入 32 個 Bias Pack
-                    cnt_bias <= 0; // 重置計數器
-                end 
-                else begin
-                    cnt_bias <= cnt_bias + 1; // 每次搬入 4-Channel Pack (32-bit)
+            if (stride == 2'd1) begin
+                if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
+                    if (first_stride1 && (cnt_bias == (col_en/3 - 1))) begin
+                        cnt_bias <= 0;
+                    end
+                    else if (cnt_bias == ((2*col_en/3) - 1)) begin // 假設每次搬入 32 個 Bias Pack
+                        cnt_bias <= 0; // 重置計數器
+                    end 
+                    else begin
+                        cnt_bias <= cnt_bias + 1; // 每次搬入 4-Channel Pack (32-bit)
+                    end
                 end
             end
         end
@@ -311,7 +345,7 @@ module token_engine (
         end
         else if(pass_layer_type == `POINTWISE) begin
             if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-                if ((cnt_psum == 2*tile_K_o-1) || (cnt_psum == ((cnt_modify + 32'd1) << 3) - 1)) begin 
+                if ((cnt_psum == 4*tile_K_o-1) || (cnt_psum == ((cnt_modify + 32'd1) << 4) - 1)) begin 
                     cnt_psum <= 0; // 重置計數器
                 end 
                 else 
@@ -321,9 +355,12 @@ module token_engine (
         else if (pass_layer_type == `DEPTHWISE) begin
             if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
                 if(stride == 2'd1) begin
-                    if (cnt_psum == (1 + 3*n_cnt)<<1) begin // FIXME: 確認n_cnt是這個?
+                    if (first_stride1 && (cnt_psum == (tile_K_o)-1)) begin 
                         cnt_psum <= 0; // 重置計數器
                     end 
+                    else if ((cnt_psum == (2*tile_K_o)-1)) begin
+                        cnt_psum <= 0; // 重置計數器
+                    end
                     else begin
                         cnt_psum <= cnt_psum + 1; // 每次搬入 4-Channel Pack (32-bit)
                     end
@@ -344,7 +381,7 @@ module token_engine (
         if (rst) begin
             col_en_cnt <= 8'd0;
         end
-        else if (col_en_cnt == col_en) begin
+        else if (col_en_cnt == col_en-1 && pe_ifamp_valid && pe_ifmap_ready) begin
             col_en_cnt <= 8'd0;
         end
         else if (pe_ifamp_valid && pe_ifmap_ready)begin
@@ -359,7 +396,17 @@ module token_engine (
 
     logic [3:0] count;              // 控制遞增模式（最多可支援超過 8 次跳躍）
     logic [1:0] phase;              // 控制 1、2 的輪替
-    logic       first;              // 第一次 +1 特殊處理
+
+
+    always@(posedge clk) begin
+        if(rst) begin
+            first_stride1 <= 1'd1;
+        end else if(change_row) begin
+            first_stride1 <= 1'd1;
+        end else if(current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
+            first_stride1 <= 1'd0;
+        end
+    end
 
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -406,6 +453,19 @@ module token_engine (
     logic enable8;
     logic enable9;
 
+    logic [31:0] bias_data;
+    logic write_opsum_flag;
+    logic close_flag;
+
+    //close_flag
+    always_ff@(posedge clk) begin
+        if(rst)
+            close_flag <= 1'b0;
+        else if(current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready && (cnt_psum == 4*tile_K_o-1) && n_cnt == (pass_tile_n >> 2) - 1) 
+            close_flag <= 1'b1;
+
+    end
+    // logic [31:0] opsum_reg;
 
     assign tile_R = pass_tile_n - 2;
     //hsk 時 +1， 因 hsk cnt 會有歸0的情況，當數到 tile_n * tile_K_o 時，此次tile算完
@@ -431,7 +491,8 @@ module token_engine (
         end
     end
 
-    assign row_en = tile_K_o;
+    // FIXME: 重新確認row_en寫法
+    assign row_en = (pass_layer_type == `POINTWISE) ? tile_K_o : tile_K_o*3;
 
     //can_compute //FIXME: only for depthwise
     always_ff @ (posedge clk) begin
@@ -519,7 +580,7 @@ module token_engine (
                 end
                 
                 S_READ_BIAS: begin
-                    if (glb_read_valid && glb_read_ready) begin
+                    if (read_bias_cnt && glb_read_valid && glb_read_ready) begin
                         next_state = S_WRITE_BIAS;
                     end 
                     else begin
@@ -564,18 +625,21 @@ module token_engine (
 
                 S_WRITE_OPSUM: begin
                     // 將剛 Pop 出來的 OPSUM 寫回 GLB
-                    if (glb_write_valid && glb_write_ready) begin
+                    if (write_opsum_flag && glb_write_valid && glb_write_ready) begin
                         //FIXME: 還沒寫
-                        if (total_opsum_num_cnt == (pass_tile_n * tile_K_o)) begin //整個算完
+                        if (total_opsum_num_cnt == (pass_tile_n * tile_K_o)-1) begin //整個算完
                             next_state = S_PASS_DONE;
                         end
                         else if (cnt_modify == 32'd8) begin
-                            if (((cnt_psum == 2*tile_K_o-1)))
+                            if (close_flag && (cnt_psum == 4*tile_K_o-1)) begin
+                                next_state = S_READ_BIAS;
+                            end
+                            else if (((cnt_psum == 4*tile_K_o-1)))
                                 next_state = S_READ_IFMAP; // FIXME: 這裡的條件要根據實際情況調整
                             else
                                 next_state = S_WAIT_OPSUM; // 繼續等待 OPSUM 
                         end
-                        else if ((cnt_psum == 2*tile_K_o-1) || (cnt_psum == ((cnt_modify + 32'd1) << 3) - 1)) begin
+                        else if ((cnt_psum == 4*tile_K_o-1) || (cnt_psum == ((cnt_modify + 32'd1) << 4) - 1)) begin
                             next_state = S_READ_IFMAP; // FIXME: 這裡的條件要根據實際情況調整
                         end
                         else begin
@@ -620,7 +684,7 @@ module token_engine (
 
                 //FIXME:
                 S_WRITE_WEIGHT: begin
-                    if (cnt_weight == 6'd30 && pe_weight_ready && pe_weight_valid) begin // FIXME: check 32?
+                    if (cnt_weight == (tile_K_o*3-1) && pe_weight_ready && pe_weight_valid) begin // FIXME: check 32?
                         next_state = S_READ_IFMAP;
                     end 
                     else if(pe_weight_ready && pe_weight_valid) begin
@@ -642,7 +706,7 @@ module token_engine (
 
                 //FIXME:可能改
                 S_WRITE_IFMAP: begin
-                    if (col_en_cnt == col_en) begin
+                    if (col_en_cnt == col_en-1) begin
                         if (can_compute) begin  //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
                             next_state = S_READ_BIAS;
                         end 
@@ -659,7 +723,7 @@ module token_engine (
                 end
                 
                 S_READ_BIAS: begin
-                    if (glb_read_valid && glb_read_ready) begin
+                    if (read_bias_cnt && glb_read_valid && glb_read_ready) begin
                         next_state = S_WRITE_BIAS;
                     end 
                     else begin
@@ -671,7 +735,19 @@ module token_engine (
                 //FIXME:可能改
                 S_WRITE_BIAS: begin
                     if(stride == 2'd1) begin
-                        if ((cnt_bias == 2*(tile_K_o-1)) && pe_bias_valid && pe_bias_ready) begin 
+                        if (first_stride1) begin
+                            if ((cnt_bias == (tile_K_o)-1) && pe_bias_valid && pe_bias_ready) begin
+                                next_state = S_WAIT_OPSUM;
+                            end
+                            else if (pe_bias_valid && pe_bias_ready) begin
+                                next_state = S_READ_BIAS;
+                            end 
+                            else begin
+                                next_state = S_WRITE_BIAS;
+                            end
+                        end
+                        
+                        else if ((cnt_bias == 2*(tile_K_o)-1) && pe_bias_valid && pe_bias_ready) begin 
                             next_state = S_WAIT_OPSUM;
                         end 
                         else if (pe_bias_valid && pe_bias_ready) begin
@@ -702,22 +778,39 @@ module token_engine (
                         next_state = S_WAIT_OPSUM;
                     end
                 end
-
+                
                 S_WRITE_OPSUM: begin
                     if (glb_write_valid && glb_write_ready) begin
-                        if (total_opsum_num_cnt == (tile_R * in_C * tile_K_o)) begin //整個算完
+                        if (total_opsum_num_cnt == (tile_R * in_C * tile_K_o)-1) begin //整個算完
                             next_state = S_PASS_DONE;
                         end
-                        else if (cnt_psum == 1+3*n_cnt && stride == 2'd1) begin 
-                            next_state = S_READ_IFMAP; 
+                        else if (stride == 2'd1) begin 
+                            if (first_stride1) begin
+                                if (cnt_psum == (tile_K_o)-1) begin
+                                    next_state = S_READ_IFMAP;
+                                end
+                                else begin
+                                    next_state = S_WAIT_OPSUM;
+                                end 
+                            end
+                            else begin                             
+                                if (cnt_psum == (2*tile_K_o)-1) begin
+                                    next_state = S_READ_IFMAP;
+                                end
+                                else begin
+                                    next_state = S_WAIT_OPSUM;
+                                end 
+                            end
                         end
-                        else if(cnt_psum == d2_opsum_num && stride == 2'd2) begin
-                            next_state = S_READ_IFMAP;
-                        end
-                        else begin
-                            next_state = S_WAIT_OPSUM;
-                        end
-                    end 
+                        else if(stride == 2'd2) begin
+                            if (cnt_psum == d2_opsum_num) begin
+                                next_state = S_READ_IFMAP;
+                            end
+                            else begin
+                                next_state = S_WAIT_OPSUM;
+                            end
+                        end 
+                    end
                     else begin
                         next_state = S_WRITE_OPSUM;
                     end
@@ -742,23 +835,67 @@ module token_engine (
         end
     end
 
+
+logic read_hsk_reg;
+logic [31:0] data_2_pe;
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        read_hsk_reg <= 1'b0;
+    end
+    else if (glb_read_valid && glb_read_ready) begin
+        read_hsk_reg <= 1'b1; // 當進入讀取狀態時，拉高讀取握手信號
+    end
+    else begin
+        read_hsk_reg <= 1'b0; // 否則清除握手信號
+    end
+end
     //---------- ifmap ----------//
     // todo: save the ifmap data
-    always_comb begin
-        data_2_pe_reg = glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
+    always_ff @ (posedge clk) begin
+        if (read_hsk_reg) begin
+            data_2_pe_reg <= glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
+        end
+
+        else begin
+            data_2_pe_reg <= data_2_pe_reg;
+        end
     end
+
+
+    always_comb begin
+        if (read_hsk_reg) begin
+            data_2_pe = glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
+        end
+
+        else begin
+            data_2_pe = data_2_pe_reg;
+        end
+    end
+
+
 //---------------------------------------------------
 // weight, ifmap, bias, opsum, token 等訊號的 Handshake
 //---------------------------------------------------
 //FIXME: 還沒考慮丟給PPU的部分
-always_comb begin
-    if(current_state == S_WRITE_OPSUM || current_state == S_WAIT_OPSUM) begin
-        glb_write_data = pe_psum_data;
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        glb_write_data <= 32'd0;
     end
-    else begin
-        glb_write_data = 32'd0; // 清除資料
+    else if(current_state == S_WAIT_OPSUM && pe_psum_valid && pe_psum_ready) begin
+        glb_write_data <= pe_psum_data;
     end
 end
+
+//write_opsum_flag
+always_ff @ (posedge clk) begin
+    if(rst) 
+        write_opsum_flag <= 1'b0; 
+    else if (glb_write_valid && glb_write_ready)
+        write_opsum_flag <= write_opsum_flag + 1'b1;
+end
+
+
+
 
 always_comb begin
     if (current_state == S_READ_WEIGHT || current_state == S_READ_IFMAP || current_state == S_READ_BIAS) begin
@@ -776,19 +913,20 @@ end
    8: no padding
 */
 always_comb begin
-    if(current_state == S_WRITE_WEIGHT || current_state == S_WRITE_BIAS) begin
-        token_data = data_2_pe_reg; // 將讀取到的資料送給 PE
+    if(current_state == S_WRITE_WEIGHT) begin
+        token_data = data_2_pe; // 將讀取到的資料送給 PE
     end
+
     else if(current_state == S_WRITE_IFMAP) begin
         case(control_padding)
             4'd0: begin
                 token_data = 32'd0; // 上方 Padding
             end
             4'd1: begin
-                token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 左側 Padding (假設是 4-Channel Pack)
+                token_data = {8'd0, data_2_pe[15:0], 8'd0}; // 左側 Padding (假設是 4-Channel Pack)
             end
             4'd2: begin
-                token_data = {16'd0, data_2_pe_reg[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
+                token_data = {16'd0, data_2_pe[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
             end
             4'd3: begin
                 token_data = 32'd0; // 下方 Padding
@@ -798,7 +936,7 @@ always_comb begin
                     token_data = 32'd0;
                 end
                 else begin
-                    token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 上左 Padding (假設是 4-Channel Pack)
+                    token_data = {8'd0, data_2_pe[15:0], 8'd0}; // 上左 Padding (假設是 4-Channel Pack)
                 end
             end
             4'd5: begin
@@ -806,7 +944,7 @@ always_comb begin
                     token_data = 32'd0;
                 end
                 else begin
-                    token_data = {16'd0, data_2_pe_reg[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
+                    token_data = {16'd0, data_2_pe[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
                 end
             end
             4'd6: begin
@@ -814,7 +952,7 @@ always_comb begin
                     token_data = 32'd0;
                 end
                 else begin
-                    token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 下左 Padding (假設是 4-Channel Pack)
+                    token_data = {8'd0, data_2_pe[15:0], 8'd0}; // 下左 Padding (假設是 4-Channel Pack)
                 end
             end
             4'd7: begin
@@ -822,21 +960,61 @@ always_comb begin
                     token_data = 32'd0;
                 end
                 else begin
-                    token_data = {16'd0, data_2_pe_reg[15:0]}; // 下右 Padding (假設是 4-Channel Pack)
+                    token_data = {16'd0, data_2_pe[15:0]}; // 下右 Padding (假設是 4-Channel Pack)
                 end
             end
             4'd8: begin
-                token_data = data_2_pe_reg;
+                token_data = data_2_pe;
             end
 
             default: begin
-                token_data = data_2_pe_reg; // 預設情況下，將資料送給 PE
+                token_data = data_2_pe; // 預設情況下，將資料送給 PE
             end
 
         endcase
     end
+    //FIXME:
+    else if (current_state == S_WRITE_BIAS) begin
+        token_data = bias_data;
+    end
+
     else begin
         token_data = 32'd0; // 清除資料
+    end
+end
+
+
+
+
+
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        bias_data <= 32'd0; // when bias en = 0   bias_data is ipsum
+    end
+    else if (current_state == S_READ_BIAS && pass_flags[0]) begin //bias
+        case (bias_addr[1])
+            1'd0: bias_data <= {2{glb_read_data[15:0]}};
+            1'd1: bias_data <= {2{glb_read_data[31:16]}};
+            default : bias_data <= 32'd0;
+        endcase
+    end
+    else if (current_state == S_READ_BIAS && glb_read_valid && glb_read_ready) begin  //ipsum
+        case (bias_addr[1])
+            1'd0: bias_data <= {glb_read_data};
+            1'd1: bias_data <= {glb_read_data[15:0], Bias_reg1[31:16]};
+            default : bias_data <= 32'd0;
+        endcase
+    end
+end
+
+//last glb data
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        Bias_reg1 <= 32'd0;
+    end
+
+    else if (read_bias_cnt == 1'b0) begin
+        Bias_reg1 <= glb_read_data; 
     end
 end
 
@@ -947,13 +1125,13 @@ always_ff@(posedge clk) begin
        d_cnt <= 0; // d_cnt 用於計算 Ifmap 的 Channel Pack 數量
     end 
     else if (pass_layer_type == `POINTWISE) begin
-        if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1) begin
+        if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1 || next_state == S_WAIT_OPSUM) begin
             d_cnt <= 6'd0;
         end
         else if(current_state == S_READ_IFMAP&& (glb_read_ready && glb_read_valid)) begin
             d_cnt <=  d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
         end
-        else if (current_state == S_READ_BIAS && glb_read_ready && glb_read_valid && cnt_bias[0]) begin
+        else if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready  && cnt_bias[0]) begin
             d_cnt <= d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
         end
     end
@@ -1021,11 +1199,13 @@ always_ff@(posedge clk) begin
     end
     //
     else if (pass_layer_type == `POINTWISE) begin
-
-        if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+        if(current_state == S_IDLE) begin
+            n_cnt <= 0;
+        end
+        else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
             //FIXME:
-            if(d_cnt == tile_D-1 && cnt_psum[0])
-                n_cnt <= ((n_cnt << 3) > pass_tile_n) ? 0 : n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+            if(next_state == S_READ_IFMAP)
+                n_cnt <= n_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
         end
     end
 end
@@ -1185,10 +1365,19 @@ always_ff@(posedge clk) begin
     end 
     else if (pass_layer_type == `POINTWISE) begin
         if (current_state == S_WRITE_OPSUM && glb_write_ready && glb_write_valid) begin
-            if(k_cnt == (tile_K_o - 1) || (cnt_modify_cnt == (((cnt_modify + 1) << 3)-1))) begin
+            if (cnt_modify == ((tile_K_o/4))) begin
+                if ((cnt_modify_cnt == (((cnt_modify) << 4)-1))) begin
+                    k_cnt <= 0;
+                end
+                else if (opsum_hsk_cnt[1:0] == 2'b11) begin
+                    k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+                end
+            end
+
+            else if((cnt_modify_cnt == (((cnt_modify + 1) << 4)-1))) begin
                 k_cnt <= 0; // 重置 k_cnt
             end 
-            else if (opsum_hsk_cnt[0]) begin
+            else if (opsum_hsk_cnt[1:0] == 2'b11) begin
                 k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
@@ -1196,12 +1385,40 @@ always_ff@(posedge clk) begin
         //     k_cnt <= k_cnt + 1; 
         // end
     end
+    // else if (pass_layer_type == `DEPTHWISE) begin
+    //     if (first_stride1) begin
+    //         if (k_cnt == (tile_K_o - 1)) begin
+    //             k_cnt <= 0; // 重置 k_cnt
+    //         end 
+    //         else if ((opsum_hsk_cnt[1:0] == 2'b11) && glb_write_ready && glb_write_valid) begin
+    //             k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    //         end
+    //     end
+    //     else begin
+    //         if (k_cnt == (2*tile_K_o - 1)) begin
+    //             k_cnt <= 0; // 重置 k_cnt
+    //         end 
+    //         else if ((opsum_hsk_cnt[1:0] == 2'b11) && glb_write_ready && glb_write_valid) begin
+    //             k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+    //         end
+    //     end
+    // end
     else if (pass_layer_type == `DEPTHWISE) begin
-        if (k_cnt == (tile_K_o - 1)) begin
-            k_cnt <= 0; // 重置 k_cnt
-        end 
-        else if (opsum_hsk_cnt[0] && glb_write_ready && glb_write_valid) begin
-            k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        if (first_stride1) begin
+            if (k_cnt == (tile_K_o - 1)) begin
+                k_cnt <= 0; // 重置 k_cnt
+            end 
+            else if ((opsum_hsk_cnt[0]) && glb_write_ready && glb_write_valid) begin
+                k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+            end
+        end
+        else begin
+            if (k_cnt == (2*tile_K_o - 1)) begin
+                k_cnt <= 0; // 重置 k_cnt
+            end 
+            else if ((opsum_hsk_cnt[0]) && glb_write_ready && glb_write_valid) begin
+                k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+            end
         end
     end
 end
@@ -1253,7 +1470,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable0 <= 1'b0;
     end
-    else if (change_row0) begin
+    else if (change_row) begin
         enable0 <= 1'b0;
     end
     else begin
@@ -1265,10 +1482,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable1 <= 1'b0;
     end
-    else if (change_row1) begin
+    else if (change_row) begin
         enable1 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd3) begin
+    else if (col_en_cnt == 9'd2 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable1 <= 1'b1;
     end
 end
@@ -1277,10 +1494,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable2 <= 1'b0;
     end
-    else if (change_row2) begin
+    else if (change_row) begin
         enable2 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd6) begin
+    else if (col_en_cnt == 9'd5 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable2 <= 1'b1;
     end
 end
@@ -1289,10 +1506,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable3 <= 1'b0;
     end
-    else if (change_row3) begin
+    else if (change_row) begin
         enable3 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd9) begin
+    else if (col_en_cnt == 9'd8 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable3 <= 1'b1;
     end
 end
@@ -1301,10 +1518,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable4 <= 1'b0;
     end
-    else if (change_row4) begin
+    else if (change_row) begin
         enable4 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd12) begin
+    else if (col_en_cnt == 9'd11 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable4 <= 1'b1;
     end
 end
@@ -1313,10 +1530,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable5 <= 1'b0;
     end
-    else if (change_row5) begin
+    else if (change_row) begin
         enable5 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd15) begin
+    else if (col_en_cnt == 9'd14 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable5 <= 1'b1;
     end
 end
@@ -1325,10 +1542,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable6 <= 1'b0;
     end
-    else if (change_row6) begin
+    else if (change_row) begin
         enable6 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd18) begin
+    else if (col_en_cnt == 9'd17 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable6 <= 1'b1;
     end
 end
@@ -1337,10 +1554,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable7 <= 1'b0;
     end
-    else if (change_row7) begin
+    else if (change_row) begin
         enable7 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd21) begin
+    else if (col_en_cnt == 9'd20 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable7 <= 1'b1;
     end
 end
@@ -1349,10 +1566,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable8 <= 1'b0;
     end
-    else if (change_row8) begin
+    else if (change_row) begin
         enable8 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd24) begin
+    else if (col_en_cnt == 9'd23 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable8 <= 1'b1;
     end
 end
@@ -1361,10 +1578,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable9 <= 1'b0;
     end
-    else if (change_row9) begin
+    else if (change_row) begin
         enable9 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd27) begin
+    else if (col_en_cnt == 9'd26 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable9 <= 1'b1;
     end
 end
@@ -1396,7 +1613,7 @@ always_comb begin
 end
 
 always_comb begin
-    change_row = change_row0 && 
+    change_row = /*change_row0 && 
                  change_row1 && 
                  change_row2 && 
                  change_row3 && 
@@ -1404,7 +1621,7 @@ always_comb begin
                  change_row5 && 
                  change_row6 && 
                  change_row7 && 
-                 change_row8 && 
+                 change_row8 && */
                  change_row9;
 end
 
@@ -1584,18 +1801,86 @@ end
 // bias_addr
 always_ff@(posedge clk) begin
     if(rst) begin
-        bias_addr <= 0;
+        bias_addr <= BASE_BIAS;
     end
     else if (pass_layer_type == `POINTWISE) begin
-        if(current_state == S_IDLE) begin
-            bias_addr <= BASE_BIAS;
-        end 
-        else if(~cnt_bias[0] && pe_bias_valid && pe_bias_ready) begin
-            bias_addr <= bias_addr + 4;
+        if(pass_flags[0]) begin //bias
+            if (current_state == S_WAIT_OPSUM) 
+                bias_addr <= BASE_BIAS;
+            else if (cnt_bias[0] == 1'b1 && pe_bias_valid && pe_bias_ready)  // 1次32bits 2個bias 
+                bias_addr <= bias_addr + 4;
         end
-        else if(current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin // FIXME: 檢查hsk次數
-            //FIXME:
-            bias_addr <= BASE_BIAS + (((n_cnt << 1) + channel_base) << 1); // n_cnt 為 4-Channel Pack 的數量///FIXME
+        else begin
+            if(current_state == S_IDLE) begin
+                bias_addr <= BASE_BIAS;
+            end 
+            else begin
+                if (d_cnt == 6'd0)
+                    bias_addr <= bias_addr0;
+                else if (d_cnt == 6'd1)
+                    bias_addr <= bias_addr1;
+                else if (d_cnt == 6'd2)
+                    bias_addr <= bias_addr2;
+                else if (d_cnt == 6'd3)
+                    bias_addr <= bias_addr3;
+                else if (d_cnt == 6'd4)
+                    bias_addr <= bias_addr4;
+                else if (d_cnt == 6'd5)
+                    bias_addr <= bias_addr5;
+                else if (d_cnt == 6'd6)
+                    bias_addr <= bias_addr6;
+                else if (d_cnt == 6'd7)
+                    bias_addr <= bias_addr7;
+                else if (d_cnt == 6'd8)
+                    bias_addr <= bias_addr8;
+                else if (d_cnt == 6'd9)
+                    bias_addr <= bias_addr9;
+                else if (d_cnt == 6'd10)
+                    bias_addr <= bias_addr10;
+                else if (d_cnt == 6'd11)
+                    bias_addr <= bias_addr11;
+                else if (d_cnt == 6'd12)
+                    bias_addr <= bias_addr12;
+                else if (d_cnt == 6'd13)
+                    bias_addr <= bias_addr13;
+                else if (d_cnt == 6'd14)
+                    bias_addr <= bias_addr14;
+                else if (d_cnt == 6'd15)
+                    bias_addr <= bias_addr15;
+                else if (d_cnt == 6'd16)
+                    bias_addr <= bias_addr16;
+                else if (d_cnt == 6'd17)
+                    bias_addr <= bias_addr17;
+                else if (d_cnt == 6'd18)
+                    bias_addr <= bias_addr18;
+                else if (d_cnt == 6'd19)
+                    bias_addr <= bias_addr19;
+                else if (d_cnt == 6'd20)
+                    bias_addr <= bias_addr20;
+                else if (d_cnt == 6'd21)
+                    bias_addr <= bias_addr21;
+                else if (d_cnt == 6'd22)
+                    bias_addr <= bias_addr22;
+                else if (d_cnt == 6'd23)
+                    bias_addr <= bias_addr23;
+                else if (d_cnt == 6'd24)
+                    bias_addr <= bias_addr24;
+                else if (d_cnt == 6'd25)
+                    bias_addr <= bias_addr25;
+                else if (d_cnt == 6'd26)
+                    bias_addr <= bias_addr26;
+                else if (d_cnt == 6'd27)
+                    bias_addr <= bias_addr27;
+                else if (d_cnt == 6'd28)
+                    bias_addr <= bias_addr28;
+                else if (d_cnt == 6'd29)
+                    bias_addr <= bias_addr29;
+                else if (d_cnt == 6'd30)
+                    bias_addr <= bias_addr30;
+                else if (d_cnt == 6'd31)
+                    bias_addr <= bias_addr31;
+
+            end
         end
     end
     else if (pass_layer_type == `DEPTHWISE) begin
@@ -1650,8 +1935,13 @@ always_ff@(posedge clk) begin
     if(rst) begin
         cnt_modify_cnt <= 0;
     end
-    else if(current_state == S_WRITE_OPSUM && glb_write_ready && glb_write_valid) begin
-        cnt_modify_cnt <= (cnt_modify_cnt == (((cnt_modify + 1) << 3)-1)) ? 0 : cnt_modify_cnt + 1; // 每次寫回 OPSUM 都增加計數
+    else if(current_state == S_WRITE_OPSUM && glb_write_ready && glb_write_valid) begin // TODO: 一次送16bit 握4次才加1
+        if (cnt_modify == (tile_K_o/4)) begin
+            cnt_modify_cnt <= (cnt_modify_cnt == (((cnt_modify) << 4)-1)) ? 0 : cnt_modify_cnt + 1; // 每次寫回 OPSUM 都增加計數
+        end
+        else begin
+            cnt_modify_cnt <= (cnt_modify_cnt == (((cnt_modify + 1) << 4)-1)) ? 0 : cnt_modify_cnt + 1; // 每次寫回 OPSUM 都增加計數
+        end
     end
 end
 
@@ -1663,10 +1953,10 @@ always_ff@(posedge clk) begin
     else if(current_state == S_IDLE) begin
         cnt_modify <= 0; // 重置計數器
     end
-    else if (cnt_modify == 4'd8) begin
-        cnt_modify <= 4'd8;
+    else if (cnt_modify == (tile_K_o/4)) begin
+        cnt_modify <= (tile_K_o/4);
     end
-    else if(current_state == S_WRITE_OPSUM && (cnt_modify_cnt == (((cnt_modify + 1) << 3)-1))) begin
+    else if(current_state == S_WRITE_OPSUM && (cnt_modify_cnt == (((cnt_modify + 1) << 4)-1))) begin
         cnt_modify <= cnt_modify + 1; // 每次寫回 OPSUM 都增加計數
     end 
 end
@@ -1710,7 +2000,7 @@ always_ff@(posedge clk) begin
         opsum_addr0 <= BASE_OPSUM;
     end
     else if(k_cnt == 6'd0 && glb_write_ready && glb_write_valid) begin
-        opsum_addr0 <= opsum_addr0 + 32'd4;
+        opsum_addr0 <= opsum_addr0 + 32'd2;
    end
 end
 
@@ -1722,11 +2012,11 @@ always_ff@(posedge clk) begin
         opsum_addr1 <= BASE_OPSUM + pass_tile_n * 2;
     end
     else if(k_cnt == 6'd1 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd0 && opsum_hsk_cnt[0]) begin
-            opsum_addr1 <= opsum_addr1 + 32'd2;
+        if(cnt_modify == 4'd0 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr1 <= opsum_addr1 - 32'd2;
         end 
         else begin
-            opsum_addr1 <= opsum_addr1 + 32'd4;
+            opsum_addr1 <= opsum_addr1 + 32'd2;
         end
     end
 end
@@ -1739,11 +2029,11 @@ always_ff@(posedge clk) begin
         opsum_addr2 <= BASE_OPSUM + (pass_tile_n * 2) * 2;
     end
     else if(k_cnt == 6'd2 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd0 && opsum_hsk_cnt[0]) begin
-            opsum_addr2 <= opsum_addr2;
+        if(cnt_modify == 4'd0 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr2 <= opsum_addr2 - 32'd4;
         end 
         else begin
-            opsum_addr2 <= opsum_addr2 + 32'd4;
+            opsum_addr2 <= opsum_addr2 + 32'd2;
         end
     end
 end
@@ -1756,11 +2046,11 @@ always_ff@(posedge clk) begin
         opsum_addr3 <= BASE_OPSUM + (pass_tile_n * 2) * 3;
     end
     else if(k_cnt == 6'd3 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd0 && opsum_hsk_cnt[0]) begin
-            opsum_addr3 <= opsum_addr3 - 32'd2;
+        if(cnt_modify == 4'd0 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr3 <= opsum_addr3 - 32'd6;
         end 
         else begin
-            opsum_addr3 <= opsum_addr3 + 32'd4;
+            opsum_addr3 <= opsum_addr3 + 32'd2;
         end
     end
 end
@@ -1773,7 +2063,7 @@ always_ff@(posedge clk) begin
         opsum_addr4 <= BASE_OPSUM + (pass_tile_n * 2) * 4;
     end
     else if(k_cnt == 6'd4 && glb_write_ready && glb_write_valid) begin
-        opsum_addr4 <= opsum_addr4 + 32'd4;
+        opsum_addr4 <= opsum_addr4 + 32'd2;
     end
 end
 
@@ -1785,11 +2075,11 @@ always_ff@(posedge clk) begin
         opsum_addr5 <= BASE_OPSUM + (pass_tile_n * 2) * 5;
     end
     else if(k_cnt == 6'd5 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd1 && opsum_hsk_cnt[0]) begin
-            opsum_addr5 <= opsum_addr5 + 32'd2;
+        if(cnt_modify == 4'd1 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr5 <= opsum_addr5 - 32'd2;
         end 
         else begin
-            opsum_addr5 <= opsum_addr5 + 32'd4;
+            opsum_addr5 <= opsum_addr5 + 32'd2;
         end
     end
 end
@@ -1802,11 +2092,11 @@ always_ff@(posedge clk) begin
         opsum_addr6 <= BASE_OPSUM + (pass_tile_n * 2) * 6;
     end
     else if(k_cnt == 6'd6 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd1 && opsum_hsk_cnt[0]) begin
-            opsum_addr6 <= opsum_addr6;
+        if(cnt_modify == 4'd1 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr6 <= opsum_addr6 - 32'd4;
         end 
         else begin
-            opsum_addr6 <= opsum_addr6 + 32'd4;
+            opsum_addr6 <= opsum_addr6 + 32'd2;
         end
     end
 end
@@ -1819,11 +2109,11 @@ always_ff@(posedge clk) begin
         opsum_addr7 <= BASE_OPSUM + (pass_tile_n * 2) * 7;
     end
     else if(k_cnt == 6'd7 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd1 && opsum_hsk_cnt[0]) begin
-            opsum_addr7 <= opsum_addr7 - 32'd2;
+        if(cnt_modify == 4'd1 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr7 <= opsum_addr7 - 32'd6;
         end 
         else begin
-            opsum_addr7 <= opsum_addr7 + 32'd4;
+            opsum_addr7 <= opsum_addr7 + 32'd2;
         end
     end
 end
@@ -1836,7 +2126,7 @@ always_ff@(posedge clk) begin
         opsum_addr8 <= BASE_OPSUM + (pass_tile_n * 2) * 8;
     end
     else if(k_cnt == 6'd8 && glb_write_ready && glb_write_valid) begin
-        opsum_addr8 <= opsum_addr8 + 32'd4;
+        opsum_addr8 <= opsum_addr8 + 32'd2;
     end
 end
 
@@ -1848,11 +2138,11 @@ always_ff@(posedge clk) begin
         opsum_addr9 <= BASE_OPSUM + (pass_tile_n * 2) * 9;
     end
     else if(k_cnt == 6'd9 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd2 && opsum_hsk_cnt[0]) begin
-            opsum_addr9 <= opsum_addr9 + 32'd2;
+        if(cnt_modify == 4'd2 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr9 <= opsum_addr9 - 32'd2;
         end 
         else begin
-            opsum_addr9 <= opsum_addr9 + 32'd4;
+            opsum_addr9 <= opsum_addr9 + 32'd2;
         end
     end
 end
@@ -1865,11 +2155,11 @@ always_ff@(posedge clk) begin
         opsum_addr10 <= BASE_OPSUM + (pass_tile_n * 2) * 10;
     end
     else if(k_cnt == 6'd10 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd2 && opsum_hsk_cnt[0]) begin
-            opsum_addr10 <= opsum_addr10;
+        if(cnt_modify == 4'd2 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr10 <= opsum_addr10 - 32'd4;
         end 
         else begin
-            opsum_addr10 <= opsum_addr10 + 32'd4;
+            opsum_addr10 <= opsum_addr10 + 32'd2;
         end
     end
 end
@@ -1882,11 +2172,11 @@ always_ff@(posedge clk) begin
         opsum_addr11 <= BASE_OPSUM + (pass_tile_n * 2) * 11;
     end
     else if(k_cnt == 6'd11 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd2 && opsum_hsk_cnt[0]) begin
-            opsum_addr11 <= opsum_addr11 - 32'd2;
+        if(cnt_modify == 4'd2 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr11 <= opsum_addr11 - 32'd6;
         end 
         else begin
-            opsum_addr11 <= opsum_addr11 + 32'd4;
+            opsum_addr11 <= opsum_addr11 + 32'd2;
         end
     end
 end
@@ -1899,7 +2189,7 @@ always_ff@(posedge clk) begin
         opsum_addr12 <= BASE_OPSUM + (pass_tile_n * 2) * 12;
     end
     else if(k_cnt == 6'd12 && glb_write_ready && glb_write_valid) begin
-        opsum_addr12 <= opsum_addr12 + 32'd4;
+        opsum_addr12 <= opsum_addr12 + 32'd2;
     end
 end
 
@@ -1911,11 +2201,11 @@ always_ff@(posedge clk) begin
         opsum_addr13 <= BASE_OPSUM + (pass_tile_n * 2) * 13;
     end
     else if(k_cnt == 6'd13 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd3 && opsum_hsk_cnt[0]) begin
-            opsum_addr13 <= opsum_addr13 + 32'd2; 
+        if(cnt_modify == 4'd3 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr13 <= opsum_addr13 - 32'd2; 
         end 
         else begin
-            opsum_addr13 <= opsum_addr13 + 32'd4;
+            opsum_addr13 <= opsum_addr13 + 32'd2;
         end
     end
 end
@@ -1928,11 +2218,11 @@ always_ff@(posedge clk) begin
         opsum_addr14 <= BASE_OPSUM + (pass_tile_n * 2) * 14;
     end
     else if(k_cnt == 6'd14 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd3 && opsum_hsk_cnt[0]) begin
-            opsum_addr14 <= opsum_addr14;
+        if(cnt_modify == 4'd3 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr14 <= opsum_addr14 - 32'd4;
         end 
         else begin
-            opsum_addr14 <= opsum_addr14 + 32'd4;
+            opsum_addr14 <= opsum_addr14 + 32'd2;
         end
     end
 end
@@ -1945,11 +2235,11 @@ always_ff@(posedge clk) begin
         opsum_addr15 <= BASE_OPSUM + (pass_tile_n * 2) * 15;
     end
     else if(k_cnt == 6'd15 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd3 && opsum_hsk_cnt[0]) begin
-            opsum_addr15 <= opsum_addr15 - 32'd2;
+        if(cnt_modify == 4'd3 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr15 <= opsum_addr15 - 32'd6;
         end 
         else begin
-            opsum_addr15 <= opsum_addr15 + 32'd4;
+            opsum_addr15 <= opsum_addr15 + 32'd2;
         end
     end
 end
@@ -1962,7 +2252,7 @@ always_ff@(posedge clk) begin
         opsum_addr16 <= BASE_OPSUM + (pass_tile_n * 2) * 16;
     end
     else if(k_cnt == 6'd16 && glb_write_ready && glb_write_valid) begin
-        opsum_addr16 <= opsum_addr16 + 32'd4;
+        opsum_addr16 <= opsum_addr16 + 32'd2;
     end
 end
 
@@ -1974,11 +2264,11 @@ always_ff@(posedge clk) begin
         opsum_addr17 <= BASE_OPSUM + (pass_tile_n * 2) * 17;
     end
     else if(k_cnt == 6'd17 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd4 && opsum_hsk_cnt[0]) begin
-            opsum_addr17 <= opsum_addr17 + 32'd2;
+        if(cnt_modify == 4'd4 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr17 <= opsum_addr17 - 32'd2;
         end 
         else begin
-            opsum_addr17 <= opsum_addr17 + 32'd4;
+            opsum_addr17 <= opsum_addr17 + 32'd2;
         end
     end
 end
@@ -1991,11 +2281,11 @@ always_ff@(posedge clk) begin
         opsum_addr18 <= BASE_OPSUM + (pass_tile_n * 2) * 18;
     end
     else if(k_cnt == 6'd18 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd4 && opsum_hsk_cnt[0]) begin
-            opsum_addr18 <= opsum_addr18;
+        if(cnt_modify == 4'd4 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr18 <= opsum_addr18 - 32'd4;
         end 
         else begin
-            opsum_addr18 <= opsum_addr18 + 32'd4;
+            opsum_addr18 <= opsum_addr18 + 32'd2;
         end
     end
 end
@@ -2008,11 +2298,11 @@ always_ff@(posedge clk) begin
         opsum_addr19 <= BASE_OPSUM + (pass_tile_n * 2) * 19;
     end
     else if(k_cnt == 6'd19 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd4 && opsum_hsk_cnt[0]) begin
-            opsum_addr19 <= opsum_addr19 - 32'd2;
+        if(cnt_modify == 4'd4 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr19 <= opsum_addr19 - 32'd6;
         end 
         else begin
-            opsum_addr19 <= opsum_addr19 + 32'd4;
+            opsum_addr19 <= opsum_addr19 + 32'd2;
         end
     end
 end 
@@ -2025,7 +2315,7 @@ always_ff@(posedge clk) begin
         opsum_addr20 <= BASE_OPSUM + (pass_tile_n * 2) * 20;
     end
     else if(k_cnt == 6'd20 && glb_write_ready && glb_write_valid) begin
-        opsum_addr20 <= opsum_addr20 + 32'd4;
+        opsum_addr20 <= opsum_addr20 + 32'd2;
     end
 end
 
@@ -2037,11 +2327,11 @@ always_ff@(posedge clk) begin
         opsum_addr21 <= BASE_OPSUM + (pass_tile_n * 2) * 21;
     end
     else if(k_cnt == 6'd21 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd5 && opsum_hsk_cnt[0]) begin
-            opsum_addr21 <= opsum_addr21 + 32'd2;
+        if(cnt_modify == 4'd5 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr21 <= opsum_addr21 - 32'd2;
         end 
         else begin
-            opsum_addr21 <= opsum_addr21 + 32'd4;
+            opsum_addr21 <= opsum_addr21 + 32'd2;
         end
     end
 end
@@ -2054,11 +2344,11 @@ always_ff@(posedge clk) begin
         opsum_addr22 <= BASE_OPSUM + (pass_tile_n * 2) * 22;
     end
     else if(k_cnt == 6'd22 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd5 && opsum_hsk_cnt[0]) begin
-            opsum_addr22 <= opsum_addr22;
+        if(cnt_modify == 4'd5 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr22 <= opsum_addr22 - 32'd4;
         end 
         else begin
-            opsum_addr22 <= opsum_addr22 + 32'd4;
+            opsum_addr22 <= opsum_addr22 + 32'd2;
         end
     end
 end
@@ -2071,11 +2361,11 @@ always_ff@(posedge clk) begin
         opsum_addr23 <= BASE_OPSUM + (pass_tile_n * 2) * 23;
     end
     else if(k_cnt == 6'd23 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd5 && opsum_hsk_cnt[0]) begin
-            opsum_addr23 <= opsum_addr23 - 32'd2;
+        if(cnt_modify == 4'd5 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr23 <= opsum_addr23 - 32'd6;
         end 
         else begin
-            opsum_addr23 <= opsum_addr23 + 32'd4;
+            opsum_addr23 <= opsum_addr23 + 32'd2;
         end
     end
 end
@@ -2088,7 +2378,7 @@ always_ff@(posedge clk) begin
         opsum_addr24 <= BASE_OPSUM + (pass_tile_n * 2) * 24;
     end
     else if(k_cnt == 6'd24 && glb_write_ready && glb_write_valid) begin
-        opsum_addr24 <= opsum_addr24 + 32'd4;
+        opsum_addr24 <= opsum_addr24 + 32'd2;
     end
 end
 
@@ -2100,11 +2390,11 @@ always_ff@(posedge clk) begin
         opsum_addr25 <= BASE_OPSUM + (pass_tile_n * 2) * 25;
     end
     else if(k_cnt == 6'd25 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd6 && opsum_hsk_cnt[0]) begin
-            opsum_addr25 <= opsum_addr25 + 32'd2;
+        if(cnt_modify == 4'd6 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr25 <= opsum_addr25 - 32'd2;
         end 
         else begin
-            opsum_addr25 <= opsum_addr25 + 32'd4;
+            opsum_addr25 <= opsum_addr25 + 32'd2;
         end
     end
 end
@@ -2117,11 +2407,11 @@ always_ff@(posedge clk) begin
         opsum_addr26 <= BASE_OPSUM + (pass_tile_n * 2) * 26;
     end
     else if(k_cnt == 6'd26 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd6 && opsum_hsk_cnt[0]) begin
-            opsum_addr26 <= opsum_addr26;
+        if(cnt_modify == 4'd6 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr26 <= opsum_addr26 - 32'd4;
         end 
         else begin
-            opsum_addr26 <= opsum_addr26 + 32'd4;
+            opsum_addr26 <= opsum_addr26 + 32'd2;
         end
     end
 end
@@ -2134,11 +2424,11 @@ always_ff@(posedge clk) begin
         opsum_addr27 <= BASE_OPSUM + (pass_tile_n * 2) * 27;
     end
     else if(k_cnt == 6'd27 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd6 && opsum_hsk_cnt[0]) begin
-            opsum_addr27 <= opsum_addr27 - 32'd2;
+        if(cnt_modify == 4'd6 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr27 <= opsum_addr27 - 32'd6;
         end 
         else begin
-            opsum_addr27 <= opsum_addr27 + 32'd4;
+            opsum_addr27 <= opsum_addr27 + 32'd2;
         end
     end
 end
@@ -2151,7 +2441,7 @@ always_ff@(posedge clk) begin
         opsum_addr28 <= BASE_OPSUM + (pass_tile_n * 2) * 28;
     end
     else if(k_cnt == 6'd28 && glb_write_ready && glb_write_valid) begin
-        opsum_addr28 <= opsum_addr28 + 32'd4;
+        opsum_addr28 <= opsum_addr28 + 32'd2;
     end
 end
 
@@ -2163,11 +2453,11 @@ always_ff@(posedge clk) begin
         opsum_addr29 <= BASE_OPSUM + (pass_tile_n * 2) * 29;
     end
     else if(k_cnt == 6'd29 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd7 && opsum_hsk_cnt[0]) begin
-            opsum_addr29 <= opsum_addr29 + 32'd2;
+        if(cnt_modify == 4'd7 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr29 <= opsum_addr29 - 32'd2;
         end 
         else begin
-            opsum_addr29 <= opsum_addr29 + 32'd4;
+            opsum_addr29 <= opsum_addr29 + 32'd2;
         end
     end
 end
@@ -2180,11 +2470,11 @@ always_ff@(posedge clk) begin
         opsum_addr30 <= BASE_OPSUM + (pass_tile_n * 2) * 30;
     end
     else if(k_cnt == 6'd30 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd7 && opsum_hsk_cnt[0]) begin
-            opsum_addr30 <= opsum_addr30;
+        if(cnt_modify == 4'd7 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr30 <= opsum_addr30 - 32'd4;
         end 
         else begin
-            opsum_addr30 <= opsum_addr30 + 32'd4;
+            opsum_addr30 <= opsum_addr30 + 32'd2;
         end
     end
 end
@@ -2197,11 +2487,11 @@ always_ff@(posedge clk) begin
         opsum_addr31 <= BASE_OPSUM + (pass_tile_n * 2) * 31;
     end
     else if(k_cnt == 6'd31 && glb_write_ready && glb_write_valid) begin
-        if(cnt_modify == 4'd7 && opsum_hsk_cnt[0]) begin
-            opsum_addr31 <= opsum_addr31 - 32'd2;
+        if(cnt_modify == 4'd7 && (opsum_hsk_cnt[1:0]==2'b11)) begin
+            opsum_addr31 <= opsum_addr31 - 32'd6;
         end 
         else begin
-            opsum_addr31 <= opsum_addr31 + 32'd4;
+            opsum_addr31 <= opsum_addr31 + 32'd2;
         end
     end
 end
@@ -2209,18 +2499,7 @@ end
 
 
 // FIXME: 只有POINTWISE有   不改
-// //---------------------------------------------------
-// // bias_addr 0~31
-// //---------------------------------------------------
 
-logic [31:0] bias_addr0, bias_addr1, bias_addr2, bias_addr3;
-logic [31:0] bias_addr4, bias_addr5, bias_addr6, bias_addr7;
-logic [31:0] bias_addr8, bias_addr9, bias_addr10, bias_addr11;
-logic [31:0] bias_addr12, bias_addr13, bias_addr14, bias_addr15;
-logic [31:0] bias_addr16, bias_addr17, bias_addr18, bias_addr19;
-logic [31:0] bias_addr20, bias_addr21, bias_addr22, bias_addr23;
-logic [31:0] bias_addr24, bias_addr25, bias_addr26, bias_addr27;
-logic [31:0] bias_addr28, bias_addr29, bias_addr30, bias_addr31;
 
 //------------- opsum_addr -------------------//
 always_ff@(posedge clk) begin
@@ -2230,7 +2509,7 @@ always_ff@(posedge clk) begin
     else if(current_state == S_IDLE) begin
         bias_addr0 <= BASE_BIAS;
     end
-    else if((((cnt_modify + 32'd1) << 2) - 1)  && glb_read_ready && glb_read_valid) begin
+    else if((/*((cnt_modify + 32'd1) << 2) - 1)  &&*/ k_cnt == 4'd0  && glb_write_ready && glb_write_valid)) begin
         
         bias_addr0 <= bias_addr0 + 32'd4;
    end
@@ -2847,7 +3126,7 @@ always_ff @(posedge clk) begin
     end
     else if (pass_layer_type == `POINTWISE) begin
         if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-            total_opsum_num_cnt <= total_opsum_num_cnt + 2; // 每次寫回 OPSUM 都增加計數
+            total_opsum_num_cnt <= total_opsum_num_cnt + 1; // 每次寫回 OPSUM 都增加計數
         end 
     end
 
@@ -2857,7 +3136,7 @@ always_ff @(posedge clk) begin
             if ((n_cnt9 == 1) && current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
                 total_opsum_num_cnt <= total_opsum_num_cnt + 1; // 每次寫回 OPSUM 都增加計數
             end
-            else if (cnt_bias[0] && current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+            else if (cnt_psum[0] && current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
                 total_opsum_num_cnt <= total_opsum_num_cnt + 3; // 每次寫回 OPSUM 都增加計數
             end
         end
@@ -3210,17 +3489,18 @@ end
 always_comb begin
     if(pass_layer_type == `POINTWISE) begin
         if(current_state == S_WRITE_OPSUM) begin
-            case(opsum_addr[1:0])
-                2'b00: BWEB = 32'hffff_ff00; // opsum_addr[1:0] = 00
-                2'b01: BWEB = 32'hffff_00ff; // opsum_addr[1:0] = 01
-                2'b10: BWEB = 32'hff00_ffff; // opsum_addr[1:0] = 10
-                2'b11: BWEB = 32'h00ff_ffff; // opsum_addr[1:0] = 11
+            case(opsum_addr[1])
+                1'b0: BWEB = 32'hffff_0000; // opsum_addr[1:0] = 00
+                1'b1: BWEB = 32'h0000_ffff; // opsum_addr[1:0] = 01
                 default: BWEB = 32'hffff_ffff; // 預設為全開
             endcase
-        end else begin
+        end 
+        else begin
             BWEB = 32'hffff_ffff;
         end
-    end else begin
+    end 
+    
+    else begin
         BWEB = 32'hffff_ffff; 
     end
 end
