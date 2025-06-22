@@ -2,7 +2,7 @@
 // Token Engine – 更新版 (SystemVerilog)
 // 
 //  date: 2025/06
-//  version:PWC徹徹底底完成(射精)
+//  version:PWC徹徹底底完成
 // 
 //==============================================================================
 `include "../include/define.svh"
@@ -146,6 +146,7 @@ module token_engine (
 
     // Counters 數送了幾個
     logic                  read_bias_cnt;
+    logic [1:0]            read_bias_cnt_stride1;
     logic [5:0]            cnt_bias;          // 已推 Bias 的筆數
     logic [5:0]            cnt_ifmap;         // 已推 Ifmap
     logic [8:0]            cnt_weight;        // 已推 Weight
@@ -275,6 +276,14 @@ always_ff @ (posedge clk) begin
         read_bias_cnt <= read_bias_cnt + 1'b1;
 end
 
+always_ff@(posedge clk) begin
+    if(rst) begin
+        read_bias_cnt_stride1 <= 2'd0;
+    end else if (glb_read_valid && glb_read_ready) begin
+        read_bias_cnt_stride1 <= (read_bias_cnt_stride1 == 2'd3) ? 2'd0 : read_bias_cnt_stride1 + 2'd1;
+    end
+end
+
     //==========================================================================
     //CNT : 數總共送了幾筆，方便轉換狀態
     //==========================================================================
@@ -324,10 +333,10 @@ end
         else if (pass_layer_type == `DEPTHWISE) begin
             if (stride == 2'd1) begin
                 if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
-                    if (first_stride1 && (cnt_bias == (col_en/3 - 1))) begin
+                    if (first_stride1 && (cnt_bias == (tile_K_o - 1))) begin
                         cnt_bias <= 0;
                     end
-                    else if (cnt_bias == ((2*col_en/3) - 1)) begin // 假設每次搬入 32 個 Bias Pack
+                    else if (cnt_bias == ((2*tile_K_o) - 1)) begin // 假設每次搬入 32 個 Bias Pack
                         cnt_bias <= 0; // 重置計數器
                     end 
                     else begin
@@ -837,9 +846,9 @@ end
 
     //---------- ifmap ----------//
     // todo: save the ifmap data
-    always_comb begin
-        data_2_pe_reg = glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
-    end
+    // always_comb begin
+    //     data_2_pe_reg = glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
+    // end
 //---------------------------------------------------
 // weight, ifmap, bias, opsum, token 等訊號的 Handshake
 //---------------------------------------------------
@@ -872,6 +881,42 @@ always_comb begin
         glb_read_ready = 1'b0;
     end
 end
+logic read_hsk_reg;
+logic [31:0] data_2_pe;
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        read_hsk_reg <= 1'b0;
+    end
+    else if (glb_read_valid && glb_read_ready) begin
+        read_hsk_reg <= 1'b1; // 當進入讀取狀態時，拉高讀取握手信號
+    end
+    else begin
+        read_hsk_reg <= 1'b0; // 否則清除握手信號
+    end
+end
+    //---------- ifmap ----------//
+    // todo: save the ifmap data
+    always_ff @ (posedge clk) begin
+        if (read_hsk_reg) begin
+            data_2_pe_reg <= glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
+        end
+
+        else begin
+            data_2_pe_reg <= data_2_pe_reg;
+        end
+    end
+
+
+    always_comb begin
+        if (read_hsk_reg) begin
+            data_2_pe = glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
+        end
+
+        else begin
+            data_2_pe = data_2_pe_reg;
+        end
+    end
+
 
 
 //FIXME:還沒 PADDING 
@@ -881,7 +926,7 @@ end
 */
 always_comb begin
     if(current_state == S_WRITE_WEIGHT) begin
-        token_data = data_2_pe_reg; // 將讀取到的資料送給 PE
+        token_data = data_2_pe; // 將讀取到的資料送給 PE
     end
 
     else if(current_state == S_WRITE_IFMAP) begin
@@ -890,10 +935,10 @@ always_comb begin
                 token_data = 32'd0; // 上方 Padding
             end
             4'd1: begin
-                token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 左側 Padding (假設是 4-Channel Pack)
+                token_data = {8'd0, data_2_pe[15:0], 8'd0}; // 左側 Padding (假設是 4-Channel Pack)
             end
             4'd2: begin
-                token_data = {16'd0, data_2_pe_reg[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
+                token_data = {16'd0, data_2_pe[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
             end
             4'd3: begin
                 token_data = 32'd0; // 下方 Padding
@@ -903,7 +948,7 @@ always_comb begin
                     token_data = 32'd0;
                 end
                 else begin
-                    token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 上左 Padding (假設是 4-Channel Pack)
+                    token_data = {8'd0, data_2_pe[15:0], 8'd0}; // 上左 Padding (假設是 4-Channel Pack)
                 end
             end
             4'd5: begin
@@ -911,7 +956,7 @@ always_comb begin
                     token_data = 32'd0;
                 end
                 else begin
-                    token_data = {16'd0, data_2_pe_reg[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
+                    token_data = {16'd0, data_2_pe[15:0]}; // 右側 Padding (假設是 4-Channel Pack)
                 end
             end
             4'd6: begin
@@ -919,7 +964,7 @@ always_comb begin
                     token_data = 32'd0;
                 end
                 else begin
-                    token_data = {8'd0, data_2_pe_reg[15:0], 8'd0}; // 下左 Padding (假設是 4-Channel Pack)
+                    token_data = {8'd0, data_2_pe[15:0], 8'd0}; // 下左 Padding (假設是 4-Channel Pack)
                 end
             end
             4'd7: begin
@@ -927,15 +972,15 @@ always_comb begin
                     token_data = 32'd0;
                 end
                 else begin
-                    token_data = {16'd0, data_2_pe_reg[15:0]}; // 下右 Padding (假設是 4-Channel Pack)
+                    token_data = {16'd0, data_2_pe[15:0]}; // 下右 Padding (假設是 4-Channel Pack)
                 end
             end
             4'd8: begin
-                token_data = data_2_pe_reg;
+                token_data = data_2_pe;
             end
 
             default: begin
-                token_data = data_2_pe_reg; // 預設情況下，將資料送給 PE
+                token_data = data_2_pe; // 預設情況下，將資料送給 PE
             end
 
         endcase
@@ -1119,13 +1164,25 @@ always_ff@(posedge clk) begin
             end
         end
         else if (current_state == S_READ_BIAS) begin
-            if(read_bias_cnt && (glb_read_valid && glb_read_ready) && d_cnt == tile_D-1) begin
-                d_cnt <= 6'd0;
-            end
-            else begin
-                if(read_bias_cnt && (glb_read_valid && glb_read_ready)) begin
-                    d_cnt <= d_cnt + 6'd1;
+            if(first_stride1) begin
+                if(read_bias_cnt && (glb_read_valid && glb_read_ready) && d_cnt == tile_D-1) begin
+                    d_cnt <= 6'd0;
                 end
+                else begin
+                    if(read_bias_cnt && (glb_read_valid && glb_read_ready)) begin
+                        d_cnt <= d_cnt + 6'd1;
+                    end
+                end
+            end else begin
+                if(read_bias_cnt_stride1 == 2'd3&& (glb_read_valid && glb_read_ready) && d_cnt == tile_D-1) begin
+                    d_cnt <= 6'd0;
+                end
+                else begin
+                    if(read_bias_cnt_stride1 == 2'd3 && (glb_read_valid && glb_read_ready)) begin
+                        d_cnt <= d_cnt + 6'd1;
+                    end
+                end
+
             end
         end
         else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
@@ -1188,7 +1245,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt0 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd3)begin
+    else if(col_en_cnt == 9'd2 && glb_read_valid && glb_read_ready)begin
         n_cnt0 <= n_cnt0 + 8'd1;
     end
 end
@@ -1201,7 +1258,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt1 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd6)begin
+    else if(col_en_cnt == 9'd5 && glb_read_valid && glb_read_ready)begin
         n_cnt1 <= n_cnt1 + 8'd1;
     end
 end
@@ -1214,7 +1271,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt2 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd9)begin
+    else if(col_en_cnt == 9'd8 && glb_read_valid && glb_read_ready)begin
         n_cnt2 <= n_cnt2 + 8'd1;
     end
 end
@@ -1227,7 +1284,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt3 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd12)begin
+    else if(col_en_cnt == 9'd11 && glb_read_valid && glb_read_ready)begin
         n_cnt3 <= n_cnt3 + 8'd1;
     end
 end
@@ -1240,7 +1297,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt4 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd15)begin
+    else if(col_en_cnt == 9'd14 && glb_read_valid && glb_read_ready)begin
         n_cnt4 <= n_cnt4 + 8'd1;
     end
 end
@@ -1253,7 +1310,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt5 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd18)begin
+    else if(col_en_cnt == 9'd17 && glb_read_valid && glb_read_ready)begin
         n_cnt5 <= n_cnt5 + 8'd1;
     end
 end
@@ -1266,7 +1323,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt6 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd21)begin
+    else if(col_en_cnt == 9'd20 && glb_read_valid && glb_read_ready)begin
         n_cnt6 <= n_cnt6 + 8'd1;
     end
 end
@@ -1279,7 +1336,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt7 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd24)begin
+    else if(col_en_cnt == 9'd23 && glb_read_valid && glb_read_ready)begin
         n_cnt7 <= n_cnt7 + 8'd1;
     end
 end
@@ -1292,7 +1349,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt8 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd27)begin
+    else if(col_en_cnt == 9'd26 && glb_read_valid && glb_read_ready)begin
         n_cnt8 <= n_cnt8 + 8'd1;
     end
 end
@@ -1305,7 +1362,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt9 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd30)begin
+    else if(col_en_cnt == 9'd29 && glb_read_valid && glb_read_ready)begin
         n_cnt9 <= n_cnt9 + 8'd1;
     end
 end
@@ -1437,8 +1494,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable0 <= 1'b0;
     end
-    else if (change_row) begin
-        enable0 <= 1'b0;
+    else if (change_row0) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable0 <= 1'b0;
+        else 
+            enable0 <= enable0;
     end
     else begin
         enable0 <= 1'b1;
@@ -1449,8 +1509,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable1 <= 1'b0;
     end
-    else if (change_row) begin
-        enable1 <= 1'b0;
+    else if (change_row1) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable1 <= 1'b0;
+        else 
+            enable1 <= enable1;
     end
     else if (col_en_cnt == 9'd2 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable1 <= 1'b1;
@@ -1461,8 +1524,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable2 <= 1'b0;
     end
-    else if (change_row) begin
-        enable2 <= 1'b0;
+    else if (change_row2) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable2 <= 1'b0;
+        else 
+            enable2 <= enable2;
     end
     else if (col_en_cnt == 9'd5 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable2 <= 1'b1;
@@ -1473,8 +1539,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable3 <= 1'b0;
     end
-    else if (change_row) begin
-        enable3 <= 1'b0;
+    else if (change_row3) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable3 <= 1'b0;
+        else 
+            enable3 <= enable3;
     end
     else if (col_en_cnt == 9'd8 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable3 <= 1'b1;
@@ -1485,8 +1554,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable4 <= 1'b0;
     end
-    else if (change_row) begin
-        enable4 <= 1'b0;
+    else if (change_row4) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable4 <= 1'b0;
+        else 
+            enable4 <= enable4;
     end
     else if (col_en_cnt == 9'd11 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable4 <= 1'b1;
@@ -1497,8 +1569,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable5 <= 1'b0;
     end
-    else if (change_row) begin
-        enable5 <= 1'b0;
+    else if (change_row5) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable5 <= 1'b0;
+        else 
+            enable5 <= enable5;
     end
     else if (col_en_cnt == 9'd14 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable5 <= 1'b1;
@@ -1509,8 +1584,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable6 <= 1'b0;
     end
-    else if (change_row) begin
-        enable6 <= 1'b0;
+    else if (change_row6) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable6 <= 1'b0;
+        else 
+            enable6 <= enable6;
     end
     else if (col_en_cnt == 9'd17 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable6 <= 1'b1;
@@ -1521,8 +1599,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable7 <= 1'b0;
     end
-    else if (change_row) begin
-        enable7 <= 1'b0;
+    else if (change_row7) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable7 <= 1'b0;
+        else 
+            enable7 <= enable7;
     end
     else if (col_en_cnt == 9'd20 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable7 <= 1'b1;
@@ -1533,8 +1614,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable8 <= 1'b0;
     end
-    else if (change_row) begin
-        enable8 <= 1'b0;
+    else if (change_row8) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable8 <= 1'b0;
+        else 
+            enable8 <= enable8;
     end
     else if (col_en_cnt == 9'd23 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable8 <= 1'b1;
@@ -1545,8 +1629,11 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable9 <= 1'b0;
     end
-    else if (change_row) begin
-        enable9 <= 1'b0;
+    else if (change_row9) begin
+        if(next_state == S_WAIT_OPSUM)
+            enable9 <= 1'b0;
+        else 
+            enable9 <= enable9;
     end
     else if (col_en_cnt == 9'd26 && pe_ifamp_valid && pe_ifmap_ready) begin
         enable9 <= 1'b1;
@@ -1567,20 +1654,20 @@ always_comb begin
 end
 
 always_comb begin
-    change_row0 = ((2-1+3*(n_cnt0+1)) >= in_C) ? 1'd1:1'd0;
-    change_row1 = ((2-1+3*(n_cnt1+1)) >= in_C) ? 1'd1:1'd0;
-    change_row2 = ((2-1+3*(n_cnt2+1)) >= in_C) ? 1'd1:1'd0;
-    change_row3 = ((2-1+3*(n_cnt3+1)) >= in_C) ? 1'd1:1'd0;
-    change_row4 = ((2-1+3*(n_cnt4+1)) >= in_C) ? 1'd1:1'd0;
-    change_row5 = ((2-1+3*(n_cnt5+1)) >= in_C) ? 1'd1:1'd0;
-    change_row6 = ((2-1+3*(n_cnt6+1)) >= in_C) ? 1'd1:1'd0;
-    change_row7 = ((2-1+3*(n_cnt7+1)) >= in_C) ? 1'd1:1'd0;
-    change_row8 = ((2-1+3*(n_cnt8+1)) >= in_C) ? 1'd1:1'd0;
-    change_row9 = ((2-1+3*(n_cnt9+1)) >= in_C) ? 1'd1:1'd0;
+    change_row0 = ((2'd2-2'd1+2'd3*(n_cnt0+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row1 = ((2'd2-2'd1+2'd3*(n_cnt1+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row2 = ((2'd2-2'd1+2'd3*(n_cnt2+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row3 = ((2'd2-2'd1+2'd3*(n_cnt3+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row4 = ((2'd2-2'd1+2'd3*(n_cnt4+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row5 = ((2'd2-2'd1+2'd3*(n_cnt5+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row6 = ((2'd2-2'd1+2'd3*(n_cnt6+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row7 = ((2'd2-2'd1+2'd3*(n_cnt7+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row8 = ((2'd2-2'd1+2'd3*(n_cnt8+2'd1)) >= in_C) ? 1'd1:1'd0;
+    change_row9 = ((2'd2-2'd1+2'd3*(n_cnt9+2'd1)) >= in_C) ? 1'd1:1'd0;
 end
 
 always_comb begin
-    change_row = /*change_row0 && 
+    change_row = change_row0 && 
                  change_row1 && 
                  change_row2 && 
                  change_row3 && 
@@ -1588,7 +1675,7 @@ always_comb begin
                  change_row5 && 
                  change_row6 && 
                  change_row7 && 
-                 change_row8 && */
+                 change_row8 && 
                  change_row9;
 end
 
