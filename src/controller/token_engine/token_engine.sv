@@ -33,6 +33,8 @@ module token_engine (
     input logic [7:0] in_R_i,
     input logic [1:0] pad_R_i,
     input logic [1:0] pad_L_i,
+    input logic [1:0] pad_T_i,
+    input logic [1:0] pad_B_i,
     input logic [7:0] out_C_i,
     input logic [7:0] out_R_i,
     input logic [7:0] IC_real_i,
@@ -138,7 +140,7 @@ logic        glb_write_req;
 
 
 logic pe_array_move;
-
+logic [31:0] output_row_cnt;
 
 weight_load_controller weight_load_controller_dut(
     .clk(clk), .rst_n(rst_n),
@@ -185,12 +187,19 @@ Layer1_Controller Layer1_Controller (
     .pass_start_i(pass_start_i),
     .pass_done_o(pass_done_o),
 
+    .layer_type_i(layer_type_i),
+    .On_real_i(On_real_i),
+
     .weight_load_done_i(weight_load_done),
     // .init_fifo_pe_done_i(init_fifo_pe_done_i), // 1 cycle
     .preheat_done_i(preheat_done),
     .normal_loop_done_i(normal_loop_done),
 
 //* output
+    //* For 3x3 Convolution Count Output Row
+    .output_row_cnt_o(output_row_cnt), // 每次處理的 row 數
+
+
     // 傳給下層 L2 的控制
     .weight_load_state_o(weight_load_state),   // INIT_WEIGHT
     .init_fifo_pe_state_o(init_fifo_pe_state),  // INIT_FIFO_PE
@@ -215,6 +224,10 @@ L2C_init_fifo_pe #(
     .opsum_glb_base_addr_i(opsum_GLB_base_addr_i), // opsum FIFO base address 由 TB 配置
     .bias_glb_base_addr_i(bias_GLB_base_addr_i),   // bias  FIFO base address 由 TB 配置
     .is_bias_i(is_bias_i), // 判斷現在 ipsum_fifo 是要輸入 bias or ipsum
+
+    //* For 3x3 convolution 
+    .output_row_cnt_i(output_row_cnt), // 每次處理的 row 數
+
 
     //* From Tile_Scheduler
     .layer_type_i(layer_type_i),
@@ -291,6 +304,14 @@ L2C_normal_loop L2C_normal_loop(
 //* Tile Infomation
     .tile_n_i(tile_n_i), // tile 的數量
     .On_real_i(On_real_i), // 實際要啟用的 opsum FIFO 數量
+
+    .in_C_i(in_C_i), // input channel
+    .in_R_i(in_R_i), // input row
+    .pad_R_i(pad_R_i), // padding row right
+    .pad_L_i(pad_L_i), // padding row left
+    .out_C_i(out_C_i), // output channel
+    .out_R_i(out_R_i), // output row
+
 //* FIFO Done
     .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix), // 每個 ifmap FIFO 是否完成
     .ipsum_fifo_done_matrix_i(ipsum_fifo_done_matrix), // 每個 ipsum FIFO 是否完成

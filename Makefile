@@ -11,6 +11,18 @@ FSDB_DEF := +FSDB
 else ifeq ($(FSDB),2)
 FSDB_DEF := +FSDB_ALL
 endif
+
+TYPE_DEF :=
+ifeq ($(TYPE),1)
+TYPE_DEF := +POINTWISE_TYPE
+else ifeq ($(TYPE),2)
+TYPE_DEF := +DEPTHWISE_TYPE
+else ifeq ($(TYPE),3)
+TYPE_DEF := +STANDARD_TYPE
+else ifeq ($(TYPE),4)
+TYPE_DEF := +LINEAR_TYPE
+endif
+
 CYCLE=`grep -v '^$$' $(root_dir)/sim/CYCLE`
 MAX=`grep -v '^$$' $(root_dir)/sim/MAX`
 
@@ -103,7 +115,7 @@ token_PE_tb: | $(bld_dir) $(wave_dir)
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/token_PE_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
-	+define+$(FSDB_DEF) \
+	+define+$(FSDB_DEF)$(TYPE_DEF)\
 
 opsum_fifo_ctrl_tb: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \

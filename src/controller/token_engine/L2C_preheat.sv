@@ -2,7 +2,15 @@
 // Module: L2C_preheat
 // Description: 控制每個 ifmap_fifo 將資料推送至對應的 PE row，達成 preheat
 //===========================================================================
-// `include "../../../include/define.svh"
+`ifndef DEFINE_LD
+`define DEFINE_LD
+
+`define POINTWISE 2'd0 // Bit width for activation
+`define DEPTHWISE 2'd1 // Bit width for activation
+`define STANDARD 2'd2 // Bit width for activation
+`define LINEAR 2'd3 // Bit width for activation
+
+`endif // DEFINE_LD
 module L2C_preheat #(
     parameter int NUM_IFMAP_FIFO = 32
 )(
@@ -126,6 +134,16 @@ always_comb begin
         ifmap_pop_num_o[27] = 32'd30;
         ifmap_pop_num_o[28] = 32'd30;
         ifmap_pop_num_o[29] = 32'd30;
+    end
+    else if ((pre_cs == SET_POP_NUM) && (layer_type_i == `STANDARD)) begin
+        for(j = 0; j < 32; j++)begin
+            ifmap_pop_num_o[j] = 32'd3;
+        end
+    end
+    else if ((pre_cs == SET_POP_NUM) && (layer_type_i == `LINEAR)) begin
+        for(j = 0; j < 32; j++)begin
+            ifmap_pop_num_o[j] = 32'd1;
+        end
     end
     else begin
         for (i = 0; i < NUM_IFMAP_FIFO; i++) begin

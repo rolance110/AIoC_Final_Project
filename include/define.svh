@@ -9,6 +9,9 @@
 `define BYTES_W 1 // Weight bytes
 `define BYTES_P 2 // Partial sum bytes
 
+
+`define ZERO_ZONE 32'h1000_0000 // Bit width for activation
+
 // convolution layer types
 `define POINTWISE 2'd0 // Bit width for activation
 `define DEPTHWISE 2'd1 // Bit width for activation

@@ -20,6 +20,8 @@ module token_PE_tb;
     logic [7:0]   in_R_i;
     logic [1:0]   pad_R_i;
     logic [1:0]   pad_L_i;
+    logic [1:0]   pad_T_i;
+    logic [1:0]   pad_B_i;
     logic [7:0]   out_C_i;
     logic [7:0]   out_R_i;
     logic [7:0]   IC_real_i;
@@ -131,6 +133,8 @@ logic [31:0] write_data;
         .in_R_i(in_R_i),
         .pad_R_i(pad_R_i),
         .pad_L_i(pad_L_i),
+        .pad_T_i(pad_T_i),
+        .pad_B_i(pad_B_i),
         .out_C_i(out_C_i),
         .out_R_i(out_R_i),
         .IC_real_i(IC_real_i),
@@ -213,42 +217,127 @@ logic [31:0] write_data;
     end
 
     // 初始重置和輸入驅動
+    // initial begin
+    //     // 初始化訊號
+    //     rst_n = 0;
+    //     pass_start_i = 0;
+    //     layer_type_i = `POINTWISE;
+    //     weight_GLB_base_addr_i = 32'h0000_0000;
+    //     ifmap_GLB_base_addr_i = 32'h0000_1000;
+    //     ipsum_GLB_base_addr_i = 32'h0000_2000;
+    //     bias_GLB_base_addr_i = 32'h0000_3000;
+    //     opsum_GLB_base_addr_i = 32'h0000_4000;
+    //     is_bias_i = 0;
+    //     tile_n_i = 32'd50;
+    //     in_C_i = 8'd224;
+    //     in_R_i = 8'd224;
+    //     pad_R_i = 2'd1;
+    //     pad_L_i = 2'd1;
+    //     pad_T_i = 2'd1;
+    //     pad_B_i = 2'd1;
+    //     out_C_i = 8'd224;
+    //     out_R_i = 8'd224;
+    //     IC_real_i = 8'd32;
+    //     OC_real_i = 8'd32;
+    //     On_real_i = 32'd50;
+    //     // glb_read_data_i = 32'd0;// read from SRAM
+    //     ipsum_read_en = 0;
+    //     ipsum_add_en = 0;
+
+    //     // 重置解除
+    //     #20 rst_n = 1;
+
+    //     // 啟動 token_engine
+    //     #10 pass_start_i = 1;
+    //     #10 pass_start_i = 0;
+
+    //     // 模擬運行一段時間
+    //     #100000 $finish;
+    // end
+
+    // 初始重置和輸入驅動
     initial begin
         // 初始化訊號
-        rst_n = 0;
-        pass_start_i = 0;
-        layer_type_i = `POINTWISE;
-        weight_GLB_base_addr_i = 32'h0000_1000;
-        ifmap_GLB_base_addr_i = 32'h0;
-        ipsum_GLB_base_addr_i = 32'h0;
-        bias_GLB_base_addr_i = 32'h0;
-        opsum_GLB_base_addr_i = 32'h0;
-        is_bias_i = 0;
-        tile_n_i = 32'd50;
-        in_C_i = 8'd224;
-        in_R_i = 8'd224;
-        pad_R_i = 2'd0;
-        pad_L_i = 2'd0;
-        out_C_i = 8'd224;
-        out_R_i = 8'd224;
-        IC_real_i = 8'd32;
-        OC_real_i = 8'd32;
-        On_real_i = 32'd50;
-        // glb_read_data_i = 32'd0;// read from SRAM
-        ipsum_read_en = 0;
-        ipsum_add_en = 0;
+        
+        `ifdef POINTWISE_TYPE
+            // 初始化訊號
+            rst_n = 0;
+            pass_start_i = 0;
+            layer_type_i = `POINTWISE;
+            weight_GLB_base_addr_i = 32'h0000_0000;
+            ifmap_GLB_base_addr_i = 32'h0000_1000;
+            ipsum_GLB_base_addr_i = 32'h0000_2000;
+            bias_GLB_base_addr_i = 32'h0000_3000;
+            opsum_GLB_base_addr_i = 32'h0000_4000;
+            is_bias_i = 0;
+            tile_n_i = 32'd50;
+            in_C_i = 8'd224;
+            in_R_i = 8'd224;
+            pad_R_i = 2'd1;
+            pad_L_i = 2'd1;
+            pad_T_i = 2'd1;
+            pad_B_i = 2'd1;
+            out_C_i = 8'd224;
+            out_R_i = 8'd224;
+            IC_real_i = 8'd32;
+            OC_real_i = 8'd32;
+            On_real_i = 32'd50;
+            // glb_read_data_i = 32'd0;// read from SRAM
+            ipsum_read_en = 0;
+            ipsum_add_en = 0;
 
-        // 重置解除
-        #20 rst_n = 1;
+            // 重置解除
+            #20 rst_n = 1;
 
-        // 啟動 token_engine
-        #10 pass_start_i = 1;
-        #10 pass_start_i = 0;
+            // 啟動 token_engine
+            #10 pass_start_i = 1;
+            #10 pass_start_i = 0;
 
-        // 模擬運行一段時間
-        #100000 $finish;
+            // 模擬運行一段時間
+           #100000 $finish;
+        `elsif DEPTHWISE_TYPE
+            rst_n = 0;
+            pass_start_i = 0;
+            layer_type_i = `DEPTHWISE;
+            weight_GLB_base_addr_i = 32'h0000_0000;
+            ifmap_GLB_base_addr_i = 32'h0000_1000;
+            ipsum_GLB_base_addr_i = 32'h0000_2000;
+            bias_GLB_base_addr_i = 32'h0000_3000;
+            opsum_GLB_base_addr_i = 32'h0000_4000;
+            is_bias_i = 0;
+            tile_n_i = 32'd5; // 1 tile has 5 row
+            in_C_i = 8'd224;
+            in_R_i = 8'd224;
+            pad_R_i = 2'd1;
+            pad_L_i = 2'd1;
+            pad_T_i = 2'd1;
+            pad_B_i = 2'd1;
+            out_C_i = 8'd224;
+            out_R_i = 8'd224;
+            IC_real_i = 8'd10;
+            OC_real_i = 8'd10;
+            On_real_i = 32'd3; // tile_n_i - 2
+            ipsum_read_en = 0;
+            ipsum_add_en = 0;
+
+            // 重置解除
+            #20 rst_n = 1;
+
+            // 啟動 token_engine
+            #10 pass_start_i = 1;
+            #10 pass_start_i = 0;
+
+            // 模擬運行一段時間
+            #50000 $finish;
+        `endif
     end
 
+    // pass_done_o
+    initial begin
+        // 等待 pass_done_o 信號
+        wait(pass_done_o);
+        $display("Simulation finished successfully at time %0t", $time);
+    end
     // 監控訊號（可選）
     initial begin
         $monitor("Time=%0t rst_n=%b pass_done_o=%b", $time, rst_n, pass_done_o);
