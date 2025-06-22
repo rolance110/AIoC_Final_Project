@@ -600,161 +600,193 @@ always_comb begin
         else if (ipsum_read_req_matrix_i[0]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[0];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_00000001; // permit_ipsum_matrix_o[0] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[1]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[1];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_00000010; // permit_ipsum_matrix_o[1] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[2]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[2];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_00000100; // permit_ipsum_matrix_o[2] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[3]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[3];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_00001000; // permit_ipsum_matrix_o[3] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[4]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[4];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_00010000; // permit_ipsum_matrix_o[4] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[5]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[5];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_00100000; // permit_ipsum_matrix_o[5] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[6]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[6];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_01000000; // permit_ipsum_matrix_o[6] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[7]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[7];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000000_10000000; // permit_ipsum_matrix_o[7] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[8]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[8];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000001_00000000; // permit_ipsum_matrix_o[8] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[9]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[9];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000010_00000000; // permit_ipsum_matrix_o[9] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[10]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[10];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00000100_00000000; // permit_ipsum_matrix_o[10] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[11]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[11];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00001000_00000000; // permit_ipsum_matrix_o[11] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[12]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[12];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00010000_00000000; // permit_ipsum_matrix_o[12] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[13]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[13];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_00100000_00000000; // permit_ipsum_matrix_o[13] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[14]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[14];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_01000000_00000000; // permit_ipsum_matrix_o[14] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[15]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[15];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000000_10000000_00000000; // permit_ipsum_matrix_o[15] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[16]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[16];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000001_00000000_00000000; // permit_ipsum_matrix_o[16] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[17]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[17];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000010_00000000_00000000; // permit_ipsum_matrix_o[17] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[18]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[18];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00000100_00000000_00000000; // permit_ipsum_matrix_o[18] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[19]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[19];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00001000_00000000_00000000; // permit_ipsum_matrix_o[19] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[20]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[20];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00010000_00000000_00000000; // permit_ipsum_matrix_o[20] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[21]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[21];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_00100000_00000000_00000000; // permit_ipsum_matrix_o[21] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[22]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[22];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_01000000_00000000_00000000; // permit_ipsum_matrix_o[22] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[23]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[23];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000000_10000000_00000000_00000000; // permit_ipsum_matrix_o[23] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[24]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[24];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000001_00000000_00000000_00000000; // permit_ipsum_matrix_o[24] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[25]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[25];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000010_00000000_00000000_00000000; // permit_ipsum_matrix_o[25] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[26]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[26];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00000100_00000000_00000000_00000000; // permit_ipsum_matrix_o[26] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[27]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[27];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00001000_00000000_00000000_00000000; // permit_ipsum_matrix_o[27] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[28]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[28];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00010000_00000000_00000000_00000000; // permit_ipsum_matrix_o[28] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[29]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[29];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b00100000_00000000_00000000_00000000; // permit_ipsum_matrix_o[29] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[30]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[30];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b01000000_00000000_00000000_00000000; // permit_ipsum_matrix_o[30] = 1'b1
         end
         else if (ipsum_read_req_matrix_i[31]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ipsum_read_addr_matrix_i[31];
+            permit_ifmap_matrix_o  = 32'd0;
             permit_ipsum_matrix_o = 32'b10000000_00000000_00000000_00000000; // permit_ipsum_matrix_o[31] = 1'b1
         end
         else begin

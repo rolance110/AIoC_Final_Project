@@ -13,6 +13,12 @@ module L3C_fifo_ctrl #(
     input  logic        ipsum_fifo_reset_i,
     input  logic        opsum_fifo_reset_i,
 
+    // pad
+    input logic [7:0] in_C_i, // 來自 Layer Decoder 的輸入 C
+    input logic [1:0] pad_R_i,
+    input logic [1:0] pad_L_i,
+
+
     // todo: fifo_mask
     input preheat_state_i,
     input logic [31:0] ipsum_fifo_mask_i, // ipsum FIFO mask
@@ -116,6 +122,10 @@ generate
             .rst_n(rst_n),
             //* busy
             .fifo_glb_busy_i(fifo_glb_busy_i),
+            // pad
+            .in_C_i(in_C_i), // 來自 Layer Decoder 的輸入 C
+            .pad_R_i(pad_R_i),
+            .pad_L_i(pad_L_i),
             // From L2 Controller
             .ifmap_fifo_reset_i(ifmap_fifo_reset_i), // Reset FIFO
             .ifmap_need_pop_i(ifmap_need_pop_matrix_i[i]),   // 新任務觸發

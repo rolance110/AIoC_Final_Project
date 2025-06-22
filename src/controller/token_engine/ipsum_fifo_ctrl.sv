@@ -1,3 +1,12 @@
+`ifndef DEFINE_LD
+`define DEFINE_LD
+
+`define POINTWISE 2'd0 // Bit width for activation
+`define DEPTHWISE 2'd1 // Bit width for activation
+`define STANDARD 2'd2 // Bit width for activation
+`define LINEAR 2'd3 // Bit width for activation
+
+`endif // DEFINE_LD
 module ipsum_fifo_ctrl (
     input  logic        clk,
     input  logic        rst_n,

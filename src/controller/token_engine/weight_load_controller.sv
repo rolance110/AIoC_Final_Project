@@ -1,3 +1,12 @@
+`ifndef DEFINE_LD
+`define DEFINE_LD
+
+`define POINTWISE 2'd0 // Bit width for activation
+`define DEPTHWISE 2'd1 // Bit width for activation
+`define STANDARD 2'd2 // Bit width for activation
+`define LINEAR 2'd3 // Bit width for activation
+
+`endif // DEFINE_LD
 // `include "../../../include/define.svh"
 module weight_load_controller(
     input logic clk,
@@ -42,7 +51,7 @@ end
     weight_read_cnt         |  0  |  0  |  1  |  2  |  3  |  .......  |num-1|   num  | finish |
     weight_addr_o           |  x  |  x  |  B  | B+1 | B+2 | ......... | B+31| B_last |
     weight_load_byte_type_o |     |  x  |  x  |  B  | B+1 | B+2 |
-    weight_load_en_matrix_o      |     |     |     | 1   |  1  |  1  | ... | 1   |    1   |   1    |
+    weight_load_en_matrix_o       |     |     |     | 1   |  1  |  1  | ... | 1   |    1   |   1    |
     weight_data             |     |     |  D1 |  D2 |  D3 |  D4 | ... | ... | ...    | D_last |
 
     weight_load_done_o      |
@@ -116,7 +125,14 @@ always_ff@(posedge clk or negedge rst_n) begin
             end
         end
         // `DEPTHWISE: begin // 0 -> 1 -> 2
+        //     ch = (weight_read_cnt - 1) / 9; // channel index
+        //     w  = (weight_read_cnt - 1) % 9; // which weight in 3x3
 
+        //     if (ch < 32) begin
+        //         for (i = 0; i < 32; i = i + 1)
+        //             for (j = 0; j < 32; j = j + 1)
+        //                 weight_load_en_matrix_o[i][j] <= (i == ch && j == ch && w_cycle_match) ? 1'b1 : 1'b0;
+        //     end
         // end
         default: begin // for other layer types, set all to 0
             for (i = 0; i < 32; i = i + 1) begin

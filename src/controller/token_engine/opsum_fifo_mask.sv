@@ -1,3 +1,13 @@
+`ifndef DEFINE_LD
+`define DEFINE_LD
+
+`define POINTWISE 2'd0 // Bit width for activation
+`define DEPTHWISE 2'd1 // Bit width for activation
+`define STANDARD 2'd2 // Bit width for activation
+`define LINEAR 2'd3 // Bit width for activation
+
+`endif // DEFINE_LD
+
 module opsum_fifo_mask (
     input  logic        clk,
     input  logic        rst_n,
@@ -24,13 +34,14 @@ module opsum_fifo_mask (
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             init_mask <= 32'h0;
-        else if (layer_type_i == `POINTWISE)
+        else if (layer_type_i == `POINTWISE)begin
             if (opsum_fifo_reset_i)
                 init_mask <= 32'h1;               // reset 時先開啟第 0 號 FIFO
             // else if (preheat_done_i)
             //     init_mask <= 32'h3; // preheat_done_i 時，開啟前 2 個 FIFO // 改成不用 先 push 1 次
             else if (normal_loop_state_i && |ifmap_fifo_pop_matrix_i)
                 init_mask <= (init_mask << 1) | 32'h1;
+        end
         else if (layer_type_i == `DEPTHWISE)
             init_mask <= 32'b00000000_00000000_00000011_11111111;// 開啟前 10 號 FIFO
     end

@@ -175,15 +175,15 @@ always_comb begin
                 end
             end
             `DEPTHWISE: begin
-                ipsum_pop_num_matrix_o[0] = On_real_i - 32'd1; //* preheat pop 1
+                ipsum_pop_num_matrix_o[0] = out_C_i - 32'd1; //* preheat pop 1
                 for(j1 = 1; j1 < 10; j1++)begin
-                    ipsum_pop_num_matrix_o[j1] = On_real_i;
+                    ipsum_pop_num_matrix_o[j1] = out_C_i;
                 end
             end
             `STANDARD: begin
-                ipsum_pop_num_matrix_o[0] = On_real_i - 32'd1; //* preheat pop 1
+                ipsum_pop_num_matrix_o[0] = out_C_i - 32'd1; //* preheat pop 1
                 for(j1 = 1; j1 < 10; j1++)begin
-                    ipsum_pop_num_matrix_o[j1] = On_real_i;
+                    ipsum_pop_num_matrix_o[j1] = out_C_i;
                 end
             end
             `LINEAR: begin
@@ -260,8 +260,8 @@ always_comb begin
     if (nl_cs == SET_NUM) 
         case (layer_type_i)
             `POINTWISE: ipsum_need_pop_matrix_o = 32'hFFFF_FFFF; // preheat pointwise pop 1 
-            `DEPTHWISE: ipsum_need_pop_matrix_o = 32'h0000_000A; // 10
-            `STANDARD: ipsum_need_pop_matrix_o = 32'h0000_000A; // 10
+            `DEPTHWISE: ipsum_need_pop_matrix_o = 32'h0000_03FF; // 10
+            `STANDARD: ipsum_need_pop_matrix_o = 32'h0000_03FF; // 10
             `LINEAR: ipsum_need_pop_matrix_o = 32'hFFFFFFFF; // preheat linear pop all
             default: ipsum_need_pop_matrix_o = 32'b0; // preheat pointwise pop 1
         endcase
@@ -273,8 +273,8 @@ always_comb begin
     if (nl_cs == SET_NUM) 
         case (layer_type_i)
             `POINTWISE:opsum_need_push_matrix_o = 32'hFFFF_FFFF; // preheat pointwise push 1
-            `DEPTHWISE: opsum_need_push_matrix_o = 32'h0000_000A; //  10 
-            `STANDARD: opsum_need_push_matrix_o = 32'h0000_000A; // 
+            `DEPTHWISE: opsum_need_push_matrix_o = 32'h0000_03FF; //  10 
+            `STANDARD: opsum_need_push_matrix_o = 32'h0000_03FF; // 10
             `LINEAR: opsum_need_push_matrix_o = 32'hFFFFFFFF; // preheat linear push all
             default: opsum_need_push_matrix_o = 32'b0; // preheat pointwise push 1
         endcase

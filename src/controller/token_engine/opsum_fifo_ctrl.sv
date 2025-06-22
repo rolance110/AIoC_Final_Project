@@ -201,7 +201,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 end
 
 // 完成條件
-assign opsum_fifo_done_o = (op_cs == DONE);
+assign opsum_fifo_done_o = (op_cs == IDLE || op_cs == DONE);
 
 assign opsum_is_PUSH_state_o = (op_cs == CAN_PUSH);
 endmodule

@@ -173,14 +173,34 @@ end
 
 always_comb begin
     if (pre_cs == SET_POP_NUM) 
-        ifmap_need_pop_o = 32'hFFFF_FFFF;
+        case (layer_type_i)
+            `POINTWISE: 
+                ifmap_need_pop_o = 32'hFFFF_FFFF; // Pointwise layer, 每個 FIFO 都需要 pop
+            `DEPTHWISE: 
+                ifmap_need_pop_o = 32'h3FFF_FFFF; // Depthwise layer, 30 個 FIFO 需要 pop
+            `STANDARD: 
+                ifmap_need_pop_o = 32'h3FFF_FFFF; // Standard layer, 30 個 FIFO 需要 pop
+            `LINEAR: 
+                ifmap_need_pop_o = 32'hFFFF_FFFF; // Linear layer, 每個 FIFO 都需要 pop
+            default: ifmap_need_pop_o = 32'b0; // 預設值，避免綁定錯誤
+        endcase
     else 
         ifmap_need_pop_o = 32'b0;
 end
 
 always_comb begin
     if (pre_cs == SET_POP_NUM) 
-        ipsum_need_pop_o = 32'hFFFF_FFFF;
+        case (layer_type_i)
+            `POINTWISE: 
+                ipsum_need_pop_o = 32'hFFFF_FFFF; // Pointwise layer, 每個 FIFO 都需要 pop
+            `DEPTHWISE: 
+                ipsum_need_pop_o = 32'h0000_03FF; // Depthwise layer,10
+            `STANDARD: 
+                ipsum_need_pop_o = 32'h0000_03FF; // Standard layer,10
+            `LINEAR: 
+                ipsum_need_pop_o = 32'hFFFF_FFFF; // Linear layer, 每個 FIFO 都需要 pop
+            default: ipsum_need_pop_o = 32'b0; // 預設值，避免綁定錯誤
+        endcase
     else 
         ipsum_need_pop_o = 32'b0;
 end

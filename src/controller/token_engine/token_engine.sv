@@ -24,6 +24,8 @@ module token_engine (
     input logic  [31:0] bias_GLB_base_addr_i,
     input logic  [31:0] opsum_GLB_base_addr_i,
 
+    input logic n_tile_is_first_i,
+    input logic n_tile_is_last_i,
     input logic is_bias_i,
 
 
@@ -225,7 +227,10 @@ L2C_init_fifo_pe #(
     .bias_glb_base_addr_i(bias_GLB_base_addr_i),   // bias  FIFO base address 由 TB 配置
     .is_bias_i(is_bias_i), // 判斷現在 ipsum_fifo 是要輸入 bias or ipsum
 
-    //* For 3x3 convolution 
+    //* For 3x3 convolution pad
+    .n_tile_is_first_i(n_tile_is_first_i), // 是否為第一個 tile
+    .n_tile_is_last_i(n_tile_is_last_i),   // 是否為最後一個 tile
+
     .output_row_cnt_i(output_row_cnt), // 每次處理的 row 數
 
 
@@ -403,6 +408,11 @@ L3C_fifo_ctrl #(
     .ifmap_fifo_reset_i(ifmap_fifo_reset_o),
     .ipsum_fifo_reset_i(ipsum_fifo_reset_o),
     .opsum_fifo_reset_i(opsum_fifo_reset_o),
+
+//* padding right left
+    .in_C_i(in_C_i), // 來自 Layer Decoder 的輸入 C
+    .pad_R_i(pad_R_i), // padding row right
+    .pad_L_i(pad_L_i), // padding row left
 
 
 //* busy

@@ -1,6 +1,21 @@
+`ifndef DEFINE_LD
+`define DEFINE_LD
+
+`define POINTWISE 2'd0 // Bit width for activation
+`define DEPTHWISE 2'd1 // Bit width for activation
+`define STANDARD 2'd2 // Bit width for activation
+`define LINEAR 2'd3 // Bit width for activation
+
+`endif // DEFINE_LD
 module ifmap_fifo_ctrl (
     input  logic        clk,
     input  logic        rst_n,
+
+    // pad
+    input logic [7:0] in_C_i, // 來自 Layer Decoder 的輸入 C
+    input logic [1:0] pad_R_i,
+    input logic [1:0] pad_L_i,
+
 
     //* busy
     input logic fifo_glb_busy_i, // FIFO <=> GLB 是否忙碌
@@ -165,8 +180,25 @@ always_ff@(posedge clk or negedge rst_n) begin
     end
 end
 
+logic right_pad;
+logic left_pad;
+assign left_pad = read_ptr < pad_L_i;
+assign right_pad = ($signed({1'b0,in_C_i}) - $signed({1'b0,read_ptr})) < $signed({1'b0, pad_R_i});
+
+logic is_padding;
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        is_padding <= 1'b0;
+    else if (ifmap_glb_read_addr_o[31]) // zero address is 32'h8000_0000 up
+        is_padding <= 1'b1;
+    else
+        is_padding <= 1'b0;
+end
 always_comb begin
-    if(ifmap_fifo_push_mod_o == 1'b0)
+    if(is_padding)begin
+        ifmap_fifo_push_data_o = 32'h00; // padding data
+    end
+    else if(ifmap_fifo_push_mod_o == 1'b0)
         case (ifmap_glb_load_byte_type_o)
             `LOAD_1BYTE: ifmap_fifo_push_data_o = {24'd0,ifmap_glb_read_data_i[7:0]}; // load first byte
             `LOAD_2BYTE: ifmap_fifo_push_data_o = {24'd0,ifmap_glb_read_data_i[15:8]}; // load second byte
