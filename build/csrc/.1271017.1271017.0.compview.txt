@@ -1,5 +1,0 @@
-{"vcs1":{"timestamp_begin":1750661144.881472598, "rt":0.28, "ut":0.03, "st":0.03}}
-{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1750661144.641114486}
-{"VCS_COMP_START_TIME": 1750661144.641114486}
-{"VCS_COMP_END_TIME": 1750661147.962723902}
-{"VCS_USER_OPTIONS": "-R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv -f /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f -debug_access+all -full64 +incdir+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./include+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim +notimingcheck +define++FSDB_ALL+POINTWISE_TYPE"}

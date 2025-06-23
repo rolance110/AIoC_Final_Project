@@ -103,7 +103,7 @@ always_comb begin
         case (layer_type_i)
             `POINTWISE: begin
                 for(j = 0; j < 32; j++)begin
-                    ifmap_pop_num_matrix_o[j] = tile_n_i - 32'd1; // preheat pointwise pop 1 
+                    ifmap_pop_num_matrix_o[j] = tile_n_i; //- 32'd1; // preheat pointwise pop 1 
                 end
             end
             `DEPTHWISE: begin
@@ -169,9 +169,9 @@ always_comb begin
     if ((nl_cs == SET_NUM)) begin
         case (layer_type_i)
             `POINTWISE: begin
-                ipsum_pop_num_matrix_o[0] = On_real_i - 32'd1; //* preheat pop 1
+                ipsum_pop_num_matrix_o[0] = On_real_i; //- 32'd1; //* preheat pop 1
                 for(j1 = 1; j1 < 32; j1++)begin
-                    ipsum_pop_num_matrix_o[j1] = On_real_i;
+                    ipsum_pop_num_matrix_o[j1] = On_real_i+1;
                 end
             end
             `DEPTHWISE: begin

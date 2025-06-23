@@ -353,6 +353,10 @@ logic [31:0] golden_data;
                              i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
                     errors++;
                 end
+                else begin
+                    $display("Match at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+                             i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
+                end
             end
             // 報告結果
             if (errors == 0) begin

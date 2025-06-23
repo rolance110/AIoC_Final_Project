@@ -85,7 +85,7 @@ for oc in range(C_out):
         golden_opsum[oc][p] = acc
 
         # ✅ 額外印出前幾筆 debug 計算過程
-        if oc < 1 and p < 16:
+        if oc == 2 and p < 41:
             print(f"[DEBUG] oc={oc}, pix={p}, ipsum={ipsum[oc][p]}")
             term_str = []
             for ic in range(C_in):
