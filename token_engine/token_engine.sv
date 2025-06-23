@@ -367,6 +367,16 @@ end
             end
         end
     end    
+    logic cnt_psum_flag;
+
+    always_ff@(posedge clk) begin
+        if(rst) begin
+            cnt_psum_flag <= 1'd0;
+        end
+        else if(glb_write_valid && glb_write_ready) begin
+            cnt_psum_flag <= ~cnt_psum_flag;
+        end
+    end
     
     //cnt_psum
     always_ff @ (posedge clk) begin
@@ -388,13 +398,13 @@ end
         else if (pass_layer_type == `DEPTHWISE) begin
             if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
                 if(stride == 2'd1) begin
-                    if (first_stride1 && (cnt_psum == (tile_K_o)-1)) begin 
+                    if (first_stride1 && (cnt_psum == (tile_K_o)-1) && cnt_psum_flag) begin 
                         cnt_psum <= 0; // 重置計數器
                     end 
-                    else if ((cnt_psum == (2*tile_K_o)-1)) begin
+                    else if ((cnt_psum == (2*tile_K_o)-1) && cnt_psum_flag) begin
                         cnt_psum <= 0; // 重置計數器
                     end
-                    else begin
+                    else if(cnt_psum_flag) begin
                         cnt_psum <= cnt_psum + 1; // 每次搬入 4-Channel Pack (32-bit)
                     end
                 end
@@ -434,7 +444,7 @@ end
     always@(posedge clk) begin
         if(rst) begin
             first_stride1 <= 1'd1;
-        end else if(change_row) begin
+        end else if(change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
             first_stride1 <= 1'd1;
         end else if(current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
             first_stride1 <= 1'd0;
@@ -1270,7 +1280,14 @@ always_ff@(posedge clk) begin
             end
         end
         else if (current_state == S_WRITE_BIAS) begin
-            if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1) begin
+            if(first_stride1) begin
+                if (pe_bias_valid && pe_bias_ready)
+                    if (d_cnt == tile_D-1)
+                        d_cnt <= 6'd0;
+                    else
+                        d_cnt <=  d_cnt + 6'd1;
+            end
+            else if((pe_bias_valid && pe_bias_ready) && (d_cnt == tile_D-1) && cnt_bias[0]) begin
                 d_cnt <= 6'd0;
             end
             else begin
@@ -1280,11 +1297,20 @@ always_ff@(posedge clk) begin
             end
         end
         else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-            if(d_cnt == tile_D-1) begin
+            if(first_stride1) begin
+                if (pe_psum_valid && pe_psum_ready)
+                    if (d_cnt == tile_D-1)
+                        d_cnt <= 6'd0;
+                    else
+                        d_cnt <=  d_cnt + 6'd1;
+            end
+            else if((glb_write_ready && glb_write_valid) && d_cnt == tile_D-1) begin
                 d_cnt <= 6'd0;
             end
             else begin
-                d_cnt <= d_cnt + 6'd1; // 每次搬入 4-Channel Pack (32-bit)
+                if(cnt_psum[0] && (pe_psum_valid && pe_psum_ready)) begin
+                    d_cnt <= d_cnt + 6'd1;
+                end
             end
         end
     end
@@ -1348,7 +1374,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt0 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd2)begin
+    else if(col_en_cnt == 9'd2 && glb_read_valid && glb_read_ready)begin
         n_cnt0 <= n_cnt0 + 8'd1;
     end
 end
@@ -1361,7 +1387,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt1 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd6)begin
+    else if(col_en_cnt == 9'd5 && glb_read_valid && glb_read_ready)begin
         n_cnt1 <= n_cnt1 + 8'd1;
     end
 end
@@ -1374,7 +1400,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt2 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd9)begin
+    else if(col_en_cnt == 9'd8 && glb_read_valid && glb_read_ready)begin
         n_cnt2 <= n_cnt2 + 8'd1;
     end
 end
@@ -1387,7 +1413,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt3 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd12)begin
+    else if(col_en_cnt == 9'd11 && glb_read_valid && glb_read_ready)begin
         n_cnt3 <= n_cnt3 + 8'd1;
     end
 end
@@ -1400,7 +1426,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt4 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd15)begin
+    else if(col_en_cnt == 9'd14 && glb_read_valid && glb_read_ready)begin
         n_cnt4 <= n_cnt4 + 8'd1;
     end
 end
@@ -1413,7 +1439,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt5 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd18)begin
+    else if(col_en_cnt == 9'd17 && glb_read_valid && glb_read_ready)begin
         n_cnt5 <= n_cnt5 + 8'd1;
     end
 end
@@ -1426,7 +1452,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt6 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd21)begin
+    else if(col_en_cnt == 9'd20 && glb_read_valid && glb_read_ready)begin
         n_cnt6 <= n_cnt6 + 8'd1;
     end
 end
@@ -1439,7 +1465,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt7 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd24)begin
+    else if(col_en_cnt == 9'd23 && glb_read_valid && glb_read_ready)begin
         n_cnt7 <= n_cnt7 + 8'd1;
     end
 end
@@ -1452,7 +1478,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt8 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd27)begin
+    else if(col_en_cnt == 9'd26 && glb_read_valid && glb_read_ready)begin
         n_cnt8 <= n_cnt8 + 8'd1;
     end
 end
@@ -1465,7 +1491,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt9 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd30)begin
+    else if(col_en_cnt == 9'd29 && glb_read_valid && glb_read_ready)begin
         n_cnt9 <= n_cnt9 + 8'd1;
     end
 end
@@ -1508,31 +1534,12 @@ always_ff@(posedge clk) begin
                 k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
-        // else if(pe_opsum_cnt[0] && pe_psum_valid && pe_psum_ready) begin
-        //     k_cnt <= k_cnt + 1; 
-        // end
+
     end
-    // else if (pass_layer_type == `DEPTHWISE) begin
-    //     if (first_stride1) begin
-    //         if (k_cnt == (tile_K_o - 1)) begin
-    //             k_cnt <= 0; // 重置 k_cnt
-    //         end 
-    //         else if ((opsum_hsk_cnt[1:0] == 2'b11) && glb_write_ready && glb_write_valid) begin
-    //             k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-    //         end
-    //     end
-    //     else begin
-    //         if (k_cnt == (2*tile_K_o - 1)) begin
-    //             k_cnt <= 0; // 重置 k_cnt
-    //         end 
-    //         else if ((opsum_hsk_cnt[1:0] == 2'b11) && glb_write_ready && glb_write_valid) begin
-    //             k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-    //         end
-    //     end
-    // end
+
     else if (pass_layer_type == `DEPTHWISE) begin
         if (first_stride1) begin
-            if (k_cnt == (tile_K_o - 1)) begin
+            if (k_cnt == (tile_K_o - 1) && (opsum_hsk_cnt[0]) && glb_write_ready && glb_write_valid) begin
                 k_cnt <= 0; // 重置 k_cnt
             end 
             else if ((opsum_hsk_cnt[0]) && glb_write_ready && glb_write_valid) begin
@@ -1540,10 +1547,10 @@ always_ff@(posedge clk) begin
             end
         end
         else begin
-            if (k_cnt == (2*tile_K_o - 1)) begin
+            if (k_cnt == (tile_K_o - 1) && (opsum_hsk_cnt[1:0] == 2'd3) && glb_write_ready && glb_write_valid) begin
                 k_cnt <= 0; // 重置 k_cnt
             end 
-            else if ((opsum_hsk_cnt[0]) && glb_write_ready && glb_write_valid) begin
+            else if ((opsum_hsk_cnt[1:0] == 2'd3) && glb_write_ready && glb_write_valid) begin
                 k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
@@ -1597,9 +1604,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable0 <= 1'b0;
     end
-    else if (change_row) begin
-        enable0 <= 1'b0;
-    end
+
     else begin
         enable0 <= 1'b1;
     end
@@ -1609,7 +1614,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable1 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable1 <= 1'b0;
     end
     else if (col_en_cnt == 9'd2 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1621,7 +1626,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable2 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable2 <= 1'b0;
     end
     else if (col_en_cnt == 9'd5 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1633,7 +1638,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable3 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable3 <= 1'b0;
     end
     else if (col_en_cnt == 9'd8 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1645,7 +1650,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable4 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable4 <= 1'b0;
     end
     else if (col_en_cnt == 9'd11 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1657,7 +1662,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable5 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable5 <= 1'b0;
     end
     else if (col_en_cnt == 9'd14 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1669,7 +1674,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable6 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable6 <= 1'b0;
     end
     else if (col_en_cnt == 9'd17 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1681,7 +1686,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable7 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable7 <= 1'b0;
     end
     else if (col_en_cnt == 9'd20 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1693,7 +1698,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable8 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable8 <= 1'b0;
     end
     else if (col_en_cnt == 9'd23 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1705,7 +1710,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable9 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable9 <= 1'b0;
     end
     else if (col_en_cnt == 9'd26 && pe_ifmap_valid && pe_ifmap_ready) begin
@@ -1740,16 +1745,20 @@ always_comb begin
 end
 
 always_comb begin
-    change_row = /*change_row0 && 
-                 change_row1 && 
-                 change_row2 && 
-                 change_row3 && 
-                 change_row4 && 
-                 change_row5 && 
-                 change_row6 && 
-                 change_row7 && 
-                 change_row8 && */
-                 change_row9;
+    if (current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
+        change_row = change_row0 && 
+                    change_row1 && 
+                    change_row2 && 
+                    change_row3 && 
+                    change_row4 && 
+                    change_row5 && 
+                    change_row6 && 
+                    change_row7 && 
+                    change_row8 && 
+                    change_row9;
+    end
+    else 
+        change_row = 1'd0;
 end
 
 
