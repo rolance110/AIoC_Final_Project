@@ -17,7 +17,7 @@ module SRAM_64KB (
     integer i, j;
     // 同步讀寫操作
     always @(posedge clk or negedge rst_n) begin
-        if (|WEB == 0) begin // 當 WEB 不全為 1 時檢查寫入
+        if (WEB != 4'b0000) begin // 當 WEB 不全為 0 時檢查寫入
             if(WEB[0]) begin
                 memory[addr_valid][7:0]   <= write_data[7:0];   // 寫入最低位
             end

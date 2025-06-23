@@ -101,10 +101,32 @@ logic [3:0] glb_web_o;
     end
 
 
-initial begin
-    $readmemh("../sim/memory.hex", u_SRAM.memory);
-    $display("===== SRAM initialized from memory.hex =====");
+// initial begin
+//     $readmemh("../sim/memory.hex", u_SRAM.memory);
+//     $display("===== SRAM initialized from memory.hex =====");
  
+// end
+    // 定義 golden 數據陣列
+    logic [31:0] golden_opsum [0:639]; // 640 個 32-bit 值
+
+initial begin
+    `ifdef POINTWISE_TYPE
+        // 讀取 pointwise_memory.hex 到 SRAM
+        $readmemh("../sim/pointwise_memory.hex", u_SRAM.memory);
+        $display("===== SRAM initialized from pointwise_memory.hex =====");
+        // 讀取 pointwise_golden.hex 到 golden_opsum 陣列
+        $readmemh("../sim/pointwise_golden.hex", golden_opsum);
+        $display("===== Golden data loaded from pointwise_golden.hex =====");
+    `elsif DEPTHWISE_TYPE
+        // // 讀取 depthwise_memory.hex 到 SRAM
+        // $readmemh("../sim/depthwise_memory.hex", u_SRAM.memory);
+        // $display("===== SRAM initialized from depthwise_memory.hex =====");
+        // // 讀取 depthwise_golden.hex 到 golden_opsum 陣列
+        // $readmemh("../sim/depthwise_golden.hex", golden_opsum);
+        // $display("===== Golden data loaded from depthwise_golden.hex =====");
+        $readmemh("../sim/memory.hex", u_SRAM.memory);
+        $display("===== SRAM initialized from memory.hex =====");
+    `endif
 end
 logic [31:0] write_data;
     SRAM_64KB u_SRAM (
@@ -232,26 +254,26 @@ logic [31:0] write_data;
             weight_GLB_base_addr_i = 32'h0000_0000;
             ifmap_GLB_base_addr_i = 32'h0000_1000;
             ipsum_GLB_base_addr_i = 32'h0000_2000;
-            bias_GLB_base_addr_i = 32'h0000_3000;
-            opsum_GLB_base_addr_i = 32'h0000_4000;
+            bias_GLB_base_addr_i = 32'h0000_2500;
+            opsum_GLB_base_addr_i = 32'h0000_3000;
             is_bias_i = 0;
-            tile_n_i = 32'd50;
+            tile_n_i = 32'd40;
             in_C_i = 8'd224;
             in_R_i = 8'd224;
             n_tile_is_first_i = 1; // 第一個 tile
             n_tile_is_last_i = 0; // 不是最後一個 tile
-            pad_R_i = 2'd1;
-            pad_L_i = 2'd1;
-            pad_T_i = 2'd1;
-            pad_B_i = 2'd1;
+            pad_R_i = 2'd0;
+            pad_L_i = 2'd0;
+            pad_T_i = 2'd0;
+            pad_B_i = 2'd0;
             out_C_i = 8'd224;
             out_R_i = 8'd224;
             IC_real_i = 8'd32;
             OC_real_i = 8'd32;
-            On_real_i = 32'd50;
+            On_real_i = 32'd40;
             // glb_read_data_i = 32'd0;// read from SRAM
             ipsum_read_en = 0;
-            ipsum_add_en = 0;
+            ipsum_add_en = 1;
 
             // 重置解除
             #20 rst_n = 1;
@@ -261,7 +283,10 @@ logic [31:0] write_data;
             #10 pass_start_i = 0;
 
             // 模擬運行一段時間
-           #100000 $finish;
+           #100000 
+            $display("Simulation Failed: No pass_done_o signal received.");
+
+           $finish;
         `elsif DEPTHWISE_TYPE
             rst_n = 0;
             pass_start_i = 0;
@@ -287,7 +312,7 @@ logic [31:0] write_data;
             OC_real_i = 8'd10;
             On_real_i = 32'd2; // tile_n_i - 2
             ipsum_read_en = 0;
-            ipsum_add_en = 0;
+            ipsum_add_en = 1;
 
             // 重置解除
             #20 rst_n = 1;
@@ -297,15 +322,77 @@ logic [31:0] write_data;
             #10 pass_start_i = 0;
 
             // 模擬運行一段時間
-            #500000 $finish;
+          #500000
+            $display("Simulation Failed: No pass_done_o signal received.");
+            $finish;
         `endif
     end
-
-    // pass_done_o
+integer i, errors;
+logic [31:0] sram_data;
+logic [31:0] golden_data;
+// pass_done_o 觸發時進行驗證
     initial begin
         // 等待 pass_done_o 信號
         wait(pass_done_o);
         $display("Simulation finished successfully at time %0t", $time);
+    `ifdef POINTWISE_TYPE
+        // 驗證 GLB opsum 區塊與 golden 數據
+        $display("===== Verifying opsum data in SRAM with pointwise_golden.hex =====");
+        begin
+            errors = 0;
+            // 共 640 個 32-bit 值（2560 bytes）
+            for (i = 0; i < 640; i++) begin
+                // 從 SRAM 讀取 4 bytes 組成 32-bit 值（小端序）
+                sram_data = u_SRAM.memory[12288 + i];
+                // $display("SRAM addr 0x%h: 0x%h", (12288 + i), u_SRAM.memory[12288 + i]);
+                // 從 golden_opsum 讀取對應值
+                golden_data = golden_opsum[i];
+                // 比較
+                if (u_SRAM.memory[12288 + i] !== golden_data) begin
+                    $display("Mismatch at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+                             i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
+                    errors++;
+                end
+            end
+            // 報告結果
+            if (errors == 0) begin
+                $display("Verification PASSED: All opsum data matches golden data!");
+            end else begin
+                $display("Verification FAILED: Found %0d mismatches!", errors);
+            end
+        end
+    `elsif DEPTHWISE_TYPE
+        // 驗證 GLB opsum 區塊與 golden 數據
+        $display("===== Verifying opsum data in SRAM with depthwise_golden.hex =====");
+        // begin
+        //     integer i, errors = 0;
+        //     logic [31:0] sram_data, golden_data;
+        //     // opsum_GLB_base_addr_i = 0x0000_4000，SRAM 索引從 16384 開始
+        //     // 共 640 個 32-bit 值（2560 bytes）
+        //     for (i = 0; i < 640; i++) begin
+        //         // 從 SRAM 讀取 4 bytes 組成 32-bit 值（小端序）
+        //         sram_data = {u_SRAM.memory[16384 + i*4 + 3],
+        //                      u_SRAM.memory[16384 + i*4 + 2],
+        //                      u_SRAM.memory[16384 + i*4 + 1],
+        //                      u_SRAM.memory[16384 + i*4 + 0]};
+        //         // 從 golden_opsum 讀取對應值
+        //         golden_data = golden_opsum[i];
+        //         // 比較
+        //         if (sram_data !== golden_data) begin
+        //             $display("Mismatch at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+        //                      i, (16384 + i*4), sram_data, golden_data);
+        //             errors++;
+        //         end
+        //     end
+        //     // 報告結果
+        //     if (errors == 0) begin
+        //         $display("Verification PASSED: All opsum data matches golden data!");
+        //     end else begin
+        //         $display("Verification FAILED: Found %0d mismatches!", errors);
+        //     end
+        // end
+    `endif
+
         $finish;
     end
 

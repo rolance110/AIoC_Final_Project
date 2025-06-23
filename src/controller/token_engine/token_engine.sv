@@ -98,6 +98,17 @@ module token_engine (
     input  logic [31:0]        opsum_fifo_empty_matrix_i
 );
 
+logic [31:0] weight_GLB_base_addr_byte;
+assign weight_GLB_base_addr_byte = weight_GLB_base_addr_i << 2; // 轉換為 byte 地址
+logic [31:0] ifmap_GLB_base_addr_byte;
+assign ifmap_GLB_base_addr_byte = ifmap_GLB_base_addr_i << 2 ; // 轉換為 byte 地址
+logic [31:0] ipsum_GLB_base_addr_byte;
+assign ipsum_GLB_base_addr_byte = ipsum_GLB_base_addr_i << 2; // 轉換為 byte 地址
+logic [31:0] bias_GLB_base_addr_byte;
+assign bias_GLB_base_addr_byte = bias_GLB_base_addr_i << 2; // 轉換為 byte 地址
+logic [31:0] opsum_GLB_base_addr_byte;
+assign opsum_GLB_base_addr_byte = opsum_GLB_base_addr_i << 2; // 轉換為 byte 地址
+
 // 狀態相關訊號 (State-related signals)
 logic init_fifo_pe_state;
 logic normal_loop_state;
@@ -148,7 +159,7 @@ weight_load_controller weight_load_controller_dut(
     .clk(clk), .rst_n(rst_n),
     .weight_load_state_i(weight_load_state),
     .layer_type_i(layer_type_i),
-    .weight_GLB_base_addr_i(weight_GLB_base_addr_i),
+    .weight_GLB_base_addr_i(weight_GLB_base_addr_byte),
     .glb_read_data_i(glb_read_data_i),
  
     .weight_addr_o(weight_addr),
@@ -221,10 +232,10 @@ L2C_init_fifo_pe #(
     .rst_n(rst_n),
 //* input
     .init_fifo_pe_state_i(init_fifo_pe_state),   // 啟動初始化
-    .ifmap_glb_base_addr_i(ifmap_GLB_base_addr_i), // ifmap base address 由 TB 配置
-    .ipsum_glb_base_addr_i(ipsum_GLB_base_addr_i), // ipsum FIFO base address 由 TB 配置
-    .opsum_glb_base_addr_i(opsum_GLB_base_addr_i), // opsum FIFO base address 由 TB 配置
-    .bias_glb_base_addr_i(bias_GLB_base_addr_i),   // bias  FIFO base address 由 TB 配置
+    .ifmap_glb_base_addr_i(ifmap_GLB_base_addr_byte), // ifmap base address 由 TB 配置
+    .ipsum_glb_base_addr_i(ipsum_GLB_base_addr_byte), // ipsum FIFO base address 由 TB 配置
+    .opsum_glb_base_addr_i(opsum_GLB_base_addr_byte), // opsum FIFO base address 由 TB 配置
+    .bias_glb_base_addr_i(bias_GLB_base_addr_byte),   // bias  FIFO base address 由 TB 配置
     .is_bias_i(is_bias_i), // 判斷現在 ipsum_fifo 是要輸入 bias or ipsum
 
     //* For 3x3 convolution pad

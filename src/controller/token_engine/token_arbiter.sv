@@ -14,7 +14,7 @@ module token_arbiter (
     input  logic [31:0] ipsum_read_addr_matrix_i [31:0],
     input  logic [31:0] opsum_write_addr_matrix_i [31:0],
 
-    input logic [31:0] opsum_fifo_pop_data_matrix_i [31:0], // 32-bit data for each write
+    input logic [31:0] opsum_fifo_pop_data_matrix_i [31:0], // 16-bit data for each write
 
 //* to GLB read sel
     output logic        glb_read_o,
@@ -31,7 +31,11 @@ module token_arbiter (
 
 logic [31:0] glb_write_addr;
 logic [31:0] glb_read_addr;
-
+logic [31:0] glb_write_data_full;
+logic glb_need_write;
+logic glb_need_read;
+assign glb_need_write = opsum_write_req_matrix_i != 32'd0;
+assign glb_need_read = ifmap_read_req_matrix_i != 32'd0 || ipsum_read_req_matrix_i != 32'd0;
 always_comb begin
     if(glb_write_o)
         glb_addr_o = glb_write_addr;
@@ -40,6 +44,16 @@ always_comb begin
     else 
         glb_addr_o = 32'd0;
 end
+
+always_comb begin
+    case (glb_write_web_o)
+        4'b0011: glb_write_data_o = {16'b0, glb_write_data_full[15:0]}; // write lower 16 bits
+        4'b1100: glb_write_data_o = {glb_write_data_full[15:0], 16'b0}; // write higher 16 bits
+        4'b1111: glb_write_data_o = glb_write_data_full; // write both 16 bits 
+        default: glb_write_data_o = 32'b0; // default to zero for any other web==========
+    endcase
+end
+
 
 
 
@@ -56,103 +70,103 @@ end
 
 always_comb begin
     if (opsum_write_req_matrix_buf[0]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[0];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[0];
     end
     else if (opsum_write_req_matrix_buf[1]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[1];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[1];
     end
     else if (opsum_write_req_matrix_buf[2]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[2];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[2];
     end
     else if (opsum_write_req_matrix_buf[3]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[3];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[3];
     end
     else if (opsum_write_req_matrix_buf[4]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[4];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[4];
     end
     else if (opsum_write_req_matrix_buf[5]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[5];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[5];
     end
     else if (opsum_write_req_matrix_buf[6]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[6];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[6];
     end
     else if (opsum_write_req_matrix_buf[7]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[7];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[7];
     end
     else if (opsum_write_req_matrix_buf[8]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[8];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[8];
     end
     else if (opsum_write_req_matrix_buf[9]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[9];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[9];
     end
     else if (opsum_write_req_matrix_buf[10]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[10];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[10];
     end
     else if (opsum_write_req_matrix_buf[11]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[11];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[11];
     end
     else if (opsum_write_req_matrix_buf[12]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[12];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[12];
     end
     else if (opsum_write_req_matrix_buf[13]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[13];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[13];
     end
     else if (opsum_write_req_matrix_buf[14]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[14];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[14];
     end
     else if (opsum_write_req_matrix_buf[15]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[15];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[15];
     end
     else if (opsum_write_req_matrix_buf[16]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[16];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[16];
     end
     else if (opsum_write_req_matrix_buf[17]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[17];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[17];
     end
     else if (opsum_write_req_matrix_buf[18]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[18];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[18];
     end
     else if (opsum_write_req_matrix_buf[19]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[19];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[19];
     end
     else if (opsum_write_req_matrix_buf[20]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[20];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[20];
     end
     else if (opsum_write_req_matrix_buf[21]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[21];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[21];
     end
     else if (opsum_write_req_matrix_buf[22]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[22];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[22];
     end
     else if (opsum_write_req_matrix_buf[23]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[23];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[23];
     end
     else if (opsum_write_req_matrix_buf[24]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[24];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[24];
     end
     else if (opsum_write_req_matrix_buf[25]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[25];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[25];
     end
     else if (opsum_write_req_matrix_buf[26]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[26];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[26];
     end
     else if (opsum_write_req_matrix_buf[27]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[27];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[27];
     end
     else if (opsum_write_req_matrix_buf[28]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[28];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[28];
     end
     else if (opsum_write_req_matrix_buf[29]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[29];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[29];
     end
     else if (opsum_write_req_matrix_buf[30]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[30];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[30];
     end
     else if (opsum_write_req_matrix_buf[31]) begin
-        glb_write_data_o = opsum_fifo_pop_data_matrix_i[31];
+        glb_write_data_full = opsum_fifo_pop_data_matrix_i[31];
     end
     else begin
-        glb_write_data_o = 32'd0;
+        glb_write_data_full = 32'd0;
     end
 end
 
@@ -435,7 +449,7 @@ always_comb begin
         glb_read_o  = 1'b1;
         glb_read_addr = weight_addr_i;
     end
-    else if (!glb_write_o) begin
+    else if (!glb_write_o  && !glb_need_write) begin
         if (ifmap_read_req_matrix_i[0]) begin
             glb_read_o  = 1'b1;
             glb_read_addr = ifmap_read_addr_matrix_i[0];

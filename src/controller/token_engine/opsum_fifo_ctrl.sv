@@ -115,7 +115,7 @@ end
     // 讀取地址管理
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
-        write_ptr <= -16'd2;
+        write_ptr <= 16'd0;
     else if (opsum_fifo_pop_o)
         write_ptr <= write_ptr + 16'd2; // opsum 2 byte
 end
@@ -154,32 +154,33 @@ end
 // CAN_PUSH 由外部 module 控制
 assign opsum_fifo_push_o = /*(*/((op_cs == CAN_PUSH) && pe_array_move_i) /*|| ((op_cs == IDLE) && after_preheat_opsum_push_one_i))*/ && opsum_fifo_mask_i && !opsum_fifo_full_i;
 
-logic opsum_glb_write_type_o; // 0: lower 16 bits, 1: higher 16 bits
+// logic opsum_glb_write_type_o; // 0: lower 16 bits, 1: higher 16 bits
 
-always_comb begin
-    case(opsum_glb_write_addr_o[1])
-        1'b0: opsum_glb_write_type_o = 1'b0; // load lower 16 bits
-        1'b1: opsum_glb_write_type_o = 1'b1; // load higher 16 bits
-        default: opsum_glb_write_type_o = 1'b0;
-    endcase
-end
+// always_comb begin
+//     case(opsum_glb_write_addr_o[1])
+//         1'b0: opsum_glb_write_type_o = 1'b0; // load lower 16 bits
+//         1'b1: opsum_glb_write_type_o = 1'b1; // load higher 16 bits
+//         default: opsum_glb_write_type_o = 1'b0;
+//     endcase
+// end
 
-always_comb begin
-    if(opsum_fifo_pop_mod_o == 1'b0)
-        case (opsum_glb_write_type_o)
-            1'b0: opsum_glb_write_data_o = {16'd0,opsum_fifo_pop_data_i[15:0]}; // load first byte
-            1'b1: opsum_glb_write_data_o = {opsum_fifo_pop_data_i[15:0],16'd0}; // load second byte
-            default: opsum_glb_write_data_o = 32'h00; // default to first byte for any other count
-        endcase
-    else // burst mod
-        opsum_glb_write_data_o = opsum_fifo_pop_data_i;
-end
+// always_comb begin
+//     if(opsum_fifo_pop_mod_o == 1'b0)
+//         case (opsum_glb_write_type_o)
+//             1'b0: opsum_glb_write_data_o = {16'd0,opsum_fifo_pop_data_i[15:0]}; // load first byte //fixme: 目前 web 要 delay 1 cyle
+//             1'b1: opsum_glb_write_data_o = {opsum_fifo_pop_data_i[15:0],16'd0}; // load second byte //fixme:目前 web 要 delay 1 cyle
+//             default: opsum_glb_write_data_o = 32'h00; // default to first byte for any other count
+//         endcase
+//     else // burst mod
+//         opsum_glb_write_data_o = opsum_fifo_pop_data_i;
+// end
+assign opsum_glb_write_data_o = opsum_fifo_pop_data_i;
 //web
 always_comb begin
     if(opsum_fifo_pop_mod_o == 1'b0)
-        case (opsum_glb_write_type_o)
-            1'b0: opsum_glb_write_web_o = 4'b0011; // load first byte
-            1'b1: opsum_glb_write_web_o = 4'b1100; // load second byte
+        case (opsum_glb_write_addr_o[1])
+            1'b0: opsum_glb_write_web_o = 4'b0011; // store lower 2 bytes
+            1'b1: opsum_glb_write_web_o = 4'b1100; // store higher 2 bytes
             default: opsum_glb_write_web_o = 4'b0000; // default to first byte for any other count
         endcase
     else // burst mod
