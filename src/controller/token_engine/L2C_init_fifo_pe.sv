@@ -83,7 +83,7 @@ always_ff@(posedge clk or negedge rst_n)begin
         end
     end
     else if(layer_type_i == `POINTWISE && init_fifo_pe_state_i)begin
-    // input channel 0
+     // input channel 0
         ifmap_fifo_base_addr_o[0] <= ifmap_glb_base_addr_i;
     // input channel 1
         ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i + tile_n_i;

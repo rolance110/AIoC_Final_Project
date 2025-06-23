@@ -125,403 +125,387 @@ always_ff@(posedge clk or negedge rst_n) begin
             end
         end
         `DEPTHWISE: begin // 0 -> 1 -> 2
-        // channel 1
-            // row1
-            if(weight_read_cnt == 32'd0)
-                weight_load_en_matrix_o[0][0] <= 1'b1;
-            else if(weight_read_cnt == 32'd1)begin
-                weight_load_en_matrix_o[0][0] <= 1'b0;
-                weight_load_en_matrix_o[0][1] <= 1'b1;
-            end
+    // channel 1
+            // col 1 (down to top)
+            if(weight_read_cnt == 32'd1)
+                weight_load_en_matrix_o[2][0] <= 1'b1;
             else if(weight_read_cnt == 32'd2)begin
-                weight_load_en_matrix_o[0][1] <= 1'b0;
-                weight_load_en_matrix_o[0][2] <= 1'b1;
-            end
-            // row2
-            else if(weight_read_cnt == 32'd3)begin
-                weight_load_en_matrix_o[0][2] <= 1'b0;
+                weight_load_en_matrix_o[2][0] <= 1'b0;
                 weight_load_en_matrix_o[1][0] <= 1'b1;
             end
-            else if(weight_read_cnt == 32'd4)begin
+            else if(weight_read_cnt == 32'd3)begin
                 weight_load_en_matrix_o[1][0] <= 1'b0;
-                weight_load_en_matrix_o[1][1] <= 1'b1;
+                weight_load_en_matrix_o[0][0] <= 1'b1;
             end
-            else if(weight_read_cnt == 32'd5)begin  
-                weight_load_en_matrix_o[1][1] <= 1'b0;
-                weight_load_en_matrix_o[1][2] <= 1'b1;
-            end
-            // row3
-            else if(weight_read_cnt == 32'd6)begin
-                weight_load_en_matrix_o[1][2] <= 1'b0;
-                weight_load_en_matrix_o[2][0] <= 1'b1;
-            end
-            else if(weight_read_cnt == 32'd7)begin
-                weight_load_en_matrix_o[2][0] <= 1'b0;
+            // col 2 (down to top)
+            else if(weight_read_cnt == 32'd4)begin
+                weight_load_en_matrix_o[0][0] <= 1'b0;
                 weight_load_en_matrix_o[2][1] <= 1'b1;
             end
-            else if(weight_read_cnt == 32'd8)begin
+            else if(weight_read_cnt == 32'd5)begin
                 weight_load_en_matrix_o[2][1] <= 1'b0;
+                weight_load_en_matrix_o[1][1] <= 1'b1;
+            end
+            else if(weight_read_cnt == 32'd6)begin  
+                weight_load_en_matrix_o[1][1] <= 1'b0;
+                weight_load_en_matrix_o[0][1] <= 1'b1;
+            end
+            // col 3 (down to top)
+            else if(weight_read_cnt == 32'd7)begin
+                weight_load_en_matrix_o[0][1] <= 1'b0;
                 weight_load_en_matrix_o[2][2] <= 1'b1;
             end
-        // channel 2
-            // row1
-            else if(weight_read_cnt == 32'd9)begin
+            else if(weight_read_cnt == 32'd8)begin
                 weight_load_en_matrix_o[2][2] <= 1'b0;
-                weight_load_en_matrix_o[3][3] <= 1'b1;
+                weight_load_en_matrix_o[1][2] <= 1'b1;
             end
+            else if(weight_read_cnt == 32'd9)begin
+                weight_load_en_matrix_o[1][2] <= 1'b0;
+                weight_load_en_matrix_o[0][2] <= 1'b1;
+            end
+    // channel 2
+            // col 1 (down to top)
             else if(weight_read_cnt == 32'd10)begin
-                weight_load_en_matrix_o[3][3] <= 1'b0;
-                weight_load_en_matrix_o[3][4] <= 1'b1;
-            end
-            else if(weight_read_cnt == 32'd11)begin
-                weight_load_en_matrix_o[3][4] <= 1'b0;
-                weight_load_en_matrix_o[3][5] <= 1'b1;
-            end
-            // row2
-            else if(weight_read_cnt == 32'd12)begin
-                weight_load_en_matrix_o[3][5] <= 1'b0;
-                weight_load_en_matrix_o[4][3] <= 1'b1;
-            end
-            else if(weight_read_cnt == 32'd13)begin
-                weight_load_en_matrix_o[4][3] <= 1'b0;
-                weight_load_en_matrix_o[4][4] <= 1'b1;
-            end
-            else if(weight_read_cnt == 32'd14)begin
-                weight_load_en_matrix_o[4][4] <= 1'b0;
-                weight_load_en_matrix_o[4][5] <= 1'b1;
-            end
-            // row3
-            else if(weight_read_cnt == 32'd15)begin
-                weight_load_en_matrix_o[4][5] <= 1'b0;
+                weight_load_en_matrix_o[0][2] <= 1'b0;
                 weight_load_en_matrix_o[5][3] <= 1'b1;
             end
-            else if(weight_read_cnt == 32'd16)begin
+            else if(weight_read_cnt == 32'd11)begin
                 weight_load_en_matrix_o[5][3] <= 1'b0;
+                weight_load_en_matrix_o[4][3] <= 1'b1;
+            end
+            else if(weight_read_cnt == 32'd12)begin
+                weight_load_en_matrix_o[4][3] <= 1'b0;
+                weight_load_en_matrix_o[3][3] <= 1'b1;
+            end
+            // col 2 (down to top)
+            else if(weight_read_cnt == 32'd13)begin
+                weight_load_en_matrix_o[3][3] <= 1'b0;
                 weight_load_en_matrix_o[5][4] <= 1'b1;
             end
-            else if(weight_read_cnt == 32'd17)begin
+            else if(weight_read_cnt == 32'd14)begin
                 weight_load_en_matrix_o[5][4] <= 1'b0;
-                weight_load_en_matrix_o[5][5] <= 1'b1;  
+                weight_load_en_matrix_o[4][4] <= 1'b1;
             end
-        // channel 3
-            // row1
-            else if(weight_read_cnt == 32'd18)begin
+            else if(weight_read_cnt == 32'd15)begin
+                weight_load_en_matrix_o[4][4] <= 1'b0;
+                weight_load_en_matrix_o[3][4] <= 1'b1;
+            end
+            // col 3 (down to top)
+            else if(weight_read_cnt == 32'd16)begin
+                weight_load_en_matrix_o[3][4] <= 1'b0;
+                weight_load_en_matrix_o[5][5] <= 1'b1;
+            end
+            else if(weight_read_cnt == 32'd17)begin
                 weight_load_en_matrix_o[5][5] <= 1'b0;
-                weight_load_en_matrix_o[6][6] <= 1'b1;
+                weight_load_en_matrix_o[4][5] <= 1'b1;
             end
+            else if(weight_read_cnt == 32'd18)begin
+                weight_load_en_matrix_o[4][5] <= 1'b0;
+                weight_load_en_matrix_o[3][5] <= 1'b1;  
+            end
+
+    // channel 3 －－ rows 6-8, cols 6-8
             else if(weight_read_cnt == 32'd19)begin
-                weight_load_en_matrix_o[6][6] <= 1'b0;
-                weight_load_en_matrix_o[6][7] <= 1'b1;
+                weight_load_en_matrix_o[3][5] <= 1'b0;        // clear  chan-2 最後格 (3,5)
+                weight_load_en_matrix_o[8][6] <= 1'b1;        // set    (8,6)
             end
             else if(weight_read_cnt == 32'd20)begin
-                weight_load_en_matrix_o[6][7] <= 1'b0;
-                weight_load_en_matrix_o[6][8] <= 1'b1;
+                weight_load_en_matrix_o[8][6] <= 1'b0;
+                weight_load_en_matrix_o[7][6] <= 1'b1;        // (7,6)
             end
-            // row2
             else if(weight_read_cnt == 32'd21)begin
-                weight_load_en_matrix_o[6][8] <= 1'b0;
-                weight_load_en_matrix_o[7][6] <= 1'b1;
+                weight_load_en_matrix_o[7][6] <= 1'b0;
+                weight_load_en_matrix_o[6][6] <= 1'b1;        // (6,6)
             end
             else if(weight_read_cnt == 32'd22)begin
-                weight_load_en_matrix_o[7][6] <= 1'b0;
-                weight_load_en_matrix_o[7][7] <= 1'b1;
+                weight_load_en_matrix_o[6][6] <= 1'b0;
+                weight_load_en_matrix_o[8][7] <= 1'b1;        // (8,7)
             end
             else if(weight_read_cnt == 32'd23)begin
-                weight_load_en_matrix_o[7][7] <= 1'b0;
-                weight_load_en_matrix_o[7][8] <= 1'b1;
+                weight_load_en_matrix_o[8][7] <= 1'b0;
+                weight_load_en_matrix_o[7][7] <= 1'b1;        // (7,7)
             end
-            // row3
             else if(weight_read_cnt == 32'd24)begin
-                weight_load_en_matrix_o[7][8] <= 1'b0;
-                weight_load_en_matrix_o[8][6] <= 1'b1;
+                weight_load_en_matrix_o[7][7] <= 1'b0;
+                weight_load_en_matrix_o[6][7] <= 1'b1;        // (6,7)
             end
             else if(weight_read_cnt == 32'd25)begin
-                weight_load_en_matrix_o[8][6] <= 1'b0;
-                weight_load_en_matrix_o[8][7] <= 1'b1;
+                weight_load_en_matrix_o[6][7] <= 1'b0;
+                weight_load_en_matrix_o[8][8] <= 1'b1;        // (8,8)
             end
             else if(weight_read_cnt == 32'd26)begin
-                weight_load_en_matrix_o[8][7] <= 1'b0;
-                weight_load_en_matrix_o[8][8] <= 1'b1;
+                weight_load_en_matrix_o[8][8] <= 1'b0;
+                weight_load_en_matrix_o[7][8] <= 1'b1;        // (7,8)
             end
-        // channel 4
-            // row1
             else if(weight_read_cnt == 32'd27)begin
-                weight_load_en_matrix_o[8][8] <= 1'b0;  // last of channel 3
-                weight_load_en_matrix_o[9][9] <= 1'b1;
+                weight_load_en_matrix_o[7][8] <= 1'b0;
+                weight_load_en_matrix_o[6][8] <= 1'b1;        // (6,8)
             end
+
+    // channel 4 －－ rows 9-11, cols 9-11
             else if(weight_read_cnt == 32'd28)begin
-                weight_load_en_matrix_o[9][9] <= 1'b0;
-                weight_load_en_matrix_o[9][10] <= 1'b1;
+                weight_load_en_matrix_o[6][8] <= 1'b0;        // clear  chan-3 最後格 (6,8)
+                weight_load_en_matrix_o[11][9] <= 1'b1;       // (11,9)
             end
             else if(weight_read_cnt == 32'd29)begin
-                weight_load_en_matrix_o[9][10] <= 1'b0;
-                weight_load_en_matrix_o[9][11] <= 1'b1;
+                weight_load_en_matrix_o[11][9] <= 1'b0;
+                weight_load_en_matrix_o[10][9] <= 1'b1;       // (10,9)
             end
-            // row2
             else if(weight_read_cnt == 32'd30)begin
-                weight_load_en_matrix_o[9][11] <= 1'b0;
-                weight_load_en_matrix_o[10][9] <= 1'b1;
+                weight_load_en_matrix_o[10][9] <= 1'b0;
+                weight_load_en_matrix_o[9][9]  <= 1'b1;       // (9,9)
             end
             else if(weight_read_cnt == 32'd31)begin
-                weight_load_en_matrix_o[10][9] <= 1'b0;
-                weight_load_en_matrix_o[10][10] <= 1'b1;
+                weight_load_en_matrix_o[9][9]  <= 1'b0;
+                weight_load_en_matrix_o[11][10]<= 1'b1;       // (11,10)
             end
             else if(weight_read_cnt == 32'd32)begin
-                weight_load_en_matrix_o[10][10] <= 1'b0;
-                weight_load_en_matrix_o[10][11] <= 1'b1;
+                weight_load_en_matrix_o[11][10]<= 1'b0;
+                weight_load_en_matrix_o[10][10]<= 1'b1;       // (10,10)
             end
-            // row3
             else if(weight_read_cnt == 32'd33)begin
-                weight_load_en_matrix_o[10][11] <= 1'b0;
-                weight_load_en_matrix_o[11][9] <= 1'b1;
+                weight_load_en_matrix_o[10][10]<= 1'b0;
+                weight_load_en_matrix_o[9][10] <= 1'b1;       // (9,10)
             end
             else if(weight_read_cnt == 32'd34)begin
-                weight_load_en_matrix_o[11][9] <= 1'b0;
-                weight_load_en_matrix_o[11][10] <= 1'b1;
+                weight_load_en_matrix_o[9][10] <= 1'b0;
+                weight_load_en_matrix_o[11][11]<= 1'b1;       // (11,11)
             end
             else if(weight_read_cnt == 32'd35)begin
-                weight_load_en_matrix_o[11][10] <= 1'b0;
-                weight_load_en_matrix_o[11][11] <= 1'b1;
+                weight_load_en_matrix_o[11][11]<= 1'b0;
+                weight_load_en_matrix_o[10][11]<= 1'b1;       // (10,11)
             end
-        // channel 5
-            // row1
             else if(weight_read_cnt == 32'd36)begin
-                weight_load_en_matrix_o[11][11] <= 1'b0;
-                weight_load_en_matrix_o[12][12] <= 1'b1;
+                weight_load_en_matrix_o[10][11]<= 1'b0;
+                weight_load_en_matrix_o[9][11] <= 1'b1;       // (9,11)
             end
+
+    // channel 5 －－ rows 12-14, cols 12-14
             else if(weight_read_cnt == 32'd37)begin
-                weight_load_en_matrix_o[12][12] <= 1'b0;
-                weight_load_en_matrix_o[12][13] <= 1'b1;
+                weight_load_en_matrix_o[9][11] <= 1'b0;
+                weight_load_en_matrix_o[14][12]<= 1'b1;       // (14,12)
             end
             else if(weight_read_cnt == 32'd38)begin
-                weight_load_en_matrix_o[12][13] <= 1'b0;
-                weight_load_en_matrix_o[12][14] <= 1'b1;
+                weight_load_en_matrix_o[14][12]<= 1'b0;
+                weight_load_en_matrix_o[13][12]<= 1'b1;       // (13,12)
             end
-            // row2
             else if(weight_read_cnt == 32'd39)begin
-                weight_load_en_matrix_o[12][14] <= 1'b0;
-                weight_load_en_matrix_o[13][12] <= 1'b1;
+                weight_load_en_matrix_o[13][12]<= 1'b0;
+                weight_load_en_matrix_o[12][12]<= 1'b1;       // (12,12)
             end
             else if(weight_read_cnt == 32'd40)begin
-                weight_load_en_matrix_o[13][12] <= 1'b0;
-                weight_load_en_matrix_o[13][13] <= 1'b1;
+                weight_load_en_matrix_o[12][12]<= 1'b0;
+                weight_load_en_matrix_o[14][13]<= 1'b1;       // (14,13)
             end
             else if(weight_read_cnt == 32'd41)begin
-                weight_load_en_matrix_o[13][13] <= 1'b0;
-                weight_load_en_matrix_o[13][14] <= 1'b1;
+                weight_load_en_matrix_o[14][13]<= 1'b0;
+                weight_load_en_matrix_o[13][13]<= 1'b1;       // (13,13)
             end
-            // row3
             else if(weight_read_cnt == 32'd42)begin
-                weight_load_en_matrix_o[13][14] <= 1'b0;
-                weight_load_en_matrix_o[14][12] <= 1'b1;
+                weight_load_en_matrix_o[13][13]<= 1'b0;
+                weight_load_en_matrix_o[12][13]<= 1'b1;       // (12,13)
             end
             else if(weight_read_cnt == 32'd43)begin
-                weight_load_en_matrix_o[14][12] <= 1'b0;
-                weight_load_en_matrix_o[14][13] <= 1'b1;
+                weight_load_en_matrix_o[12][13]<= 1'b0;
+                weight_load_en_matrix_o[14][14]<= 1'b1;       // (14,14)
             end
             else if(weight_read_cnt == 32'd44)begin
-                weight_load_en_matrix_o[14][13] <= 1'b0;
-                weight_load_en_matrix_o[14][14] <= 1'b1;
+                weight_load_en_matrix_o[14][14]<= 1'b0;
+                weight_load_en_matrix_o[13][14]<= 1'b1;       // (13,14)
             end
-        // channel 6
-            // row1
             else if(weight_read_cnt == 32'd45)begin
-                weight_load_en_matrix_o[14][14] <= 1'b0;
-                weight_load_en_matrix_o[15][15] <= 1'b1;
+                weight_load_en_matrix_o[13][14]<= 1'b0;
+                weight_load_en_matrix_o[12][14]<= 1'b1;       // (12,14)
             end
+
+    // channel 6 －－ rows 15-17, cols 15-17
             else if(weight_read_cnt == 32'd46)begin
-                weight_load_en_matrix_o[15][15] <= 1'b0;
-                weight_load_en_matrix_o[15][16] <= 1'b1;
+                weight_load_en_matrix_o[12][14]<= 1'b0;
+                weight_load_en_matrix_o[17][15]<= 1'b1;       // (17,15)
             end
             else if(weight_read_cnt == 32'd47)begin
-                weight_load_en_matrix_o[15][16] <= 1'b0;
-                weight_load_en_matrix_o[15][17] <= 1'b1;
+                weight_load_en_matrix_o[17][15]<= 1'b0;
+                weight_load_en_matrix_o[16][15]<= 1'b1;       // (16,15)
             end
-            // row2
             else if(weight_read_cnt == 32'd48)begin
-                weight_load_en_matrix_o[15][17] <= 1'b0;
-                weight_load_en_matrix_o[16][15] <= 1'b1;
+                weight_load_en_matrix_o[16][15]<= 1'b0;
+                weight_load_en_matrix_o[15][15]<= 1'b1;       // (15,15)
             end
             else if(weight_read_cnt == 32'd49)begin
-                weight_load_en_matrix_o[16][15] <= 1'b0;
-                weight_load_en_matrix_o[16][16] <= 1'b1;
+                weight_load_en_matrix_o[15][15]<= 1'b0;
+                weight_load_en_matrix_o[17][16]<= 1'b1;       // (17,16)
             end
             else if(weight_read_cnt == 32'd50)begin
-                weight_load_en_matrix_o[16][16] <= 1'b0;
-                weight_load_en_matrix_o[16][17] <= 1'b1;
+                weight_load_en_matrix_o[17][16]<= 1'b0;
+                weight_load_en_matrix_o[16][16]<= 1'b1;       // (16,16)
             end
-            // row3
             else if(weight_read_cnt == 32'd51)begin
-                weight_load_en_matrix_o[16][17] <= 1'b0;
-                weight_load_en_matrix_o[17][15] <= 1'b1;
+                weight_load_en_matrix_o[16][16]<= 1'b0;
+                weight_load_en_matrix_o[15][16]<= 1'b1;       // (15,16)
             end
             else if(weight_read_cnt == 32'd52)begin
-                weight_load_en_matrix_o[17][15] <= 1'b0;
-                weight_load_en_matrix_o[17][16] <= 1'b1;
+                weight_load_en_matrix_o[15][16]<= 1'b0;
+                weight_load_en_matrix_o[17][17]<= 1'b1;       // (17,17)
             end
             else if(weight_read_cnt == 32'd53)begin
-                weight_load_en_matrix_o[17][16] <= 1'b0;
-                weight_load_en_matrix_o[17][17] <= 1'b1;
+                weight_load_en_matrix_o[17][17]<= 1'b0;
+                weight_load_en_matrix_o[16][17]<= 1'b1;       // (16,17)
             end
-        // channel 7
-            // row1
             else if(weight_read_cnt == 32'd54)begin
-                weight_load_en_matrix_o[17][17] <= 1'b0;
-                weight_load_en_matrix_o[18][18] <= 1'b1;
+                weight_load_en_matrix_o[16][17]<= 1'b0;
+                weight_load_en_matrix_o[15][17]<= 1'b1;       // (15,17)
             end
+
+    // channel 7 －－ rows 18-20, cols 18-20
             else if(weight_read_cnt == 32'd55)begin
-                weight_load_en_matrix_o[18][18] <= 1'b0;
-                weight_load_en_matrix_o[18][19] <= 1'b1;
+                weight_load_en_matrix_o[15][17]<= 1'b0;
+                weight_load_en_matrix_o[20][18]<= 1'b1;       // (20,18)
             end
             else if(weight_read_cnt == 32'd56)begin
-                weight_load_en_matrix_o[18][19] <= 1'b0;
-                weight_load_en_matrix_o[18][20] <= 1'b1;
+                weight_load_en_matrix_o[20][18]<= 1'b0;
+                weight_load_en_matrix_o[19][18]<= 1'b1;       // (19,18)
             end
-            // row2
             else if(weight_read_cnt == 32'd57)begin
-                weight_load_en_matrix_o[18][20] <= 1'b0;
-                weight_load_en_matrix_o[19][18] <= 1'b1;
+                weight_load_en_matrix_o[19][18]<= 1'b0;
+                weight_load_en_matrix_o[18][18]<= 1'b1;       // (18,18)
             end
             else if(weight_read_cnt == 32'd58)begin
-                weight_load_en_matrix_o[19][18] <= 1'b0;
-                weight_load_en_matrix_o[19][19] <= 1'b1;
+                weight_load_en_matrix_o[18][18]<= 1'b0;
+                weight_load_en_matrix_o[20][19]<= 1'b1;       // (20,19)
             end
             else if(weight_read_cnt == 32'd59)begin
-                weight_load_en_matrix_o[19][19] <= 1'b0;
-                weight_load_en_matrix_o[19][20] <= 1'b1;
+                weight_load_en_matrix_o[20][19]<= 1'b0;
+                weight_load_en_matrix_o[19][19]<= 1'b1;       // (19,19)
             end
-            // row3
             else if(weight_read_cnt == 32'd60)begin
-                weight_load_en_matrix_o[19][20] <= 1'b0;
-                weight_load_en_matrix_o[20][18] <= 1'b1;
+                weight_load_en_matrix_o[19][19]<= 1'b0;
+                weight_load_en_matrix_o[18][19]<= 1'b1;       // (18,19)
             end
             else if(weight_read_cnt == 32'd61)begin
-                weight_load_en_matrix_o[20][18] <= 1'b0;
-                weight_load_en_matrix_o[20][19] <= 1'b1;
+                weight_load_en_matrix_o[18][19]<= 1'b0;
+                weight_load_en_matrix_o[20][20]<= 1'b1;       // (20,20)
             end
             else if(weight_read_cnt == 32'd62)begin
-                weight_load_en_matrix_o[20][19] <= 1'b0;
-                weight_load_en_matrix_o[20][20] <= 1'b1;
+                weight_load_en_matrix_o[20][20]<= 1'b0;
+                weight_load_en_matrix_o[19][20]<= 1'b1;       // (19,20)
             end
-        // channel 8
-            // row1
             else if(weight_read_cnt == 32'd63)begin
-                weight_load_en_matrix_o[20][20] <= 1'b0;
-                weight_load_en_matrix_o[21][21] <= 1'b1;
+                weight_load_en_matrix_o[19][20]<= 1'b0;
+                weight_load_en_matrix_o[18][20]<= 1'b1;       // (18,20)
             end
+
+    // channel 8 －－ rows 21-23, cols 21-23
             else if(weight_read_cnt == 32'd64)begin
-                weight_load_en_matrix_o[21][21] <= 1'b0;
-                weight_load_en_matrix_o[21][22] <= 1'b1;
+                weight_load_en_matrix_o[18][20]<= 1'b0;
+                weight_load_en_matrix_o[23][21]<= 1'b1;       // (23,21)
             end
             else if(weight_read_cnt == 32'd65)begin
-                weight_load_en_matrix_o[21][22] <= 1'b0;
-                weight_load_en_matrix_o[21][23] <= 1'b1;
+                weight_load_en_matrix_o[23][21]<= 1'b0;
+                weight_load_en_matrix_o[22][21]<= 1'b1;       // (22,21)
             end
-            // row2
             else if(weight_read_cnt == 32'd66)begin
-                weight_load_en_matrix_o[21][23] <= 1'b0;
-                weight_load_en_matrix_o[22][21] <= 1'b1;
+                weight_load_en_matrix_o[22][21]<= 1'b0;
+                weight_load_en_matrix_o[21][21]<= 1'b1;       // (21,21)
             end
             else if(weight_read_cnt == 32'd67)begin
-                weight_load_en_matrix_o[22][21] <= 1'b0;
-                weight_load_en_matrix_o[22][22] <= 1'b1;
+                weight_load_en_matrix_o[21][21]<= 1'b0;
+                weight_load_en_matrix_o[23][22]<= 1'b1;       // (23,22)
             end
             else if(weight_read_cnt == 32'd68)begin
-                weight_load_en_matrix_o[22][22] <= 1'b0;
-                weight_load_en_matrix_o[22][23] <= 1'b1;
+                weight_load_en_matrix_o[23][22]<= 1'b0;
+                weight_load_en_matrix_o[22][22]<= 1'b1;       // (22,22)
             end
-            // row3
             else if(weight_read_cnt == 32'd69)begin
-                weight_load_en_matrix_o[22][23] <= 1'b0;
-                weight_load_en_matrix_o[23][21] <= 1'b1;
+                weight_load_en_matrix_o[22][22]<= 1'b0;
+                weight_load_en_matrix_o[21][22]<= 1'b1;       // (21,22)
             end
             else if(weight_read_cnt == 32'd70)begin
-                weight_load_en_matrix_o[23][21] <= 1'b0;
-                weight_load_en_matrix_o[23][22] <= 1'b1;
+                weight_load_en_matrix_o[21][22]<= 1'b0;
+                weight_load_en_matrix_o[23][23]<= 1'b1;       // (23,23)
             end
             else if(weight_read_cnt == 32'd71)begin
-                weight_load_en_matrix_o[23][22] <= 1'b0;
-                weight_load_en_matrix_o[23][23] <= 1'b1;
+                weight_load_en_matrix_o[23][23]<= 1'b0;
+                weight_load_en_matrix_o[22][23]<= 1'b1;       // (22,23)
             end
-        // channel 9
-            // row1
             else if(weight_read_cnt == 32'd72)begin
-                weight_load_en_matrix_o[23][23] <= 1'b0;
-                weight_load_en_matrix_o[24][24] <= 1'b1;
+                weight_load_en_matrix_o[22][23]<= 1'b0;
+                weight_load_en_matrix_o[21][23]<= 1'b1;       // (21,23)
             end
+
+    // channel 9 －－ rows 24-26, cols 24-26
             else if(weight_read_cnt == 32'd73)begin
-                weight_load_en_matrix_o[24][24] <= 1'b0;
-                weight_load_en_matrix_o[24][25] <= 1'b1;
+                weight_load_en_matrix_o[21][23]<= 1'b0;
+                weight_load_en_matrix_o[26][24]<= 1'b1;       // (26,24)
             end
             else if(weight_read_cnt == 32'd74)begin
-                weight_load_en_matrix_o[24][25] <= 1'b0;
-                weight_load_en_matrix_o[24][26] <= 1'b1;
+                weight_load_en_matrix_o[26][24]<= 1'b0;
+                weight_load_en_matrix_o[25][24]<= 1'b1;       // (25,24)
             end
-            // row2
             else if(weight_read_cnt == 32'd75)begin
-                weight_load_en_matrix_o[24][26] <= 1'b0;
-                weight_load_en_matrix_o[25][24] <= 1'b1;
+                weight_load_en_matrix_o[25][24]<= 1'b0;
+                weight_load_en_matrix_o[24][24]<= 1'b1;       // (24,24)
             end
             else if(weight_read_cnt == 32'd76)begin
-                weight_load_en_matrix_o[25][24] <= 1'b0;
-                weight_load_en_matrix_o[25][25] <= 1'b1;
+                weight_load_en_matrix_o[24][24]<= 1'b0;
+                weight_load_en_matrix_o[26][25]<= 1'b1;       // (26,25)
             end
             else if(weight_read_cnt == 32'd77)begin
-                weight_load_en_matrix_o[25][25] <= 1'b0;
-                weight_load_en_matrix_o[25][26] <= 1'b1;
+                weight_load_en_matrix_o[26][25]<= 1'b0;
+                weight_load_en_matrix_o[25][25]<= 1'b1;       // (25,25)
             end
-            // row3
             else if(weight_read_cnt == 32'd78)begin
-                weight_load_en_matrix_o[25][26] <= 1'b0;
-                weight_load_en_matrix_o[26][24] <= 1'b1;
+                weight_load_en_matrix_o[25][25]<= 1'b0;
+                weight_load_en_matrix_o[24][25]<= 1'b1;       // (24,25)
             end
             else if(weight_read_cnt == 32'd79)begin
-                weight_load_en_matrix_o[26][24] <= 1'b0;
-                weight_load_en_matrix_o[26][25] <= 1'b1;
+                weight_load_en_matrix_o[24][25]<= 1'b0;
+                weight_load_en_matrix_o[26][26]<= 1'b1;       // (26,26)
             end
             else if(weight_read_cnt == 32'd80)begin
-                weight_load_en_matrix_o[26][25] <= 1'b0;
-                weight_load_en_matrix_o[26][26] <= 1'b1;
+                weight_load_en_matrix_o[26][26]<= 1'b0;
+                weight_load_en_matrix_o[25][26]<= 1'b1;       // (25,26)
             end
-        // channel 10
-            // row1
             else if(weight_read_cnt == 32'd81)begin
-                weight_load_en_matrix_o[26][26] <= 1'b0;
-                weight_load_en_matrix_o[27][27] <= 1'b1;
+                weight_load_en_matrix_o[25][26]<= 1'b0;
+                weight_load_en_matrix_o[24][26]<= 1'b1;       // (24,26)
             end
+
+    // channel 10 －－ rows 27-29, cols 27-29
             else if(weight_read_cnt == 32'd82)begin
-                weight_load_en_matrix_o[27][27] <= 1'b0;
-                weight_load_en_matrix_o[27][28] <= 1'b1;
+                weight_load_en_matrix_o[24][26]<= 1'b0;
+                weight_load_en_matrix_o[29][27]<= 1'b1;       // (29,27)
             end
             else if(weight_read_cnt == 32'd83)begin
-                weight_load_en_matrix_o[27][28] <= 1'b0;
-                weight_load_en_matrix_o[27][29] <= 1'b1;
+                weight_load_en_matrix_o[29][27]<= 1'b0;
+                weight_load_en_matrix_o[28][27]<= 1'b1;       // (28,27)
             end
-            // row2
             else if(weight_read_cnt == 32'd84)begin
-                weight_load_en_matrix_o[27][29] <= 1'b0;
-                weight_load_en_matrix_o[28][27] <= 1'b1;
+                weight_load_en_matrix_o[28][27]<= 1'b0;
+                weight_load_en_matrix_o[27][27]<= 1'b1;       // (27,27)
             end
             else if(weight_read_cnt == 32'd85)begin
-                weight_load_en_matrix_o[28][27] <= 1'b0;
-                weight_load_en_matrix_o[28][28] <= 1'b1;
+                weight_load_en_matrix_o[27][27]<= 1'b0;
+                weight_load_en_matrix_o[29][28]<= 1'b1;       // (29,28)
             end
             else if(weight_read_cnt == 32'd86)begin
-                weight_load_en_matrix_o[28][28] <= 1'b0;
-                weight_load_en_matrix_o[28][29] <= 1'b1;
+                weight_load_en_matrix_o[29][28]<= 1'b0;
+                weight_load_en_matrix_o[28][28]<= 1'b1;       // (28,28)
             end
-            // row3
             else if(weight_read_cnt == 32'd87)begin
-                weight_load_en_matrix_o[28][29] <= 1'b0;
-                weight_load_en_matrix_o[29][27] <= 1'b1;
+                weight_load_en_matrix_o[28][28]<= 1'b0;
+                weight_load_en_matrix_o[27][28]<= 1'b1;       // (27,28)
             end
             else if(weight_read_cnt == 32'd88)begin
-                weight_load_en_matrix_o[29][27] <= 1'b0;
-                weight_load_en_matrix_o[29][28] <= 1'b1;
+                weight_load_en_matrix_o[27][28]<= 1'b0;
+                weight_load_en_matrix_o[29][29]<= 1'b1;       // (29,29)
             end
             else if(weight_read_cnt == 32'd89)begin
-                weight_load_en_matrix_o[29][28] <= 1'b0;
-                weight_load_en_matrix_o[29][29] <= 1'b1;
+                weight_load_en_matrix_o[29][29]<= 1'b0;
+                weight_load_en_matrix_o[28][29]<= 1'b1;       // (28,29)
+            end
+            else if(weight_read_cnt == 32'd90)begin
+                weight_load_en_matrix_o[28][29]<= 1'b0;
+                weight_load_en_matrix_o[27][29]<= 1'b1;       // (27,29) ＊channel 10 最後一格
             end
         end
         default: begin // for other layer types, set all to 0
