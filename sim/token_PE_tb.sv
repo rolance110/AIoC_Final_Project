@@ -203,6 +203,13 @@ logic [31:0] write_data;
     conv_unit u_conv_unit (
         .clk(clk),
         .rst_n(rst_n),
+
+//* reset
+        .ifmap_fifo_reset_i(ifmap_fifo_reset_o),
+        .ipsum_fifo_reset_i(ipsum_fifo_reset_o),
+        .opsum_fifo_reset_i(opsum_fifo_reset_o),
+
+
         .layer_type(layer_type_i), // 與 token_engine 共用相同的 layer_type_i
         .push_ifmap_en(ifmap_fifo_push_matrix_o),
         .push_ifmap_mod(ifmap_fifo_push_mod_matrix_o),

@@ -507,6 +507,9 @@ always_ff@(posedge clk or negedge rst_n) begin
                 weight_load_en_matrix_o[28][29]<= 1'b0;
                 weight_load_en_matrix_o[27][29]<= 1'b1;       // (27,29) ＊channel 10 最後一格
             end
+            else if(weight_read_cnt == 32'd91)begin
+                weight_load_en_matrix_o[27][29]<= 1'b0;       // (27,29) ＊channel 10 最後一格
+            end
         end
         default: begin // for other layer types, set all to 0
             for (i = 0; i < 32; i = i + 1) begin

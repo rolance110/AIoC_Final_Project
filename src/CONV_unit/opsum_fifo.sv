@@ -9,7 +9,7 @@ module opsum_fifo #(
 )(
     input  logic           clk,
     input  logic           rst_n,
-
+    input logic opsum_fifo_reset_i, // Reset signal for FIFO
     // Push interface
     input  logic           push_en,
     input  logic [15:0]    push_data,
@@ -34,12 +34,26 @@ module opsum_fifo #(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             wr_ptr <= 2'd0;
+        else if (opsum_fifo_reset_i)
+            wr_ptr <= 2'd0; // Reset write pointer to 0
         else if (push_en && !full)
             wr_ptr <= (wr_ptr + 2'd1);
     end
     // === Write data ===
     always_ff @(posedge clk) begin
-        if (push_en && !full) begin
+        if(!rst_n) begin
+            mem[0] <= 16'd0;
+            mem[1] <= 16'd0;
+            mem[2] <= 16'd0;
+            mem[3] <= 16'd0;
+        end
+        else if (opsum_fifo_reset_i) begin
+            mem[0] <= 16'd0; // Reset all memory to 0
+            mem[1] <= 16'd0;
+            mem[2] <= 16'd0;
+            mem[3] <= 16'd0;
+        end
+        else if (push_en && !full) begin
             mem[wr_ptr] <= push_data;
         end
     end
@@ -48,6 +62,8 @@ module opsum_fifo #(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             rd_ptr <= 2'd0;
+        else if (opsum_fifo_reset_i)
+            rd_ptr <= 2'd0; // Reset read pointer to 0
         else if (pop_en && !empty && pop_mod == 1'b0)
             rd_ptr <= (rd_ptr + 2'd1);
         else if (pop_en && pop_mod == 1'b1 && full) //todo: only full can pop 32-bit
@@ -58,6 +74,8 @@ module opsum_fifo #(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             pop_data <= 32'd0;
+        else if (opsum_fifo_reset_i)
+            pop_data <= 32'd0; // Reset pop data to 0
         else if (pop_en && !empty) begin
             if (pop_mod == 1'b0)
                 pop_data <= {16'd0, mem[rd_ptr]};
@@ -84,6 +102,8 @@ module opsum_fifo #(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             count <= 3'd0;
+        else if (opsum_fifo_reset_i)
+            count <= 3'd0; // Reset count to 0
         else if (push_en && !full && pop_en && !empty && pop_mod == 1'b0) begin// push 1 pop 1
             count <= count; // no change
         end 

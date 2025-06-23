@@ -11,7 +11,7 @@ module opsum_fifo_bank #(
 )(
     input  logic             clk,
     input  logic             rst_n,
-
+    input logic opsum_fifo_reset_i, // Reset signal for FIFO
     // Push interfaces
     input  logic [31:0]            push_opsum_en,     // per-FIFO push enable
     input  logic [15:0]            push_opsum_data[31:0],   // per-FIFO 16-bit push data
@@ -33,6 +33,7 @@ module opsum_fifo_bank #(
             ) opsum_fifo_inst (
                 .clk        (clk),
                 .rst_n      (rst_n),
+                .opsum_fifo_reset_i (opsum_fifo_reset_i),
                 .push_en    (push_opsum_en[i]),
                 .push_data  (push_opsum_data[i]),
                 .full       (opsum_fifo_full[i]),

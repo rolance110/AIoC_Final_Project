@@ -11,7 +11,7 @@ module ifmap_fifo_bank #(
 )(
     input  logic           clk,
     input  logic           rst_n,
-
+    input logic ifmap_fifo_reset_i,
     // Push interfaces (one-hot per FIFO)
     input  logic [31:0]    push_ifmap_en,        // per-FIFO push enable
     input  logic [31:0]    push_ifmap_mod,       // per-FIFO mode: 0=8-bit,1=32-bit burst
@@ -33,6 +33,7 @@ module ifmap_fifo_bank #(
             ) fifo_inst (
                 .clk       (clk),
                 .rst_n     (rst_n),
+                .ifmap_fifo_reset_i (ifmap_fifo_reset_i),
                 .push_en   (push_ifmap_en[i]),
                 .push_mod  (push_ifmap_mod[i]),
                 .push_data (push_ifmap_data[i]),

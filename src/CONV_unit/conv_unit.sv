@@ -19,6 +19,11 @@ module conv_unit (
     input  logic               clk,
     input  logic               rst_n,
 
+//* reset
+    input logic ifmap_fifo_reset_i,
+    input logic ipsum_fifo_reset_i,
+    input logic opsum_fifo_reset_i,
+
 //* layer type
     input  logic [1:0]         layer_type,
 
@@ -76,6 +81,7 @@ module conv_unit (
     ) u_ifmap_fifo_bank (
         .clk               (clk),
         .rst_n             (rst_n),
+        .ifmap_fifo_reset_i (ifmap_fifo_reset_i),
         .push_ifmap_en     (push_ifmap_en),
         .push_ifmap_mod    (push_ifmap_mod),
         .push_ifmap_data   (push_ifmap_data),// broadcast 32-bit push data to 32 FIFOs
@@ -115,6 +121,7 @@ module conv_unit (
     ) u_ipsum_fifo_bank (
         .clk               (clk),
         .rst_n             (rst_n),
+        .ipsum_fifo_reset_i (ipsum_fifo_reset_i),
         .push_ipsum_en     (push_ipsum_en),
         .push_ipsum_mod    (push_ipsum_mod),
         .push_ipsum_data   (push_ipsum_data),// broadcast 32-bit push data to 32 FIFOs
@@ -142,6 +149,7 @@ module conv_unit (
     opsum_fifo_bank u_opsum_fifo_bank (
         .clk             (clk),
         .rst_n           (rst_n),
+        .opsum_fifo_reset_i (opsum_fifo_reset_i),
         .push_opsum_en   (opsum_push_en),
         .push_opsum_data (reducer_out),
         .pop_opsum_en    (opsum_pop_en),

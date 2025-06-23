@@ -11,7 +11,7 @@ module ipsum_fifo_bank #(
 )(
     input  logic           clk,
     input  logic           rst_n,
-
+    input logic ipsum_fifo_reset_i, // Reset signal for FIFO
     // Push interfaces (one-hot per FIFO) 
     input  logic [31:0]    push_ipsum_en,        // per-FIFO push enable
     input  logic [31:0]    push_ipsum_mod,       // per-FIFO mode: 0=16-bit,1=32-bit burst
@@ -33,6 +33,7 @@ module ipsum_fifo_bank #(
             ) ipsum_fifo_inst (
                 .clk       (clk),
                 .rst_n     (rst_n),
+                .ipsum_fifo_reset_i (ipsum_fifo_reset_i),
                 .push_en   (push_ipsum_en[i]),
                 .push_mod  (push_ipsum_mod[i]),
                 .push_data (push_ipsum_data[i]),

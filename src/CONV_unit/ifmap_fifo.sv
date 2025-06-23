@@ -9,7 +9,7 @@ module ifmap_fifo #(
 )(
     input  logic           clk,
     input  logic           rst_n,
-
+    input logic           ifmap_fifo_reset_i, // Reset signal for FIFO
     // Push interface
     input  logic           push_en,       // Push enable
     input  logic           push_mod,      // 0: push 8-bit, 1: push 32-bit (4 entries)
@@ -36,6 +36,8 @@ module ifmap_fifo #(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             wr_ptr <= 2'd0;
+        else if(ifmap_fifo_reset_i)
+            wr_ptr <= 2'd0; // Reset write pointer to 0
         else if (push_en) begin
             if (push_mod == 1'b0 && !full)
                 wr_ptr <= (wr_ptr + 2'd1);
@@ -45,7 +47,19 @@ module ifmap_fifo #(
     end
     // Write data
     always_ff @(posedge clk) begin
-        if (push_en) begin
+        if(!rst_n)begin
+            mem[0] <= 8'd0;
+            mem[1] <= 8'd0;
+            mem[2] <= 8'd0;
+            mem[3] <= 8'd0;
+        end
+        else if(ifmap_fifo_reset_i)begin
+            mem[0] <= 8'd0; // Reset all memory to 0
+            mem[1] <= 8'd0;
+            mem[2] <= 8'd0;
+            mem[3] <= 8'd0;
+        end
+        else if (push_en) begin
             if (push_mod == 1'b0 && !full)
                 mem[wr_ptr] <= push_data[7:0];
             else if (push_mod == 1'b1 && empty) begin// only empty can accept burst push
@@ -62,6 +76,8 @@ module ifmap_fifo #(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             rd_ptr <= 2'd0;
+        else if(ifmap_fifo_reset_i)
+            rd_ptr <= 2'd0;
         else if (pop_en && !empty)
             rd_ptr <= (rd_ptr + 2'd1);
     end
@@ -69,22 +85,19 @@ module ifmap_fifo #(
     always_ff @(posedge clk) begin
         if (!rst_n)
             data_out_reg <= 7'd0;
+        else if(ifmap_fifo_reset_i)
+            data_out_reg <= 7'd0; // Reset output to 0
         else if (pop_en && !empty)
             data_out_reg <= mem[rd_ptr];
     end
-    // always_comb begin
-    //     if (pop_en && !empty)
-    //         data_out_reg = mem[rd_ptr];
-    //     else
-    //         data_out_reg = 7'd0; // Reset output if not popping
-    // end
-
 
     // todo Count update // 1 2 3 4 
     // Count: The number of valid entries in the FIFO
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             count <= 3'd0;
+        else if(ifmap_fifo_reset_i)
+            count <= 3'd0; // Reset count to 0
         else if(push_en && pop_en) begin
             if(push_mod == 1'b0 && !full) // push 1 byte pop 1 byte
                 count <= count; // 可以 pop 代表 fifo 裡面本來就有值 => mod 1 不可能發生
