@@ -2,7 +2,7 @@
 // Token Engine – 更新版 (SystemVerilog)
 // 
 //  date: 2025/06
-//  version:PWC徹徹底底完成(射精)
+//  version:PWC徹徹底底完成
 // 
 //==============================================================================
 `include "../include/define.svh"
@@ -75,7 +75,7 @@ module token_engine (
     input pe_weight_ready,
     output logic pe_weight_valid,
     input pe_ifmap_ready,
-    output logic pe_ifamp_valid,
+    output logic pe_ifmap_valid,
     input pe_bias_ready,
     output logic pe_bias_valid,
     // output logic pe_psum_ready,
@@ -165,7 +165,8 @@ module token_engine (
     //---------------------------------------------------
     logic [3:0] cnt_modify;
     logic [8:0] opsum_hsk_cnt;
-    logic [8:0] ifmap_hsk_cnt; // for depthwise enable open
+    logic [1:0] ifmap_hsk_cnt; // for depthwise enable open
+    logic [2:0] ifmap_hsk_cnt_state;
     logic [5:0] d_cnt;
     logic [9:0] n_cnt;
     logic [5:0] k_cnt;
@@ -230,7 +231,7 @@ module token_engine (
     logic [31:0] BASE_IFMAP7;
     logic [31:0] BASE_IFMAP8;
     logic [31:0] BASE_IFMAP9;
-
+    logic [7:0] y_cnt;
 
 
 // //---------------------------------------------------
@@ -250,6 +251,8 @@ logic [31:0] bias_addr28, bias_addr29, bias_addr30, bias_addr31;
     logic [31:0] Bias_reg1;
     // logic [31:0] Bias_reg2;
         logic first_stride1;
+    logic close_flag;
+    logic [6:0] close_bias_num;//當close_flag為1，用這個來看bias以及opsum要送幾筆
 
 
 
@@ -298,12 +301,36 @@ end
         if(rst) begin
             cnt_ifmap <= 0;
         end
-        else if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
-            if (cnt_ifmap == col_en-1) begin // 假設每次搬入 32 個 Ifmap Pack
-                cnt_ifmap <= 0; // 重置計數器
-            end 
-            else
-                cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
+
+
+        else if(pass_layer_type == `POINTWISE) begin
+            if (current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
+                if (cnt_ifmap == col_en-1) begin // 假設每次搬入 32 個 Ifmap Pack
+                    cnt_ifmap <= 0; // 重置計數器
+                end 
+                else
+                    cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
+            end
+        end
+
+        else if (pass_layer_type == `DEPTHWISE) begin
+            if (current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
+                if(y_cnt == 8'd0 || y_cnt == in_R - 1) begin
+                    if (cnt_ifmap == col_en-2) begin // 假設每次搬入 32 個 Ifmap Pack
+                        cnt_ifmap <= 0; // 重置計數器
+                    end 
+                    else
+                        cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
+                end 
+                else begin
+                    if (cnt_ifmap == col_en-1) begin // 假設每次搬入 32 個 Ifmap Pack
+                        cnt_ifmap <= 0; // 重置計數器
+                    end 
+                    else
+                        cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
+                end
+            end
+
         end
     end
     // bias 
@@ -314,7 +341,10 @@ end
         end
         else if (pass_layer_type == `POINTWISE) begin
             if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
-                if (cnt_bias == ((cnt_modify + 32'd1) << 3) - 1) begin // 假設每次搬入 32 個 Bias Pack //((cnt_modify + 32'd1) << 2) - 1) 改<<3 因為16byte要送 16 筆bias要8次
+                if (close_flag && cnt_bias == close_bias_num) begin
+                    cnt_bias <= 0;
+                end
+                else if (cnt_bias == ((cnt_modify + 32'd1) << 3) - 1) begin // 假設每次搬入 32 個 Bias Pack //((cnt_modify + 32'd1) << 2) - 1) 改<<3 因為16byte要送 16 筆bias要8次
                     cnt_bias <= 0; // 重置計數器
                 end
                 else  
@@ -337,6 +367,16 @@ end
             end
         end
     end    
+    logic cnt_psum_flag;
+
+    always_ff@(posedge clk) begin
+        if(rst) begin
+            cnt_psum_flag <= 1'd0;
+        end
+        else if(glb_write_valid && glb_write_ready) begin
+            cnt_psum_flag <= ~cnt_psum_flag;
+        end
+    end
     
     //cnt_psum
     always_ff @ (posedge clk) begin
@@ -345,7 +385,10 @@ end
         end
         else if(pass_layer_type == `POINTWISE) begin
             if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-                if ((cnt_psum == 4*tile_K_o-1) || (cnt_psum == ((cnt_modify + 32'd1) << 4) - 1)) begin 
+                if (close_flag && cnt_psum == close_bias_num) begin
+                    cnt_psum <= 0;
+                end
+                else if ((cnt_psum == 4*tile_K_o-1) || (cnt_psum == ((cnt_modify + 32'd1) << 4) - 1)) begin 
                     cnt_psum <= 0; // 重置計數器
                 end 
                 else 
@@ -355,13 +398,13 @@ end
         else if (pass_layer_type == `DEPTHWISE) begin
             if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
                 if(stride == 2'd1) begin
-                    if (first_stride1 && (cnt_psum == (tile_K_o)-1)) begin 
+                    if (first_stride1 && (cnt_psum == (tile_K_o)-1) && cnt_psum_flag) begin 
                         cnt_psum <= 0; // 重置計數器
                     end 
-                    else if ((cnt_psum == (2*tile_K_o)-1)) begin
+                    else if ((cnt_psum == (2*tile_K_o)-1) && cnt_psum_flag) begin
                         cnt_psum <= 0; // 重置計數器
                     end
-                    else begin
+                    else if(cnt_psum_flag) begin
                         cnt_psum <= cnt_psum + 1; // 每次搬入 4-Channel Pack (32-bit)
                     end
                 end
@@ -381,10 +424,10 @@ end
         if (rst) begin
             col_en_cnt <= 8'd0;
         end
-        else if (col_en_cnt == col_en-1 && pe_ifamp_valid && pe_ifmap_ready) begin
+        else if (col_en_cnt == col_en-1 && pe_ifmap_valid && pe_ifmap_ready) begin
             col_en_cnt <= 8'd0;
         end
-        else if (pe_ifamp_valid && pe_ifmap_ready)begin
+        else if (pe_ifmap_valid && pe_ifmap_ready)begin
             col_en_cnt <= col_en_cnt + 8'd1;
         end
     end   
@@ -401,7 +444,7 @@ end
     always@(posedge clk) begin
         if(rst) begin
             first_stride1 <= 1'd1;
-        end else if(change_row) begin
+        end else if(change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
             first_stride1 <= 1'd1;
         end else if(current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
             first_stride1 <= 1'd0;
@@ -455,7 +498,7 @@ end
 
     logic [31:0] bias_data;
     logic write_opsum_flag;
-    logic close_flag;
+
 
     //close_flag
     always_ff@(posedge clk) begin
@@ -488,6 +531,24 @@ end
         end
         else begin
             col_en = 6'd0; // 預設值，若非 Pointwise 或 Depthwise，則不計算
+        end
+    end
+
+
+    always_ff @ (posedge clk) begin
+        if (rst) begin
+            close_bias_num <= 7'd0;
+        end
+        else if(close_flag) begin
+            if (current_state == S_WRITE_OPSUM && next_state == S_READ_BIAS) begin
+                close_bias_num <= close_bias_num;
+            end
+            // else if (current_state == S_WRITE_IFMAP && next_state == S_READ_BIAS) begin //不這樣做的話第一次會減不到?
+            //     close_bias_num <= close_bias_num - 7'd8;
+            // end
+        end
+        else begin
+            close_bias_num <= 4*tile_K_o-1;
         end
     end
 
@@ -568,10 +629,10 @@ end
 
                 //FIXME:可能改
                 S_WRITE_IFMAP: begin
-                    if (cnt_ifmap == tile_D-1 && pe_ifamp_valid && pe_ifmap_ready) begin  //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
+                    if (cnt_ifmap == tile_D-1 && pe_ifmap_valid && pe_ifmap_ready) begin  //後面不一定是 32 可以改成一個parameter (ifmap 不夠大或是 channel 不夠多)
                         next_state = S_READ_BIAS;
                     end 
-                    else if(pe_ifamp_valid && pe_ifmap_ready) begin
+                    else if(pe_ifmap_valid && pe_ifmap_ready) begin
                         next_state = S_READ_IFMAP;
                     end
                     else begin
@@ -591,8 +652,19 @@ end
 
                 //FIXME:可能改
                 S_WRITE_BIAS: begin
-                    if (cnt_modify == 32'd8) begin
-                        if ((cnt_bias == ((cnt_modify) << 3) - 1) && pe_bias_valid && pe_bias_ready) begin
+                    if (cnt_modify == tile_K_o/4) begin
+                        if (close_flag) begin
+                            if (((cnt_bias == close_bias_num/2)) && pe_bias_valid && pe_bias_ready) begin
+                                next_state = S_WAIT_OPSUM;
+                            end
+                            else if (pe_bias_valid && pe_bias_ready) begin
+                                next_state = S_READ_BIAS;
+                            end 
+                            else begin
+                                next_state = S_WRITE_BIAS;
+                            end
+                        end
+                        else if ((cnt_bias == ((cnt_modify) << 3) - 1) && pe_bias_valid && pe_bias_ready) begin
                             next_state = S_WAIT_OPSUM;
                         end
                         else if (pe_bias_valid && pe_bias_ready) begin
@@ -630,9 +702,14 @@ end
                         if (total_opsum_num_cnt == (pass_tile_n * tile_K_o)-1) begin //整個算完
                             next_state = S_PASS_DONE;
                         end
-                        else if (cnt_modify == 32'd8) begin
-                            if (close_flag && (cnt_psum == 4*tile_K_o-1)) begin
-                                next_state = S_READ_BIAS;
+                        else if (cnt_modify == tile_K_o/4) begin
+                            if (close_flag) begin
+                                if ((cnt_psum == close_bias_num)) begin
+                                    next_state = S_READ_BIAS;
+                                end
+                                else begin
+                                    next_state = S_WAIT_OPSUM; // 繼續等待 OPSUM 
+                                end
                             end
                             else if (((cnt_psum == 4*tile_K_o-1)))
                                 next_state = S_READ_IFMAP; // FIXME: 這裡的條件要根據實際情況調整
@@ -696,7 +773,7 @@ end
                 end
 
                 S_READ_IFMAP: begin
-                    if (glb_read_valid && glb_read_ready) begin
+                    if (glb_read_valid && glb_read_ready && ifmap_hsk_cnt_state == 2'd1) begin
                         next_state = S_WRITE_IFMAP;
                     end 
                     else begin
@@ -714,7 +791,7 @@ end
                             next_state = S_READ_IFMAP;
                         end
                     end
-                    else if(pe_ifamp_valid && pe_ifmap_ready) begin
+                    else if(pe_ifmap_valid && pe_ifmap_ready) begin
                         next_state = S_READ_IFMAP;
                     end
                     else begin
@@ -780,7 +857,7 @@ end
                 end
                 
                 S_WRITE_OPSUM: begin
-                    if (glb_write_valid && glb_write_ready) begin
+                    if (write_opsum_flag && glb_write_valid && glb_write_ready) begin
                         if (total_opsum_num_cnt == (tile_R * in_C * tile_K_o)-1) begin //整個算完
                             next_state = S_PASS_DONE;
                         end
@@ -852,7 +929,10 @@ end
     //---------- ifmap ----------//
     // todo: save the ifmap data
     always_ff @ (posedge clk) begin
-        if (read_hsk_reg) begin
+        if(rst) begin
+            data_2_pe_reg <= 32'd0;
+        end 
+        else if (read_hsk_reg) begin
             data_2_pe_reg <= glb_read_data; // 假設 glb_read_data 是 4-Channel Pack
         end
 
@@ -906,7 +986,9 @@ always_comb begin
     end
 end
 
-
+logic [31:0] ifmap_addr_reg;
+logic [31:0] ifmap_data_reg;
+logic [31:0] ifmap_data;
 //FIXME:還沒 PADDING 
 /* 0: up padding, 1: left paadding, 2: right padding, 3: down padding
    4: up left padding, 5: up right padding, 6: down left padding, 7: down right padding
@@ -964,7 +1046,11 @@ always_comb begin
                 end
             end
             4'd8: begin
-                token_data = data_2_pe;
+                if (pass_layer_type == `POINTWISE)
+                    token_data = data_2_pe;
+                else begin
+                    token_data = ifmap_data;
+                end
             end
 
             default: begin
@@ -983,22 +1069,60 @@ always_comb begin
     end
 end
 
+always_ff @ (posedge clk) begin
+    if (rst) begin
+        ifmap_data_reg <= 32'd0;
+    end
+    else if (read_hsk_reg) begin
+        ifmap_data_reg <= data_2_pe;
+    end
+end
+always_ff @ (posedge clk)begin
+    if(rst) begin
+        ifmap_addr_reg <= 32'd0;
+    end
+    else if (glb_read_valid && glb_read_ready) begin
+        ifmap_addr_reg <= ifmap_addr;
+    end 
+end
+//-------------------- ifmap_data --------------------//
+always_comb begin
+    if(ifmap_hsk_cnt_state==1'd1) begin
+        case(ifmap_addr_reg[1:0]) 
+            2'd0: begin
+                ifmap_data = {ifmap_data_reg};
+            end
+            2'd1: begin
+                ifmap_data = {data_2_pe[7:0], ifmap_data_reg[31:8]};
+            end
+            2'd2: begin
+                ifmap_data = {data_2_pe[15:0], ifmap_data_reg[31:16]};
+            end
+            2'd3: begin
+                ifmap_data = {data_2_pe[23:0], ifmap_data_reg[31:24]};
+            end
+        endcase
+    end
+    else begin
+        ifmap_data = {data_2_pe};
+    end
 
-
+end
+ 
 
 
 always_ff @ (posedge clk) begin
     if (rst) begin
         bias_data <= 32'd0; // when bias en = 0   bias_data is ipsum
     end
-    else if (current_state == S_READ_BIAS && pass_flags[0]) begin //bias
+    else if (pass_flags[0] && read_hsk_reg) begin //bias
         case (bias_addr[1])
             1'd0: bias_data <= {2{glb_read_data[15:0]}};
             1'd1: bias_data <= {2{glb_read_data[31:16]}};
             default : bias_data <= 32'd0;
         endcase
     end
-    else if (current_state == S_READ_BIAS && glb_read_valid && glb_read_ready) begin  //ipsum
+    else if (read_hsk_reg) begin  //ipsum
         case (bias_addr[1])
             1'd0: bias_data <= {glb_read_data};
             1'd1: bias_data <= {glb_read_data[15:0], Bias_reg1[31:16]};
@@ -1030,10 +1154,10 @@ end
 
 always_comb begin
     if (current_state == S_WRITE_IFMAP) begin
-        pe_ifamp_valid = 1'b1;
+        pe_ifmap_valid = 1'b1;
     end
     else begin
-        pe_ifamp_valid = 1'b0;
+        pe_ifmap_valid = 1'b0;
     end
 end
 
@@ -1094,7 +1218,7 @@ end
 // ifmap_addr 、 bias_addr
 //---------------------------------------------------
 // d_cnt
-logic [7:0] y_cnt;
+
 always_ff@(posedge clk) begin
     if(rst) begin
         y_cnt <= 8'd0; // y_cnt 用於計算 Ifmap 的 Row 數量
@@ -1125,34 +1249,45 @@ always_ff@(posedge clk) begin
        d_cnt <= 0; // d_cnt 用於計算 Ifmap 的 Channel Pack 數量
     end 
     else if (pass_layer_type == `POINTWISE) begin
-        if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1 || next_state == S_WAIT_OPSUM) begin
+        if(current_state == S_READ_IFMAP && (glb_read_ready && glb_read_valid)) begin
+            if (d_cnt == tile_D-1) 
+                d_cnt <= 6'd0;
+            else
+                d_cnt <=  d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
+        end
+        else if((((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1) && cnt_bias[0]) || next_state == S_WAIT_OPSUM) begin
             d_cnt <= 6'd0;
         end
-        else if(current_state == S_READ_IFMAP&& (glb_read_ready && glb_read_valid)) begin
-            d_cnt <=  d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-        end
+         
         else if (current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready  && cnt_bias[0]) begin
             d_cnt <= d_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
         end
     end
     else if (pass_layer_type == `DEPTHWISE) begin   
         if(current_state == S_WRITE_IFMAP) begin
-            if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1) begin
+            if((pe_ifmap_ready && pe_ifmap_valid) && d_cnt == tile_D-1) begin
                 d_cnt <= 6'd0;
             end
             else if(y_cnt == 8'd0 || y_cnt == in_R - 1) begin
-                if(ifmap_hsk_cnt == 9'd2) begin
+                if(ifmap_hsk_cnt == 2'd1) begin
                     d_cnt <= d_cnt + 6'd1;
                 end
             end
             else begin
-                if(ifmap_hsk_cnt == 9'd3) begin
+                if(ifmap_hsk_cnt == 2'd2) begin
                     d_cnt <= d_cnt + 6'd1;
                 end
             end
         end
         else if (current_state == S_WRITE_BIAS) begin
-            if((glb_read_ready && glb_read_valid) && d_cnt == tile_D-1) begin
+            if(first_stride1) begin
+                if (pe_bias_valid && pe_bias_ready)
+                    if (d_cnt == tile_D-1)
+                        d_cnt <= 6'd0;
+                    else
+                        d_cnt <=  d_cnt + 6'd1;
+            end
+            else if((pe_bias_valid && pe_bias_ready) && (d_cnt == tile_D-1) && cnt_bias[0]) begin
                 d_cnt <= 6'd0;
             end
             else begin
@@ -1162,11 +1297,20 @@ always_ff@(posedge clk) begin
             end
         end
         else if (current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
-            if(d_cnt == tile_D-1) begin
+            if(first_stride1) begin
+                if (pe_psum_valid && pe_psum_ready)
+                    if (d_cnt == tile_D-1)
+                        d_cnt <= 6'd0;
+                    else
+                        d_cnt <=  d_cnt + 6'd1;
+            end
+            else if((glb_write_ready && glb_write_valid) && d_cnt == tile_D-1) begin
                 d_cnt <= 6'd0;
             end
             else begin
-                d_cnt <= d_cnt + 6'd1; // 每次搬入 4-Channel Pack (32-bit)
+                if(cnt_psum[0] && (pe_psum_valid && pe_psum_ready)) begin
+                    d_cnt <= d_cnt + 6'd1;
+                end
             end
         end
     end
@@ -1175,21 +1319,30 @@ end
 // ifmap_hsk_cnt
 always_ff@(posedge clk) begin
     if(rst) begin
-        ifmap_hsk_cnt <= 9'd0;
+        ifmap_hsk_cnt <= 2'd0;
     end
-    else if(current_state == S_READ_IFMAP && glb_read_valid && glb_read_ready) begin
-        if(y_cnt == 8'd0 || y_cnt == in_R - 1) begin
-             if(ifmap_hsk_cnt == 9'd2) begin
-                ifmap_hsk_cnt <= 9'd0;
+    else if(pe_ifmap_valid && pe_ifmap_ready) begin
+        if(y_cnt == 8'd0 || y_cnt == in_R - 1) begin // 有padding 
+             if(ifmap_hsk_cnt == 2'd1) begin
+                ifmap_hsk_cnt <= 2'd0;
              end
         end
-        else if(ifmap_hsk_cnt == 9'd3)begin
-            ifmap_hsk_cnt <= 9'd0;
+        else if(ifmap_hsk_cnt == 2'd2)begin // no padding
+            ifmap_hsk_cnt <= 2'd0;
         end
         else begin
-            ifmap_hsk_cnt <= ifmap_hsk_cnt + 9'd1;
+            ifmap_hsk_cnt <= ifmap_hsk_cnt + 2'd1;
         end
     end 
+end
+
+always_ff@(posedge clk) begin
+    if(rst) begin
+        ifmap_hsk_cnt_state <= 2'd0;
+    end 
+    else if(current_state == S_READ_IFMAP && read_hsk_reg) begin
+        ifmap_hsk_cnt_state <= (ifmap_hsk_cnt_state == 2'd1) ? 2'd0 : ifmap_hsk_cnt_state + 2'd1;
+    end
 end
 
 // n_cnt
@@ -1221,7 +1374,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt0 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd3)begin
+    else if(col_en_cnt == 9'd2 && glb_read_valid && glb_read_ready)begin
         n_cnt0 <= n_cnt0 + 8'd1;
     end
 end
@@ -1234,7 +1387,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt1 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd6)begin
+    else if(col_en_cnt == 9'd5 && glb_read_valid && glb_read_ready)begin
         n_cnt1 <= n_cnt1 + 8'd1;
     end
 end
@@ -1247,7 +1400,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt2 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd9)begin
+    else if(col_en_cnt == 9'd8 && glb_read_valid && glb_read_ready)begin
         n_cnt2 <= n_cnt2 + 8'd1;
     end
 end
@@ -1260,7 +1413,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt3 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd12)begin
+    else if(col_en_cnt == 9'd11 && glb_read_valid && glb_read_ready)begin
         n_cnt3 <= n_cnt3 + 8'd1;
     end
 end
@@ -1273,7 +1426,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt4 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd15)begin
+    else if(col_en_cnt == 9'd14 && glb_read_valid && glb_read_ready)begin
         n_cnt4 <= n_cnt4 + 8'd1;
     end
 end
@@ -1286,7 +1439,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt5 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd18)begin
+    else if(col_en_cnt == 9'd17 && glb_read_valid && glb_read_ready)begin
         n_cnt5 <= n_cnt5 + 8'd1;
     end
 end
@@ -1299,7 +1452,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt6 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd21)begin
+    else if(col_en_cnt == 9'd20 && glb_read_valid && glb_read_ready)begin
         n_cnt6 <= n_cnt6 + 8'd1;
     end
 end
@@ -1312,7 +1465,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt7 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd24)begin
+    else if(col_en_cnt == 9'd23 && glb_read_valid && glb_read_ready)begin
         n_cnt7 <= n_cnt7 + 8'd1;
     end
 end
@@ -1325,7 +1478,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt8 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd27)begin
+    else if(col_en_cnt == 9'd26 && glb_read_valid && glb_read_ready)begin
         n_cnt8 <= n_cnt8 + 8'd1;
     end
 end
@@ -1338,7 +1491,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt9 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd30)begin
+    else if(col_en_cnt == 9'd29 && glb_read_valid && glb_read_ready)begin
         n_cnt9 <= n_cnt9 + 8'd1;
     end
 end
@@ -1381,31 +1534,12 @@ always_ff@(posedge clk) begin
                 k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
-        // else if(pe_opsum_cnt[0] && pe_psum_valid && pe_psum_ready) begin
-        //     k_cnt <= k_cnt + 1; 
-        // end
+
     end
-    // else if (pass_layer_type == `DEPTHWISE) begin
-    //     if (first_stride1) begin
-    //         if (k_cnt == (tile_K_o - 1)) begin
-    //             k_cnt <= 0; // 重置 k_cnt
-    //         end 
-    //         else if ((opsum_hsk_cnt[1:0] == 2'b11) && glb_write_ready && glb_write_valid) begin
-    //             k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-    //         end
-    //     end
-    //     else begin
-    //         if (k_cnt == (2*tile_K_o - 1)) begin
-    //             k_cnt <= 0; // 重置 k_cnt
-    //         end 
-    //         else if ((opsum_hsk_cnt[1:0] == 2'b11) && glb_write_ready && glb_write_valid) begin
-    //             k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
-    //         end
-    //     end
-    // end
+
     else if (pass_layer_type == `DEPTHWISE) begin
         if (first_stride1) begin
-            if (k_cnt == (tile_K_o - 1)) begin
+            if (k_cnt == (tile_K_o - 1) && (opsum_hsk_cnt[0]) && glb_write_ready && glb_write_valid) begin
                 k_cnt <= 0; // 重置 k_cnt
             end 
             else if ((opsum_hsk_cnt[0]) && glb_write_ready && glb_write_valid) begin
@@ -1413,10 +1547,10 @@ always_ff@(posedge clk) begin
             end
         end
         else begin
-            if (k_cnt == (2*tile_K_o - 1)) begin
+            if (k_cnt == (tile_K_o - 1) && (opsum_hsk_cnt[1:0] == 2'd3) && glb_write_ready && glb_write_valid) begin
                 k_cnt <= 0; // 重置 k_cnt
             end 
-            else if ((opsum_hsk_cnt[0]) && glb_write_ready && glb_write_valid) begin
+            else if ((opsum_hsk_cnt[1:0] == 2'd3) && glb_write_ready && glb_write_valid) begin
                 k_cnt <= k_cnt + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
         end
@@ -1452,7 +1586,7 @@ always_ff@(posedge clk) begin
         ifmap_addr8 <= BASE_IFMAP8;
         ifmap_addr9 <= BASE_IFMAP9;
     end 
-    else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if(current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
         ifmap_addr0 <=  BASE_IFMAP + n_cnt0 * 3 + ((enable0 && n_cnt0 == 0) << 2) + in_c_c_cnt; // n_cnt0 為 4-Channel Pack 的數量
         ifmap_addr1 <= BASE_IFMAP1 + n_cnt1 * 3 + ((enable1 && n_cnt1 == 0) << 2) + in_c_c_cnt;
         ifmap_addr2 <= BASE_IFMAP2 + n_cnt2 * 3 + ((enable2 && n_cnt2 == 0) << 2) + in_c_c_cnt;
@@ -1470,9 +1604,7 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable0 <= 1'b0;
     end
-    else if (change_row) begin
-        enable0 <= 1'b0;
-    end
+
     else begin
         enable0 <= 1'b1;
     end
@@ -1482,10 +1614,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable1 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable1 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd2 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd2 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable1 <= 1'b1;
     end
 end
@@ -1494,10 +1626,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable2 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable2 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd5 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd5 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable2 <= 1'b1;
     end
 end
@@ -1506,10 +1638,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable3 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable3 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd8 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd8 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable3 <= 1'b1;
     end
 end
@@ -1518,10 +1650,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable4 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable4 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd11 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd11 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable4 <= 1'b1;
     end
 end
@@ -1530,10 +1662,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable5 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable5 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd14 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd14 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable5 <= 1'b1;
     end
 end
@@ -1542,10 +1674,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable6 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable6 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd17 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd17 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable6 <= 1'b1;
     end
 end
@@ -1554,10 +1686,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable7 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable7 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd20 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd20 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable7 <= 1'b1;
     end
 end
@@ -1566,10 +1698,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable8 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable8 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd23 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd23 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable8 <= 1'b1;
     end
 end
@@ -1578,10 +1710,10 @@ always_ff @ (posedge clk) begin
     if(rst) begin
         enable9 <= 1'b0;
     end
-    else if (change_row) begin
+    else if (change_row && current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
         enable9 <= 1'b0;
     end
-    else if (col_en_cnt == 9'd26 && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (col_en_cnt == 9'd26 && pe_ifmap_valid && pe_ifmap_ready) begin
         enable9 <= 1'b1;
     end
 end
@@ -1613,16 +1745,20 @@ always_comb begin
 end
 
 always_comb begin
-    change_row = /*change_row0 && 
-                 change_row1 && 
-                 change_row2 && 
-                 change_row3 && 
-                 change_row4 && 
-                 change_row5 && 
-                 change_row6 && 
-                 change_row7 && 
-                 change_row8 && */
-                 change_row9;
+    if (current_state == S_WRITE_OPSUM && next_state == S_READ_IFMAP) begin
+        change_row = change_row0 && 
+                    change_row1 && 
+                    change_row2 && 
+                    change_row3 && 
+                    change_row4 && 
+                    change_row5 && 
+                    change_row6 && 
+                    change_row7 && 
+                    change_row8 && 
+                    change_row9;
+    end
+    else 
+        change_row = 1'd0;
 end
 
 
@@ -1732,7 +1868,7 @@ always_ff @ (posedge clk) begin
     if (rst) begin
         c_cnt <= 9'd0;
     end 
-    else if (current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if (current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
         if(y_cnt == 0) begin
             c_cnt <= !c_cnt;
         end 
@@ -1758,26 +1894,29 @@ always_ff@(posedge clk) begin
         if(current_state == S_IDLE) begin
             ifmap_addr <= BASE_IFMAP;
         end 
-        else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+        else if(current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
             ifmap_addr <= BASE_IFMAP + (n_cnt << 2) + channel_base; // n_cnt 為 4-Channel Pack 的數量        
         end
     end
     else if (pass_layer_type == `DEPTHWISE) begin
-        case(cnt_ifmap) 
-            6'd0, 6'd1, 6'd2:  ifmap_addr <= ifmap_addr0;
-            6'd3, 6'd4, 6'd5:  ifmap_addr <= ifmap_addr1;
-            6'd6, 6'd7, 6'd8:  ifmap_addr <= ifmap_addr2;
-            6'd9, 6'd10, 6'd11: ifmap_addr <= ifmap_addr3;
-            6'd12, 6'd13, 6'd14: ifmap_addr <= ifmap_addr4;
-            6'd15, 6'd16, 6'd17: ifmap_addr <= ifmap_addr5;
-            6'd18, 6'd19, 6'd20: ifmap_addr <= ifmap_addr6;
-            6'd21, 6'd22, 6'd23: ifmap_addr <= ifmap_addr7;
-            6'd24, 6'd25, 6'd26: ifmap_addr <= ifmap_addr8;
-            6'd27, 6'd28, 6'd29: ifmap_addr <= ifmap_addr9;
-            default: ifmap_addr <= 0; // 預設情況
-
-        endcase
-
+        if(ifmap_hsk_cnt_state == 0) begin
+            case(cnt_ifmap) 
+                6'd0, 6'd1, 6'd2:  ifmap_addr <= ifmap_addr0;
+                6'd3, 6'd4, 6'd5:  ifmap_addr <= ifmap_addr1;
+                6'd6, 6'd7, 6'd8:  ifmap_addr <= ifmap_addr2;
+                6'd9, 6'd10, 6'd11: ifmap_addr <= ifmap_addr3;
+                6'd12, 6'd13, 6'd14: ifmap_addr <= ifmap_addr4;
+                6'd15, 6'd16, 6'd17: ifmap_addr <= ifmap_addr5;
+                6'd18, 6'd19, 6'd20: ifmap_addr <= ifmap_addr6;
+                6'd21, 6'd22, 6'd23: ifmap_addr <= ifmap_addr7;
+                6'd24, 6'd25, 6'd26: ifmap_addr <= ifmap_addr8;
+                6'd27, 6'd28, 6'd29: ifmap_addr <= ifmap_addr9;
+                default: ifmap_addr <= 0; // 預設情況
+            endcase
+        end
+        else begin
+            ifmap_addr <= ifmap_addr + 32'd4;
+        end
 
     end
 end
@@ -1790,10 +1929,10 @@ always_ff@(posedge clk) begin
     end 
     else if (pass_layer_type == `DEPTHWISE) begin
         if(bias_flag == 1'd0) begin
-            bias_flag <= (cnt_bias == 10) ? 1'd1:bias_flag; // 有 Bias
+            bias_flag <= (cnt_bias == 10) ? 1'd1:bias_flag;
         end 
         else begin
-            bias_flag <= (cnt_bias == 20) ? 1'd0:bias_flag; // 無 Bias
+            bias_flag <= (cnt_bias == 20) ? 1'd0:bias_flag;
         end
     end
 end
@@ -1887,9 +2026,33 @@ always_ff@(posedge clk) begin
         if(current_state == S_IDLE) begin
             bias_addr <= BASE_BIAS;
         end 
-        else if(current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin
+        else if (pass_flags[0]) begin // bias
             if(stride == 2'd1) begin
-                if (pe_bias_valid && pe_bias_ready && n_cnt9 == 1) begin
+                if (pe_bias_valid && pe_bias_ready && first_stride1) begin
+                    bias_addr <= bias_addr + 2; // 每次搬入 4-Channel Pack (32-bit)
+                end
+                else if(cnt_bias[0] && pe_bias_valid && pe_bias_ready)
+                    bias_addr <= bias_addr + 4;
+                else 
+                    bias_addr <= bias_addr;
+            end 
+            else if(stride == 2'd2) begin
+                if (pe_bias_valid && pe_bias_ready) begin
+                    if (first) begin
+                        bias_addr <= bias_addr + 1; // 每次搬入 4-Channel Pack (32-bit)
+                    end
+                    else if(bias_flag && y_cnt >= 1) begin // 數10次
+                        bias_addr <= bias_addr + 2;
+                    end 
+                    else if(!bias_flag && y_cnt >= 1) begin // 數20次
+                        bias_addr <= bias_addr + 1;
+                    end
+                end
+            end
+        end
+        else if(current_state == S_WRITE_BIAS && pe_bias_valid && pe_bias_ready) begin // ipsum
+            if(stride == 2'd1) begin
+                if (pe_bias_valid && pe_bias_ready && first_stride1) begin
                     bias_addr <= bias_addr + 1 + channel_base; // 每次搬入 4-Channel Pack (32-bit)
                 end
                 else if(cnt_bias[0] && pe_bias_valid && pe_bias_ready)
@@ -3020,8 +3183,8 @@ always_ff@(posedge clk) begin
     end 
     else if(pass_layer_type == `DEPTHWISE) begin
         if(stride == 2'd1) begin
-            if (pe_psum_valid && pe_psum_ready && n_cnt9 == 1) begin
-                d_opsum_addr <= d_opsum_addr + 1 + channel_base; // 每次搬入 4-Channel Pack (32-bit)
+            if (pe_psum_valid && pe_psum_ready && first_stride1) begin
+                d_opsum_addr <= d_opsum_addr + channel_base; // 每次搬入 4-Channel Pack (32-bit)
             end
             else if(cnt_bias[0] && pe_psum_valid && pe_psum_ready)
                 d_opsum_addr <= d_opsum_addr + 3 + channel_base;
@@ -3030,7 +3193,7 @@ always_ff@(posedge clk) begin
         end 
         else if(stride == 2'd2) begin
             if (pe_psum_valid && pe_psum_ready) begin
-                if (n_cnt9 == 1) begin
+                if (first) begin
                     d_opsum_addr <= d_opsum_addr + 1 + channel_base; // 每次搬入 4-Channel Pack (32-bit)
                 end
                 else if(bias_flag && y_cnt >= 1) begin // 數20次
@@ -3133,7 +3296,7 @@ always_ff @(posedge clk) begin
     //FIXME:
     else if (pass_layer_type == `DEPTHWISE) begin
         if (stride == 2'd1) begin
-            if ((n_cnt9 == 1) && current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
+            if (first && current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
                 total_opsum_num_cnt <= total_opsum_num_cnt + 1; // 每次寫回 OPSUM 都增加計數
             end
             else if (cnt_psum[0] && current_state == S_WRITE_OPSUM && glb_write_valid && glb_write_ready) begin
@@ -3197,7 +3360,7 @@ always_ff@(posedge clk) begin
     if(rst) begin
         padding_pe_hsk_cnt <= 3'd0;
     end 
-    else if(pe_ifamp_valid && pe_ifmap_ready) begin
+    else if(pe_ifmap_valid && pe_ifmap_ready) begin
         padding_pe_hsk_cnt <= (padding_pe_hsk_cnt == 3'd2) ? 3'd0 : padding_pe_hsk_cnt + 1; // 每次讀取 IFMAP 都增加計數
     end 
 end
@@ -3206,7 +3369,7 @@ always_ff@(posedge clk) begin
     if(rst) begin
         padding_pe_hsk_cnt_left <= 6'd0;
     end 
-    else if(current_state == S_WRITE_IFMAP && pe_ifamp_valid && pe_ifmap_ready) begin
+    else if(current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
         padding_pe_hsk_cnt_left <= (padding_pe_hsk_cnt_left == 6'd2) ? 6'd0 : padding_pe_hsk_cnt_left + 1; // 每次讀取 IFMAP 都增加計數
     end 
     else if(current_state == S_READ_IFMAP) begin
@@ -3453,35 +3616,40 @@ end
 
 //control_padding
 always_comb begin
-    if (col_en_cnt >= 8'd27) begin
-        control_padding = control_padding9; // 27-30
+    if (pass_layer_type == `POINTWISE) begin
+        control_padding = 4'd8;
     end
-    else if (col_en_cnt >= 8'd24) begin
-        control_padding = control_padding8; // 24-27
-    end
-    else if (col_en_cnt >= 8'd21) begin
-        control_padding = control_padding7; // 21-24
-    end
-    else if (col_en_cnt >= 8'd18) begin
-        control_padding = control_padding6; // 18-21
-    end
-    else if (col_en_cnt >= 8'd15) begin
-        control_padding = control_padding5; // 15-18
-    end
-    else if (col_en_cnt >= 8'd12) begin
-        control_padding = control_padding4; // 12-15
-    end
-    else if (col_en_cnt >= 8'd9) begin
-        control_padding = control_padding3; // 9-12
-    end
-    else if (col_en_cnt >= 8'd6) begin
-        control_padding = control_padding2; // 6-9
-    end
-    else if (col_en_cnt >= 8'd3) begin
-        control_padding = control_padding1; // 3-6
-    end 
-    else begin 
-        control_padding = control_padding0; // 0-3
+    else begin
+        if (col_en_cnt >= 8'd27) begin
+            control_padding = control_padding9; // 27-30
+        end
+        else if (col_en_cnt >= 8'd24) begin
+            control_padding = control_padding8; // 24-27
+        end
+        else if (col_en_cnt >= 8'd21) begin
+            control_padding = control_padding7; // 21-24
+        end
+        else if (col_en_cnt >= 8'd18) begin
+            control_padding = control_padding6; // 18-21
+        end
+        else if (col_en_cnt >= 8'd15) begin
+            control_padding = control_padding5; // 15-18
+        end
+        else if (col_en_cnt >= 8'd12) begin
+            control_padding = control_padding4; // 12-15
+        end
+        else if (col_en_cnt >= 8'd9) begin
+            control_padding = control_padding3; // 9-12
+        end
+        else if (col_en_cnt >= 8'd6) begin
+            control_padding = control_padding2; // 6-9
+        end
+        else if (col_en_cnt >= 8'd3) begin
+            control_padding = control_padding1; // 3-6
+        end 
+        else begin 
+            control_padding = control_padding0; // 0-3
+        end
     end
 end
 

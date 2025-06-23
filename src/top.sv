@@ -38,7 +38,7 @@ module top(
     // input logic [6:0] tile_K_out,   // Token Engine ↔ PE
     input logic [7:0] in_C, //輸入特徵圖 Width column
     input logic [7:0] in_R, //輸入特徵圖 Height row
-    input [1:0] stride
+    input [1:0] stride,
     output logic pass_done
 );
 
@@ -169,14 +169,14 @@ conv_unit conv_unit(
     .valid_ip(pe_bias_valid),
     .valid_op(pe_psum_valid),
     .ready_op(pe_psum_ready),
-    .DW_PW_sel(DW_PW_sel),
+    .pass_layer_type(pass_layer_type),
     .data_in(token_data),
     .data_out(pe_psum_data),
     .col_en(col_en),
     .row_en(row_en),
     .dw_input_num(compute_num),
     .dw_row_end(change_row),
-    .dw_stride(dw_stride)
+    .stride(stride)
 );
 
 endmodule

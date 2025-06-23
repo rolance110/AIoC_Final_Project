@@ -104,13 +104,18 @@ always #(`CYCLE/2) clk = ~clk;
 //     $fsdbDumpMDA;
 // end
 
+logic [31:0] golden_data_reg [0:16383]; // 16K bytes
 initial begin
     $readmemh("init_sram_data.txt",u_sram.mem);
+    $readmemh("pw_golden.txt", golden_data_reg);
     $fsdbDumpfile("top.fsdb");
     $fsdbDumpvars(0, tb_top);
     $fsdbDumpMDA;
 end
 
+integer i, errors;
+logic [31:0] sram_data;
+logic [31:0] golden_data;
 
 initial begin
     /* === Default === */
@@ -138,6 +143,31 @@ initial begin
     #(`CYCLE * 2) 
     rst = 1'b0;
     wait(pass_done)
+      errors = 0;
+      // 共 640 個 32-bit 值（2560 bytes）
+      for (i = 0; i < 640; i++) begin
+          // 從 SRAM 讀取 4 bytes 組成 32-bit 值（小端序）
+          sram_data = u_sram.mem[3750 + i];
+          // $display("SRAM addr 0x%h: 0x%h", (12288 + i), u_SRAM.memory[12288 + i]);
+          // 從 golden_opsum 讀取對應值
+          golden_data = golden_data_reg[i];
+          // 比較
+          if (u_sram.mem[3750 + i] !== golden_data) begin
+              $display("Mismatch at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+                       i, (3750 + i), u_sram.mem[3750 + i], golden_data);
+              errors++;
+          end
+          else begin
+              $display("Match at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+                       i, (3750 + i), u_sram.mem[3750 + i], golden_data);
+          end
+      end
+      // 報告結果
+      if (errors == 0) begin
+          $display("Verification PASSED: All opsum data matches golden data!");
+      end else begin
+          $display("Verification FAILED: Found %0d mismatches!", errors);
+      end
     $display("Simulation finished successfully.");
     $finish; // 結束模擬
 
@@ -151,7 +181,15 @@ end
 
 
 
-  MEM32x16384 u_sram (
+logic [13:0]  o_cnt, err_cnt;
+
+// always @(posedge clk) begin
+//   if (glb_write_ready && glb_write_valid) begin
+//       $display("ERROR: GLB Write Data = 0x%08x", glb_write_data);
+//   end
+// end
+
+ MEM32x16384 u_sram (
   .CK(clk),
   .CS(1'b1),
   .WEB(WEB),

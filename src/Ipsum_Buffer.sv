@@ -10,11 +10,9 @@ module Ipsum_buffer(
     input [5:0] ip_time_4,
     input first_f, //用來決定是否是第一個8個cycle的weight load
     //要關閉PE array
-    input [4:0] close_start_num,//用來決定關閉PE array的ROW起始位子
-    input close_f,//用來決定是否要關閉PE array
     //DW
-    input DW_PW_sel,//用來決定是DW還是PW
-    input dw_stride,
+    input [1:0] pass_layer_type,//用來決定是DW還是PW
+    input [1:0] stride,
     input [1:0] dw_input_num,
     input [3:0] dw_open_num,
     input dw_open_f,
@@ -49,8 +47,8 @@ always_ff @(posedge clk) begin
         FIFO_cnt <= 5'd0;
     end
     else begin
-        case(DW_PW_sel)
-            1'd0:begin
+        case(pass_layer_type)
+            2'd1:begin
                 if(handshake_f) begin
                     if(dw_open_f) begin
                         if(FIFO_cnt == (row_en[4:0] - 5'd3))
@@ -59,8 +57,8 @@ always_ff @(posedge clk) begin
                             FIFO_cnt <= FIFO_cnt + 5'd3;
                     end
                     else begin
-                        case(dw_stride)
-                            1'd0:begin
+                        case(stride)
+                            2'd1:begin
                                 if(dw_input_num > 2'd2) begin
                                     depth_cnt <= !depth_cnt;
                                     if(depth_cnt == 1'd1) begin
@@ -77,34 +75,27 @@ always_ff @(posedge clk) begin
                                         FIFO_cnt <= FIFO_cnt + 5'd3;
                                 end
                             end
-                            1'd1:begin
+                            2'd2:begin
                                 if(FIFO_cnt == (row_en[4:0] - 5'd3))
                                     FIFO_cnt <= 5'd0;
                                 else
                                     FIFO_cnt <= FIFO_cnt + 5'd3;
                             end
+                            default: begin
+                                depth_cnt <= 1'd0; // Default case to handle unexpected values
+                                FIFO_cnt <= 5'd0; // Default case to handle unexpected values
+                            end
                         endcase
                     end
                 end
             end
-            1'd1:begin
+            2'd0:begin
                 if(first_f) begin
                     if(handshake_f) begin
                         depth_cnt <= !depth_cnt;
                         if(depth_cnt == 1'd1) begin
                             if(FIFO_cnt == (ip_time_4_cnt))
                                 FIFO_cnt <= 5'd0;
-                            else
-                                FIFO_cnt <= FIFO_cnt + 5'd1;
-                        end
-                    end
-                end
-                else if(close_f) begin
-                    if(handshake_f) begin
-                        depth_cnt <= !depth_cnt;
-                        if(depth_cnt == 1'd1) begin
-                            if(FIFO_cnt == row_num)
-                                FIFO_cnt <= close_start_num + 5'd4;
                             else
                                 FIFO_cnt <= FIFO_cnt + 5'd1;
                         end
@@ -119,6 +110,10 @@ always_ff @(posedge clk) begin
                             FIFO_cnt <= FIFO_cnt + 5'd1;
                     end
                 end
+            end
+            default: begin
+                depth_cnt <= 1'd0; // Default case to handle unexpected values
+                FIFO_cnt <= 5'd0; // Default case to handle unexpected values
             end
         endcase
     end
@@ -136,10 +131,10 @@ generate
         end 
         else if(handshake_f && (FIFO_cnt == r)) begin
         //TODO: 按照第一次輸入的16bit為第一個的psum，後16bit為第二個，然後下一組相同
-            case(DW_PW_sel)
-              1'd0:begin
-                case(dw_stride)
-                    1'd0:begin
+            case(pass_layer_type)
+              2'd1:begin
+                case(stride)
+                    2'd1:begin
                         if(dw_open_f) begin
                             fifo[r][0] <= 16'd0;
                             fifo[r][1] <= 16'd0;
@@ -159,20 +154,32 @@ generate
                             fifo[r][3] <= ipsum_in[15:0];
                         end
                     end
-                    1'd1:begin//TODO: 根據做1次or做2次來判斷傳幾筆
+                    2'd2:begin//TODO: 根據做1次or做2次來判斷傳幾筆
                         fifo[r][0] <= 16'd0;
                         fifo[r][1] <= 16'd0;
                         fifo[r][2] <= ipsum_in[31:16];
                         fifo[r][3] <= ipsum_in[15:0];
                     end
+                    default: begin
+                        fifo[r][0] <= 16'd0; // Default case to handle unexpected values
+                        fifo[r][1] <= 16'd0; // Default case to handle unexpected values
+                        fifo[r][2] <= 16'd0; // Default case to handle unexpected values
+                        fifo[r][3] <= 16'd0; // Default case to handle unexpected values
+                    end
                 endcase
               end
-              1'd1:begin
+              2'd0:begin
                 // PW模式，將psum_in的前16bit和後16bit分別存入fifo的兩個位置
                 fifo[r][0] <= ipsum_in[31:16];
                 fifo[r][1] <= ipsum_in[15:0];
                 fifo[r][2] <= fifo[r][0];
                 fifo[r][3] <= fifo[r][1];
+              end
+              default: begin
+                fifo[r][0] <= 16'd0; // Default case to handle unexpected values
+                fifo[r][1] <= 16'd0; // Default case to handle unexpected values
+                fifo[r][2] <= 16'd0; // Default case to handle unexpected values
+                fifo[r][3] <= 16'd0; // Default case to handle unexpected values
               end
             endcase
         end

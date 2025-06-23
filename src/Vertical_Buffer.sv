@@ -7,7 +7,7 @@ module Vertical_Buffer(
     input [4:0] row_en,
     //TODO: DW signal
     input dw_first_f,
-    input DW_PW_sel, // 0 = pw, 1 = dw
+    input [1:0] pass_layer_type,
     input [4:0] dw_open_start_num, // 5-bit to accommodate values up to 31
     input dw_first_if,
     //handshake 
@@ -30,8 +30,8 @@ always_ff @(posedge clk) begin
   if(reset)
     cnt <= 5'd0;
   else begin
-    case(DW_PW_sel)
-      1'd0: begin
+    case(pass_layer_type)
+      2'd1: begin
         if(handshake_f) begin
           if(dw_first_f) begin//每次的第一次
             if(cnt == row_en)
@@ -49,13 +49,16 @@ always_ff @(posedge clk) begin
         else if(dw_first_if)
           cnt <= dw_open_start_num - 5'd3;
       end
-      1'd1: begin
+      2'd0: begin
         if(handshake_f) begin
           if(cnt == col_en)
             cnt <= 5'd0;
           else
             cnt <= cnt + 5'd1;
         end
+      end
+      default: begin
+        cnt <= 5'd0; // Default case to handle unexpected values
       end
     endcase
   end

@@ -17,7 +17,7 @@ wire zero_f;
 //store weight
 always_ff @(posedge clk) begin
     if(reset)
-        weight_reg <= 8'd0;
+        weight_reg <= 8'sd0;
     else if(weight_en)
         weight_reg <= weight_in;
 end
@@ -25,19 +25,19 @@ end
 //send ifmap to next PE
 always_ff @( posedge clk ) begin
     if(reset)
-        ifmap_out <= 8'd0;
+        ifmap_out <= 8'sd0;
     else if(prod_out_en || pe_pass_if)
         ifmap_out <= ifmap_in;
 end
 
 //multiply ifmap and weight
 //send prod_out to adder tree
-assign zero_f = (weight_reg == 8'd0) || (ifmap_in == 8'd0);
-assign prod_reg = (zero_f) ? 16'd0 : ifmap_in * weight_reg;
+assign zero_f = (weight_reg == 8'sd0) || (ifmap_in == 8'sd0);
+assign prod_reg = (zero_f) ? 16'sd0 : $signed(ifmap_in) * $signed(weight_reg);
 
 always_ff @( posedge clk ) begin
     if(reset)
-        prod_out <= 16'd0;
+        prod_out <= 16'sd0;
     else if(prod_out_en)
         prod_out <= prod_reg;
 end

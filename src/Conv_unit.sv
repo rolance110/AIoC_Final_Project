@@ -21,10 +21,10 @@ module conv_unit(
     //DW signal
     input [1:0] dw_input_num,//決定輸入幾筆ifmap(1-3筆)
     input dw_row_end,//用來說明要換ROW，所以需要關閉PE array(觸發一個cycle))
-    input dw_stride,//用來決定是DW還是PW，0 = stride 1, 1 = stride 2
+    input [1:0] stride,//用來決定是DW還是PW，0 = stride 1, 1 = stride 2
 
     //control signal
-    input DW_PW_sel,//用來決定是DW還是PW，PW = 1, DW = 0
+    input [1:0] pass_layer_type,//0 pw, 1 dw, 2 conv, 3 linear
     input [5:0] col_en,//控制這次有幾個col會動作(因為不是每次都會把Vertical buffer塞滿)
     input [5:0] row_en//控制這次有幾個ROW動作(因為不一定是32個Weight)，不一定會塞滿全部
 );
@@ -88,35 +88,6 @@ assign data_out = (cs == OPSUM_OUT) ? opsum2GLB : 32'd0;
     //--------------------------------------------------------------//
 
 
-    //---------------------------------------------------------------//
-    //TODO: 關閉PE array信號設定
-    logic pw_close_f; //用來關閉PE array的信號
-    logic [2:0] pw_close_cnt;
-
-    wire [2:0] sub1_reg = pw_close_cnt - 3'd1;
-
-    //0 - 4 - 8 - 12 - 16 - 20 - 24 - 28(總共8次)
-    wire [4:0] pw_close_start_num = sub1_reg << 2; //關閉PE array的ROW起始位子
-    wire [5:0] pw_close_num = (row_en << 1) - (pw_close_start_num << 1) - 6'd1;
-
-    always_ff @(posedge clk) begin
-        if(reset)
-            pw_close_f <= 1'b0;
-        else if(cs == IDLE && ns == IPSUM_LOAD)
-            pw_close_f <= 1'b1; //當進入WEIGHT_LOAD的時候，代表已經完成第一個8個cycle的weight load
-        else if(cs == OPSUM_OUT && ns == IDLE && (sub1_reg == 3'd7))//等最後一次做完才放下
-            pw_close_f <= 1'b0; //當進入IFMAP_LOAD的時候，代表已經完成第一個8個cycle的weight load
-    end
-
-    always_ff @(posedge clk) begin
-        if(reset || (cs == WEIGHT_LOAD))
-            pw_close_cnt <= 3'd0;
-        else if(cs == IDLE && ns == IPSUM_LOAD)
-            pw_close_cnt <= pw_close_cnt + 3'd1;
-    end
-    //----------------------------------------------------------------//
-
-
 //--------------------------------------------------------------//
 //TODO: DW
 // close signal要在open之前
@@ -162,14 +133,14 @@ assign data_out = (cs == OPSUM_OUT) ? opsum2GLB : 32'd0;
             stride_cnt <= 2'd0;
         else if(stride_cnt == 2'd2)
             stride_cnt <= stride_cnt;
-        else if((cs == OPSUM_OUT && ns == IDLE) && dw_stride)
+        else if((cs == OPSUM_OUT && ns == IDLE) && stride == 2'd2)
             stride_cnt <= stride_cnt + 2'd1;
     end
 
     always_ff @(posedge clk) begin
         if(reset || (stride_cnt < 2'd1))//代表只輸出一筆
             dw_out_2_f <= 1'b0;
-        else if((DW_PW_sel == 1'd0) && (dw_stride == 1'd1) && (cs == COMPUTE) && (cnt[1:0] == (dw_input_num - 2'd1)))
+        else if((pass_layer_type == 2'd1) && (stride == 2'd2) && (cs == COMPUTE) && (cnt[1:0] == (dw_input_num - 2'd1)))
             dw_out_2_f <= !dw_out_2_f;
     end
 //--------------------------------------------------------------//
@@ -194,24 +165,31 @@ always_comb begin
                 ns = IDLE;
         end
         WEIGHT_LOAD: begin
-            case(DW_PW_sel)//OKAY
-                1'd0: begin //DW
-                    if((cnt == row_en - 6'd1)  && (valid_w && ready_w))
-                        ns = IFMAP_LOAD;
-                    else
-                        ns = WEIGHT_LOAD;
-                end
-                1'd1: begin //PW
+            case(pass_layer_type)//OKAY
+                2'd0: begin //PW
                     if((cnt == weight_load_time) && (valid_w && ready_w))
                         ns = IFMAP_LOAD;
                     else
                         ns = WEIGHT_LOAD;
                 end
+                2'd1:begin //DW
+                    if((cnt == row_en - 6'd1)  && (valid_w && ready_w))
+                        ns = IFMAP_LOAD;
+                    else
+                        ns = WEIGHT_LOAD;
+                end
+                default: ns = IDLE;
             endcase
         end
         IFMAP_LOAD: begin
-            case(DW_PW_sel)
-                1'd0: begin //DW
+            case(pass_layer_type)
+                2'd0: begin //PW
+                    if(cnt[4:0] == ifmap_load_time  && (valid_if && ready_if))
+                        ns = IPSUM_LOAD;
+                    else
+                        ns = IFMAP_LOAD;
+                end
+                2'd1: begin //DW
                     if(dw_open_f) begin
                         if(cnt == dw_time_3 && (valid_if && ready_if))
                             ns = PASS;
@@ -225,12 +203,7 @@ always_comb begin
                             ns = IFMAP_LOAD;
                     end
                 end
-                1'd1: begin //PW
-                    if(cnt[4:0] == ifmap_load_time  && (valid_if && ready_if))
-                        ns = IPSUM_LOAD;
-                    else
-                        ns = IFMAP_LOAD;
-                end
+                default: ns = IDLE;
             endcase
         end
         PASS: begin
@@ -245,8 +218,20 @@ always_comb begin
                 
         end
         IPSUM_LOAD: begin
-            case(DW_PW_sel)
-                1'd0: begin //DW
+            case(pass_layer_type)
+                2'd0: begin //PW
+                    if(pw_first_f) begin //第一個8個cycle的weight load
+                        if((cnt[6:0] == pw_time_8) && (valid_ip && ready_ip)) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
+                            ns = COMPUTE;
+                        else 
+                            ns = IPSUM_LOAD;
+                    end
+                    else if((cnt[6:0] == ipsum_load_time) && (valid_ip && ready_ip))
+                        ns = COMPUTE;
+                    else 
+                        ns = IPSUM_LOAD;
+                end
+                2'd1: begin //DW
                     if(dw_open_f) begin//第一次只要抓最多10筆
                         if((cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip))
                             ns = COMPUTE;
@@ -254,8 +239,8 @@ always_comb begin
                             ns = IPSUM_LOAD;
                     end
                     else begin
-                        case(dw_stride)
-                            1'd0: begin
+                        case(stride)
+                            2'd1: begin
                                 if(dw_input_num < 2'd3) begin//代表送一筆就夠了
                                     if((cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip)) begin//max 10筆
                                         ns = COMPUTE;
@@ -270,39 +255,30 @@ always_comb begin
                                         ns = IPSUM_LOAD;
                                 end
                             end
-                            1'd1:begin//固定存一筆(因為1或2都可以一次傳送進來使用) max 10筆
+                            2'd2:begin//固定存一筆(因為1或2都可以一次傳送進來使用) max 10筆
                                 if((cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip)) begin
                                     ns = COMPUTE;
                                 end
                                 else
                                     ns = IPSUM_LOAD;
                             end
+                            default: begin
+                                ns = IDLE; //其他情況不處理
+                            end
                         endcase
                     end
-                end
-                1'd1: begin //PW
-                    if(pw_first_f) begin //第一個8個cycle的weight load
-                        if((cnt[6:0] == pw_time_8) && (valid_ip && ready_ip)) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
-                            ns = COMPUTE;
-                        else 
-                            ns = IPSUM_LOAD;
-                    end
-                    else if(pw_close_f) begin //關閉PE array
-                        if((cnt[5:0] == pw_close_num) && (valid_ip && ready_ip))
-                            ns = COMPUTE;
-                        else 
-                            ns = IPSUM_LOAD;
-                    end
-                    else if((cnt[6:0] == ipsum_load_time) && (valid_ip && ready_ip))
-                        ns = COMPUTE;
-                    else 
-                        ns = IPSUM_LOAD;
                 end
             endcase
         end
         COMPUTE: begin
-            case(DW_PW_sel)
-                1'd0: begin //DW 三個cycle計算
+            case(pass_layer_type)
+                2'd0: begin //PW
+                    if(cnt == 8'd3) //每個PE需要4個cycle來計算
+                        ns = OPSUM_OUT;
+                    else
+                        ns = COMPUTE;
+                end
+                2'd1: begin //DW 三個cycle計算
                     if(dw_open_f)//只需要一個cycle
                         ns = OPSUM_OUT;
                     else if(cnt == (dw_input_num - 2'd1)) //每個PE需要3個cycle來計算
@@ -310,17 +286,25 @@ always_comb begin
                     else
                         ns = COMPUTE;
                 end
-                1'd1: begin //PW
-                    if(cnt == 8'd3) //每個PE需要4個cycle來計算
-                        ns = OPSUM_OUT;
-                    else
-                        ns = COMPUTE;
-                end
+                default: ns = IDLE;
             endcase
         end
         OPSUM_OUT: begin
-            case(DW_PW_sel)
-                1'd0: begin //DW，共10個FIFO
+            case(pass_layer_type)
+                2'd0: begin //PW
+                    if(pw_first_f) begin
+                        if((cnt[6:0] == pw_time_8) && (valid_op && ready_op)) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
+                            ns = IDLE; //代表這32個channel做完，已經
+                        else 
+                            ns = OPSUM_OUT;
+                    end
+                    else if((cnt[6:0] == opsum_load_time) && (valid_op && ready_op)) begin
+                        ns = IDLE;
+                    end
+                    else
+                        ns = OPSUM_OUT;
+                end
+                2'd1: begin //DW，共10個FIFO
                     if(dw_open_f) begin//第一次最多只要輸出10筆
                         if((cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op))//最大10筆
                             ns = IDLE;
@@ -328,8 +312,8 @@ always_comb begin
                             ns = OPSUM_OUT;
                     end
                     else begin
-                        case(dw_stride)
-                            1'd0: begin
+                        case(stride)
+                            2'd1: begin
                                 if(dw_input_num < 2'd3) begin//一個FIFO送一次
                                     if((cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op)) begin//最大10筆
                                         ns = IDLE;
@@ -344,35 +328,20 @@ always_comb begin
                                         ns = OPSUM_OUT;
                                 end
                             end
-                            1'd1: begin
+                            2'd2: begin
                                 if((cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op)) begin//最大10筆
                                     ns = IDLE;
                                 end
                                 else
                                     ns = OPSUM_OUT;
                             end
+                            default: begin
+                                ns = IDLE; //其他情況不處理
+                            end
                         endcase
                     end
                 end
-                1'd1: begin //PW
-                    if(pw_first_f) begin
-                        if((cnt[6:0] == pw_time_8) && (valid_op && ready_op)) //pw_time_8 = (pw_open_cnt + 3'd1) << 3 - 7'd1
-                            ns = IDLE; //代表這32個channel做完，已經
-                        else 
-                            ns = OPSUM_OUT;
-                    end
-                    else if(pw_close_f) begin //關閉PE array
-                        if((cnt[5:0] == pw_close_num) && (valid_op && ready_op))
-                            ns = IDLE; //代表這32個channel做完，已經
-                        else 
-                            ns = OPSUM_OUT;
-                    end
-                    else if((cnt[6:0] == opsum_load_time) && (valid_op && ready_op)) begin
-                        ns = IDLE;
-                    end
-                    else
-                        ns = OPSUM_OUT;
-                end
+                default: ns = IDLE;
             endcase
         end
         default: ns = IDLE; 
@@ -383,8 +352,8 @@ always_ff @(posedge clk) begin
     if(reset) 
         cnt <= 8'd0;
     else begin
-        case(DW_PW_sel)
-            1'd0: begin//DW
+        case(pass_layer_type)
+            2'd1: begin//DW
                 if(dw_open_f) begin
                     if(((cs == PASS) && (cnt == 8'd2)) ||
                     (cs == WEIGHT_LOAD && (cnt == row_en - 6'd1) && (valid_w && ready_w)) ||
@@ -401,18 +370,18 @@ always_ff @(posedge clk) begin
                     ((cs == WEIGHT_LOAD) && (cnt == row_en - 6'd1) && (valid_w && ready_w)) ||
                     ((cs == IPSUM_LOAD) && (dw_input_num < 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (valid_ip && ready_ip)) ||
                     ((cs == IPSUM_LOAD) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num) && (valid_ip && ready_ip)) ||
-                    ((cs == IPSUM_LOAD) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (dw_stride == 1'd1) && (valid_ip && ready_ip)) ||
+                    ((cs == IPSUM_LOAD) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (stride == 2'd2) && (valid_ip && ready_ip)) ||
                     ((cs == COMPUTE) && (cnt == (dw_input_num - 2'd1))) ||
                     ((cs == OPSUM_OUT) && (dw_input_num < 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (valid_op && ready_op)) ||
-                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num) && (dw_stride == 1'd0) && (valid_op && ready_op)) ||
-                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (dw_stride == 1'd1) && (valid_op && ready_op))
+                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[4:0] == dw_ip_num) && (stride == 2'd1) && (valid_op && ready_op)) ||
+                    ((cs == OPSUM_OUT) && (dw_input_num == 2'd3) && (cnt[3:0] == dw_open_num - 4'd1) && (stride == 2'd2) && (valid_op && ready_op))
                     )
                         cnt <= 8'd0;
                     else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
                         cnt <= cnt + 8'd1;
                 end
             end
-            1'd1: begin//PW FIXME: OKAY
+            2'd0: begin//PW FIXME: OKAY
                 if(pw_first_f) begin
                     if(((cs == WEIGHT_LOAD) && (cnt == weight_load_time) && (valid_w && ready_w)) || 
                     ((cs == IFMAP_LOAD) && (cnt[4:0] == ifmap_load_time) && (valid_if && ready_if)) ||
@@ -423,20 +392,15 @@ always_ff @(posedge clk) begin
                     else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
                         cnt <= cnt + 8'd1;
                 end
-                else if(pw_close_f) begin
-                    if(((cs == IPSUM_LOAD) && (cnt[5:0] == pw_close_num) && (valid_ip && ready_ip)) || 
-                    ((cs == OPSUM_OUT) && (cnt[5:0] == pw_close_num) && (valid_op && ready_op))  || 
-                    ((cs == COMPUTE) && (cnt == 8'd3)))
-                        cnt <= 8'd0;
-                    else if((valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
-                        cnt <= cnt + 8'd1;
-                end
                 else if(((cs == WEIGHT_LOAD) && (cnt == weight_load_time) && (valid_w && ready_w)) || ((cs == IFMAP_LOAD) && (cnt[5:0] == ifmap_load_time) && (valid_if && ready_if)) ||
                 ((cs == IPSUM_LOAD) && (cnt[6:0] == ipsum_load_time) && (valid_ip && ready_ip)) || ((cs == OPSUM_OUT) && (cnt[6:0] == opsum_load_time) && (valid_op && ready_op)) || ((cs == COMPUTE) && cnt == 8'd3))begin
                     cnt <= 8'd0;
                 end
                 else if((valid_if && ready_if) || (valid_w && ready_w) || (valid_ip && ready_ip) || (valid_op && ready_op) || (cs == COMPUTE))
                     cnt <= cnt + 8'd1;
+            end
+            default: begin
+                cnt <= 8'd0; //其他狀態都歸零
             end
         endcase
     end
@@ -470,7 +434,7 @@ Horizontal_Buffer Horizontal_Buffer(
     .clk(clk),
     .reset(reset),
     .change_weight_f(change_weight_f), //用來決定是否要更新weight
-    .DW_PW_sel(DW_PW_sel), //用來決定是DW還是PW，PW = 1, DW = 0
+    .pass_layer_type(pass_layer_type), //用來決定是DW還是PW，PW = 1, DW = 0
     .row_en(row_en),
     .col_in(col_in),
     .ready_w(ready_w),
@@ -488,12 +452,15 @@ logic ifmap_out_f;
 logic [255:0] ifmap_out; //32個ROW，每個ROW 8bit，總共256bit
 
 always_comb begin
-    case(DW_PW_sel)
-        1'd0: begin //DW
+    case(pass_layer_type)
+        2'd1: begin //DW
             ifmap_out_f = (((cs == COMPUTE) || (cs == PASS)) && (cnt < {6'd0, dw_input_num}));
         end
-        1'd1: begin //PW
+        2'd0: begin //PW
             ifmap_out_f = ((cs == COMPUTE) && (cnt < 8'd4));
+        end
+        default: begin
+            ifmap_out_f = 1'b0; //其他狀態不需要ifmap_out_f
         end
     endcase
 end
@@ -509,7 +476,7 @@ Vertical_Buffer Vertical_Buffer(
     .clk(clk),
     .reset(reset),
     //DW
-    .DW_PW_sel(DW_PW_sel), //用來決定是DW還是PW，PW = 1, DW = 0
+    .pass_layer_type(pass_layer_type), //用來決定是DW還是PW，PW = 1, DW = 0
     .dw_first_f(dw_open_f), //用來決定是否是第一個8個cycle的weight load
     .dw_open_start_num(dw_open_start_num), //用來決定有幾個ROW要使用
     .dw_first_if(dw_first_if),
@@ -539,7 +506,7 @@ logic [1:0] dw_out_times;//輸出幾筆opsum
 always_ff @(posedge clk) begin
     if(reset)
         ip_out_dw_f <= 1'd0;
-    else if(dw_stride) begin
+    else if(stride == 2'd2) begin
         if(stride_cnt == 2'd0) begin
             if(ns == OPSUM_OUT)
                 ip_out_dw_f <= 1'd0; //當進入OPSUM_OUT的時候，代表已經完成第一個8個cycle的weight load
@@ -565,30 +532,36 @@ always_ff @(posedge clk) begin
 end
 
 //if pass signal=1，則不動作 不輸出data
-always_comb begin
-    if(cs == COMPUTE) begin
-        case(DW_PW_sel)
-            1'd0: begin //DW
-                case(dw_stride)
-                    1'd0: begin // stride = 1
-                        ipsum_out_f = ((cs == COMPUTE) && (cnt[1:0] < dw_input_num));
+always_ff @(posedge clk) begin
+    if(reset) begin
+        ipsum_out_f <= 1'd0;
+    end
+    else if(cs == COMPUTE) begin
+        case(pass_layer_type)
+            2'd1: begin //DW
+                case(stride)
+                    2'd1: begin // stride = 1
+                        ipsum_out_f <= ((cs == COMPUTE) && (cnt[1:0] < dw_input_num));
                     end
-                    1'd1: begin // stride = 2
+                    2'd2: begin // stride = 2
                         if((cs == COMPUTE) && (cnt[1:0] < dw_input_num))
-                        ipsum_out_f = ip_out_dw_f;
+                        ipsum_out_f <= ip_out_dw_f;
+                    end
+                    default: begin
+                        ipsum_out_f <= 1'b0; //其他情況不處理
                     end
                 endcase
             end
-            1'd1: begin //PW
-                ipsum_out_f = ((cs == COMPUTE) && (cnt < 8'd4));
+            2'd0: begin //PW
+                ipsum_out_f <= ((cs == COMPUTE) && (cnt < 8'd4));
             end
             default: begin
-                ipsum_out_f = 1'b0; //其他狀態不需要ipsum_out_f
+                ipsum_out_f <= 1'b0; //其他狀態不需要ipsum_out_f
             end
         endcase
     end
     else
-        ipsum_out_f = 1'b0; //其他狀態不需要ipsum_out_f
+        ipsum_out_f <= 1'b0; //其他狀態不需要ipsum_out_f
 end
 
 always_comb begin
@@ -608,11 +581,9 @@ Ipsum_buffer Ipsum_buffer(
     .ip_time_4(pw_time_4),//用來決定有幾個ROW要使用
     .first_f(pw_first_f), //用來決定是否是第一個8個cycle的weight load
     //要關閉PE array
-    .close_start_num(pw_close_start_num), //用來決定關閉PE array的ROW起始位子
-    .close_f(pw_close_f), //用來關閉PE array的信號
     //DW
-    .DW_PW_sel(DW_PW_sel), //用來決定是DW還是PW，PW = 1, DW = 0
-    .dw_stride(dw_stride), //用來決定是DW還是PW，0 = stride 1, 1 = stride 2
+    .pass_layer_type(pass_layer_type), //用來決定是DW還是PW，PW = 1, DW = 0
+    .stride(stride), //用來決定是DW還是PW，0 = stride 1, 1 = stride 2
     .dw_input_num(dw_input_num), //決定輸入幾筆ifmap(1-3筆)
     .dw_open_num(dw_open_num), //用來決定有幾個ROW要使用
     .dw_open_f(dw_open_f),
@@ -645,20 +616,26 @@ always_ff @(posedge clk) begin//TODO: 考慮DW
     if(reset)
         store_opsum_f <= 1'b0;
     else if(cs == COMPUTE) begin
-        case(DW_PW_sel)
-            1'd0:begin
-                case(dw_stride)
-                    1'd0:begin
+        case(pass_layer_type)
+            2'd1:begin
+                case(stride)
+                    2'd1:begin
                         store_opsum_f <= 1'b1; 
                     end
-                    1'd1:begin
+                    2'd2:begin
                         store_opsum_f <= ip_out_dw_f; //在compute的時候開始儲存opsum
+                    end
+                    default: begin
+                        store_opsum_f <= 1'b0; //其他情況不處理
                     end
                 endcase
             end
-            1'd1:begin
+            2'd0:begin
                     store_opsum_f <= 1'b1; //在compute的時候開始儲存opsum
-            end        
+            end      
+            default: begin
+                store_opsum_f <= 1'b0; //其他狀態不需要store_opsum_f
+            end  
         endcase
     end
     else
@@ -672,16 +649,14 @@ Opsum_buffer Opsum_buffer(
     .ready_op(ready_op),
     .valid_op(valid_op),
     //DW
-    .DW_PW_sel(DW_PW_sel), 
-    .dw_stride(dw_stride), 
+    .pass_layer_type(pass_layer_type), 
+    .stride(stride), 
     .dw_input_num(dw_input_num), 
     .dw_open_f(dw_open_f),
     .dw_out_times(dw_out_times),
     //PW, first 8 cycle
     .first_f(pw_first_f),
     .ip_time_4(pw_time_4), //用來決定有幾個ROW要使用
-    .pw_close_start_num(pw_close_start_num), //用來決定關閉PE array的ROW起始位子
-    .close_f(pw_close_f), //用來關閉PE array的信號
 
     .row_en(row_en), //用來決定有幾個ROW要使用
     .store_opsum_f(store_opsum_f),
@@ -726,7 +701,7 @@ PE_array PE_array(
 Reducer Reducer(
     .array2reducer(array_opsum), //從PE_array來的
     .ipsum2reducer(ipsum_out), //只有在cs == Compute的時候會輸出給Reducer，維持四個cycle
-    .DW_PW_sel(DW_PW_sel), //從Ipsum_buffer來的
+    .pass_layer_type(pass_layer_type), //從Ipsum_buffer來的
     .reducer2opsum(reducer2opsum) //送到Opsum_buffer
 );
 //--------------------------------------------------------------//

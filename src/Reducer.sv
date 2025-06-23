@@ -3,7 +3,7 @@
 module Reducer(
     input signed [`ROW_NUM*16 - 1:0] array2reducer,
     input signed [`ROW_NUM*16 - 1:0] ipsum2reducer,
-    input DW_PW_sel,//選擇哪一種做法,  1 = PW mode, 0 = DW mode
+    input [1:0] pass_layer_type,//選擇哪一種做法,  1 = PW mode, 0 = DW mode
 
     output signed [`ROW_NUM*16 - 1:0] reducer2opsum
 );
@@ -53,13 +53,13 @@ generate
         // 如果是PW模式，則每個row獨立計算
         if(n < 30) begin
           if ((n % 3) == 0) begin
-              assign reducer2opsum[n*16 +: 16] = (DW_PW_sel) ? PW_SUM[n] : DW_CONV_SUM[n/3];
+              assign reducer2opsum[n*16 +: 16] = (pass_layer_type == 2'd0) ? PW_SUM[n] : (pass_layer_type == 2'd1) ? DW_CONV_SUM[n/3] : 16'd0;
           end else begin
-              assign reducer2opsum[n*16 +: 16] = (DW_PW_sel) ? PW_SUM[n] : 16'd0;
+              assign reducer2opsum[n*16 +: 16] = (pass_layer_type == 2'd0) ? PW_SUM[n] : 16'd0;
           end
         end
         else begin
-          assign reducer2opsum[n*16 +: 16] = (DW_PW_sel) ? PW_SUM[n] : 16'd0;
+          assign reducer2opsum[n*16 +: 16] = (pass_layer_type == 2'd0) ? PW_SUM[n] : 16'd0;
         end
     end
 endgenerate

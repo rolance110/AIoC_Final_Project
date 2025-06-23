@@ -5,7 +5,7 @@ module Horizontal_Buffer(
     input clk,
     input reset,
     input change_weight_f,//切換weight的signal
-    input DW_PW_sel,//PW=1, DW=0
+    input [1:0] pass_layer_type,
     input [5:0] row_en,
     input [4:0] col_in,//用來判斷一個ROW要放幾筆data
     //handshake
@@ -27,28 +27,28 @@ logic [2:0] col_cnt;
 logic [4:0] row_cnt;
 logic change_f_reg;
 
-wire [2:0] col_num = col_in[4:2];//最多一個ROW有8筆32bit
-
-wire handshake_f0 = (valid_w && ready_w) ? 1'b1 : 1'b0; // handshake signal for writing weights
-
 logic handshake_f;
-always_ff @(posedge clk) begin
-    if(reset) begin
-        handshake_f <= 1'b0;
-    end
-    else if(handshake_f0) begin
-        handshake_f <= 1'b1;
-    end
+logic [2:0] col_num;
+
+always_comb begin
+    col_num = col_in[4:2];//最多一個ROW有8筆32bit
 end
 
+// wire handshake_f0 = (valid_w && ready_w) ? 1'b1 : 1'b0; // handshake signal for writing weights
 
+// logic handshake_f;
+// always_ff @(posedge clk) begin
+//     if(reset) begin
+//         handshake_f <= 1'b0;
+//     end
+//     else if(handshake_f0) begin
+//         handshake_f <= 1'b1;
+//     end
+// end
 
-
-
-
-
-
-
+always_comb begin
+    handshake_f = (valid_w && ready_w) ? 1'b1 : 1'b0; // handshake signal for writing weights
+end
 
 always_ff @(posedge clk) begin
     if(reset || (ready_w == 1'd0)) begin
@@ -56,8 +56,8 @@ always_ff @(posedge clk) begin
        row_cnt <= 5'd0;
     end
     else begin
-        case(DW_PW_sel)
-            1'd0:begin
+        case(pass_layer_type)
+            2'd1:begin
                 if(handshake_f) begin
                     if(row_cnt == row_en - 6'd1) begin
                         row_cnt <= 5'd0;
@@ -66,25 +66,7 @@ always_ff @(posedge clk) begin
                         row_cnt <= row_cnt + 6'd1;
                 end
             end
-            1'd1: begin
-                // if(handshake_f) begin
-                //     if(col_cnt == col_num) begin
-                //         col_cnt <= 3'd0;
-                //         if(row_cnt == row_en - 6'd1) begin//數量相同就可以歸零
-                //             row_cnt <= 5'd0;
-                //         end
-                //         else begin
-                //             row_cnt <= row_cnt + 6'd1;//不怕她爆掉，就給他在else的時候清0即可
-                //         end
-                //     end
-                //     else begin
-                //         col_cnt <= col_cnt + 3'd1;
-                //     end
-                // end
-                // else begin
-                //     col_cnt <= col_cnt;
-                // end
-
+            2'd0: begin
                 if(handshake_f && (col_cnt == col_num) && (row_cnt == row_en - 6'd1)) begin
                     col_cnt <= 3'd0;
                     row_cnt <= 5'd0;
@@ -99,6 +81,10 @@ always_ff @(posedge clk) begin
                 else begin
                     col_cnt <= col_cnt;
                 end
+            end
+            default: begin
+                col_cnt <= 3'd0;
+                row_cnt <= 5'd0;
             end
         endcase
     end 
@@ -118,28 +104,9 @@ always_ff @(posedge clk) begin
    end
 end
 
-// genvar r, c;
-// generate
-//     for(r=0;r<`ROW_NUM;r=r+1) begin : ROWS
-//         for(c=0;c<8;c=c+1) begin : COLS
-//             always_comb begin
-//                 case(DW_PW_sel)
-//                     1'd0:begin//要斜對角放，每三個ROW整理一次
-//                         weight_out[(r*256)+(c*32) +: 32] = 32'd0; // DW mode, output zero
-//                     end
-//                     1'd1:begin
-//                         weight_out[(r*256)+(c*32) +: 32] = weight_mem[r][c]; // PW mode, output stored weight
-//                     end
-//                 endcase
-//             end
-//             //assign weight_out[(r*256)+(c*32) +: 32] = weight_mem[r][c];
-//         end
-//     end
-// endgenerate
-
 always_comb begin
-    case(DW_PW_sel)
-        1'd0:begin//要斜對角放，每三個ROW整理一次
+    case(pass_layer_type)
+        2'd1:begin//要斜對角放，每三個ROW整理一次
             //ROW0
             weight_out[255:0] = {weight_mem[0][0][23:16], weight_mem[1][0][23:16], weight_mem[2][0][23:16], 232'd0};
             weight_out[511:256] = {weight_mem[0][0][15:8], weight_mem[1][0][15:8], weight_mem[2][0][15:8], 232'd0};
@@ -185,7 +152,7 @@ always_comb begin
             weight_out[8191:7936] = {256'd0};
             //weight_out[(r*256)+(c*32) +: 32] = 32'd0; // DW mode, output zero
         end
-        1'd1:begin
+        2'd0:begin
             //ROW0
             weight_out[255:0] = {weight_mem[0][7], weight_mem[0][6], weight_mem[0][5], weight_mem[0][4],
                                  weight_mem[0][3], weight_mem[0][2], weight_mem[0][1], weight_mem[0][0]};
@@ -262,6 +229,7 @@ always_comb begin
             weight_out[8191:7936] = { weight_mem[31][7], weight_mem[31][6], weight_mem[31][5], weight_mem[31][4],
                                    weight_mem[31][3], weight_mem[31][2], weight_mem[31][1], weight_mem[31][0]};
         end
+        default weight_out = 8192'd0; // Default case to avoid latches
     endcase
 end
 
