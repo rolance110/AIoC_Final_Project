@@ -301,21 +301,36 @@ end
         if(rst) begin
             cnt_ifmap <= 0;
         end
-        else if (current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
-            if(y_cnt == 8'd0 || y_cnt == in_R - 1) begin
-                if (cnt_ifmap == col_en-2) begin // 假設每次搬入 32 個 Ifmap Pack
-                    cnt_ifmap <= 0; // 重置計數器
-                end 
-                else
-                    cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
-            end 
-            else begin
+
+
+        else if(pass_layer_type == `POINTWISE) begin
+            if (current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
                 if (cnt_ifmap == col_en-1) begin // 假設每次搬入 32 個 Ifmap Pack
                     cnt_ifmap <= 0; // 重置計數器
                 end 
                 else
                     cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
             end
+        end
+
+        else if (pass_layer_type == `DEPTHWISE) begin
+            if (current_state == S_WRITE_IFMAP && pe_ifmap_valid && pe_ifmap_ready) begin
+                if(y_cnt == 8'd0 || y_cnt == in_R - 1) begin
+                    if (cnt_ifmap == col_en-2) begin // 假設每次搬入 32 個 Ifmap Pack
+                        cnt_ifmap <= 0; // 重置計數器
+                    end 
+                    else
+                        cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
+                end 
+                else begin
+                    if (cnt_ifmap == col_en-1) begin // 假設每次搬入 32 個 Ifmap Pack
+                        cnt_ifmap <= 0; // 重置計數器
+                    end 
+                    else
+                        cnt_ifmap <= cnt_ifmap + 1; // 每次搬入 4-Channel Pack (32-bit)
+                end
+            end
+
         end
     end
     // bias 
@@ -1333,7 +1348,7 @@ always_ff@(posedge clk) begin
     else if (change_row) begin
         n_cnt0 <= 8'd0;
     end
-    else if(col_en_cnt == 9'd2 && )begin
+    else if(col_en_cnt == 9'd2)begin
         n_cnt0 <= n_cnt0 + 8'd1;
     end
 end
