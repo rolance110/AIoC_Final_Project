@@ -2,6 +2,14 @@
 `include "../sim/SRAM_64KB.sv"
 module token_PE_tb;
 
+//TODO: CONFIGURE SETTINGS
+    parameter POINTWISE_N = 32'd40;
+    parameter COMPUTE_ROW = 32'd3;
+    // 紀錄之前 tile 已經計算幾個 ofmap row
+    parameter Already_COMP_ROW = 8'd0; // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad
+
+
+
     // 時鐘和重置訊號
     logic clk;
     logic rst_n;
@@ -80,6 +88,7 @@ module token_PE_tb;
     logic [31:0]       opsum_pop_mod;
     logic n_tile_is_first_i;
     logic n_tile_is_last_i;
+    logic [7:0] Already_Compute_Row;
 
     // conv_unit 的輸出訊號
     logic [31:0]       opsum_pop_data [31:0];
@@ -162,6 +171,7 @@ logic [31:0] write_data;
         .opsum_fifo_pop_data_matrix_i(opsum_pop_data),
         .n_tile_is_first_i(n_tile_is_first_i),
         .n_tile_is_last_i(n_tile_is_last_i),
+        .Already_Compute_Row_i(Already_Compute_Row), // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad
 
 
 //* to GLB
@@ -258,11 +268,12 @@ logic [31:0] write_data;
             bias_GLB_base_addr_i = 32'h0000_2500;
             opsum_GLB_base_addr_i = 32'h0000_3000;
             is_bias_i = 0;
-            tile_n_i = 32'd40;
+            tile_n_i = POINTWISE_N;
             in_C_i = 8'd224;
             in_R_i = 8'd224;
             n_tile_is_first_i = 1; // 第一個 tile
             n_tile_is_last_i = 0; // 不是最後一個 tile
+            Already_Compute_Row = 8'd0; // Pointwise layer 不需要這個訊號
             pad_R_i = 2'd0;
             pad_L_i = 2'd0;
             pad_T_i = 2'd0;
@@ -271,7 +282,7 @@ logic [31:0] write_data;
             out_R_i = 8'd224;
             IC_real_i = 8'd32;
             OC_real_i = 8'd32;
-            On_real_i = 32'd40;
+            On_real_i = POINTWISE_N;
             // glb_read_data_i = 32'd0;// read from SRAM
             ipsum_read_en = 0;
             ipsum_add_en = 1;
@@ -299,10 +310,11 @@ logic [31:0] write_data;
             opsum_GLB_base_addr_i = 32'h0000_3000;
             
             is_bias_i = 0; //*
-            tile_n_i = 32'd5; //* 1 tile has tile_n_i row
+            tile_n_i = COMPUTE_ROW; //* 1 tile has tile_n_i row
 
             in_C_i = 8'd224;
             in_R_i = 8'd224;
+            Already_Compute_Row = Already_COMP_ROW; // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad 
             n_tile_is_first_i = 1; // 第一個 tile
             n_tile_is_last_i = 0; // 不是最後一個 tile
             pad_R_i = 2'd1;
@@ -313,7 +325,7 @@ logic [31:0] write_data;
             out_R_i = 8'd224;
             IC_real_i = 8'd10;
             OC_real_i = 8'd10;
-            On_real_i = 32'd3; //* tile_n_i - 2
+            On_real_i = COMPUTE_ROW - 32'd2; //* tile_n_i - 2
             ipsum_read_en = 0;
             ipsum_add_en = 1;
 
@@ -344,7 +356,7 @@ logic [31:0] golden_data;
         begin
             errors = 0;
             // 共 640 個 32-bit 值（2560 bytes）
-            for (i = 0; i < 640; i++) begin
+            for (i = 0; i < (POINTWISE_N*32/2); i++) begin
                 // 從 SRAM 讀取 4 bytes 組成 32-bit 值（小端序）
                 sram_data = u_SRAM.memory[12288 + i];
                 // $display("SRAM addr 0x%h: 0x%h", (12288 + i), u_SRAM.memory[12288 + i]);
@@ -375,10 +387,9 @@ logic [31:0] golden_data;
             integer i, errors = 0;
             logic [31:0] sram_data, golden_data;
             // 共 1120 個 32-bit 值（2560 bytes）
-            for (i = 0; i < 2240; i++) begin
+            for (i = 0; i < ((COMPUTE_ROW-2)*1120); i++) begin
                 // 從 SRAM 讀取 4 bytes 組成 32-bit 值（小端序）
                 sram_data = u_SRAM.memory[12288 + i];
-                // $display("SRAM addr 0x%h: 0x%h", (12288 + i), u_SRAM.memory[12288 + i]);
                 // 從 golden_opsum 讀取對應值
                 golden_data = golden_opsum[i];
                 // 比較
@@ -388,8 +399,8 @@ logic [31:0] golden_data;
                     errors++;
                 end
                 else begin
-                    // $display("Match at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
-                    //          i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
+                    $display("Match at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+                             i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
                 end
             end
             // 報告結果

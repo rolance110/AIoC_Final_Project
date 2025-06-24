@@ -16,6 +16,11 @@ module L2C_preheat #(
 )(
     input  logic               clk,
     input  logic               rst_n,
+
+    input logic [7:0] IC_real_i,
+    input logic [7:0] OC_real_i,
+
+
     input  logic               start_preheat_i,
     input  logic [1:0]         layer_type_i,    // 00: pw, 01: dw, others: future
     input  logic [31:0] ifmap_fifo_done_matrix_i,
@@ -83,6 +88,43 @@ always_comb begin
         after_preheat_opsum_push_one_o = 1'b0;
 end
 
+//========================================================
+// 根據 layer_type 決定要啟動哪幾個 FIFO ( 根據 IC_real_i 和 OC_real_i )
+//========================================================
+always_comb begin
+    if (pre_cs == SET_POP_NUM) 
+        case (layer_type_i)
+            `POINTWISE: 
+                ifmap_need_pop_o = (IC_real_i == 8'd0)? 32'h0: ((32'h1 << IC_real_i) - 1);   // 32'hFFFF_FFFF; // Pointwise layer, 每個 FIFO 都需要 pop
+            `DEPTHWISE: 
+                ifmap_need_pop_o = (IC_real_i == 8'd0)? 32'h0: ((32'h1 << (IC_real_i * 3)) - 1);// 32'h3FFF_FFFF; // Depthwise layer, 30 個 FIFO 需要 pop
+            `STANDARD: 
+                ifmap_need_pop_o = (IC_real_i == 8'd0)? 32'h0: ((32'h1 << (IC_real_i * 3)) - 1);//32'h3FFF_FFFF; // Standard layer, 30 個 FIFO 需要 pop
+            `LINEAR: 
+                ifmap_need_pop_o = (IC_real_i == 8'd0)? 32'h0: ((32'h1 << IC_real_i) - 1); // Linear layer, 每個 FIFO 都需要 pop
+            default: ifmap_need_pop_o = 32'b0; // 預設值，避免綁定錯誤
+        endcase
+    else 
+        ifmap_need_pop_o = 32'b0;
+end
+
+always_comb begin
+    if (pre_cs == SET_POP_NUM) 
+        case (layer_type_i)
+            `POINTWISE: 
+                ipsum_need_pop_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1); // Pointwise layer, 每個 FIFO 都需要 pop
+            `DEPTHWISE: 
+                ipsum_need_pop_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1); // Depthwise layer, 10 個 FIFO 需要 pop
+            `STANDARD: 
+                ipsum_need_pop_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1); // Standard layer, 10 個 FIFO 需要 pop
+            `LINEAR: 
+                ipsum_need_pop_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1); // Linear layer, 每個 FIFO 都需要 pop
+            default: ipsum_need_pop_o = 32'b0; // 預設值，避免綁定錯誤
+        endcase
+    else 
+        ipsum_need_pop_o = 32'b0;
+end
+
 
 //========================================================
 // 根據 layer_type 決定每個 FIFO 要 pop 幾次
@@ -90,11 +132,17 @@ end
 integer i, j;
 always_comb begin
     if ((pre_cs == SET_POP_NUM) && (layer_type_i == `POINTWISE)) begin
-        for(j = 0; j < 32; j++)begin
-            ifmap_pop_num_o[j] = 32'd1;
+        for (j = 0; j < 32; j = j + 1) begin
+            ifmap_pop_num_o[j] = (j < IC_real_i)? 32'd1: 32'd0;
         end
     end
     else if ((pre_cs == SET_POP_NUM) && (layer_type_i == `DEPTHWISE)) begin
+        // for (j = 0; j < 32; j = j + 1) begin
+        //     if (j < IC_real_i * 3)
+        //         ifmap_pop_num_o[j] = (((j / 3) + 1) * 3);
+        //     else
+        //         ifmap_pop_num_o[j] = 32'd0;
+        // end
         ifmap_pop_num_o[0]  = 32'd3;
         ifmap_pop_num_o[1]  = 32'd3;
         ifmap_pop_num_o[2]  = 32'd3;
@@ -136,13 +184,13 @@ always_comb begin
         ifmap_pop_num_o[29] = 32'd30;
     end
     else if ((pre_cs == SET_POP_NUM) && (layer_type_i == `STANDARD)) begin
-        for(j = 0; j < 32; j++)begin
-            ifmap_pop_num_o[j] = 32'd3;
+        for (j = 0; j < 32; j = j + 1) begin
+            ifmap_pop_num_o[j] = (j < IC_real_i)? 32'd3: 32'd0;
         end
     end
     else if ((pre_cs == SET_POP_NUM) && (layer_type_i == `LINEAR)) begin
-        for(j = 0; j < 32; j++)begin
-            ifmap_pop_num_o[j] = 32'd1;
+        for (j = 0; j < 32; j = j + 1) begin
+            ifmap_pop_num_o[j] = (j < IC_real_i)? 32'd1: 32'd0;
         end
     end
     else begin
@@ -170,40 +218,6 @@ end
 
 
 
-
-always_comb begin
-    if (pre_cs == SET_POP_NUM) 
-        case (layer_type_i)
-            `POINTWISE: 
-                ifmap_need_pop_o = 32'hFFFF_FFFF; // Pointwise layer, 每個 FIFO 都需要 pop
-            `DEPTHWISE: 
-                ifmap_need_pop_o = 32'h3FFF_FFFF; // Depthwise layer, 30 個 FIFO 需要 pop
-            `STANDARD: 
-                ifmap_need_pop_o = 32'h3FFF_FFFF; // Standard layer, 30 個 FIFO 需要 pop
-            `LINEAR: 
-                ifmap_need_pop_o = 32'hFFFF_FFFF; // Linear layer, 每個 FIFO 都需要 pop
-            default: ifmap_need_pop_o = 32'b0; // 預設值，避免綁定錯誤
-        endcase
-    else 
-        ifmap_need_pop_o = 32'b0;
-end
-
-always_comb begin
-    if (pre_cs == SET_POP_NUM) 
-        case (layer_type_i)
-            `POINTWISE: 
-                ipsum_need_pop_o = 32'hFFFF_FFFF; // Pointwise layer, 每個 FIFO 都需要 pop
-            `DEPTHWISE: 
-                ipsum_need_pop_o = 32'h0000_03FF; // Depthwise layer,10
-            `STANDARD: 
-                ipsum_need_pop_o = 32'h0000_03FF; // Standard layer,10
-            `LINEAR: 
-                ipsum_need_pop_o = 32'hFFFF_FFFF; // Linear layer, 每個 FIFO 都需要 pop
-            default: ipsum_need_pop_o = 32'b0; // 預設值，避免綁定錯誤
-        endcase
-    else 
-        ipsum_need_pop_o = 32'b0;
-end
 
 assign preheat_done_o = (pre_cs == DONE);
 

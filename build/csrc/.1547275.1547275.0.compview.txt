@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1750769251.840082969, "rt":3.21, "ut":2.86, "st":0.10}}
+{"vcselab":{"timestamp_begin":1750769255.110289766, "rt":0.43, "ut":0.20, "st":0.06}}
+{"link":{"timestamp_begin":1750769255.578249558, "rt":0.20, "ut":0.09, "st":0.06}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1750769251.603224966}
+{"VCS_COMP_START_TIME": 1750769251.603224966}
+{"VCS_COMP_END_TIME": 1750769258.926852439}
+{"VCS_USER_OPTIONS": "-R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv -f /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f -debug_access+all -full64 +incdir+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./include+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim +notimingcheck -l /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log +define++FSDB_ALL+POINTWISE_TYPE"}
+{"vcs1": {"peak_mem": 415452}}
+{"vcselab": {"peak_mem": 187552}}

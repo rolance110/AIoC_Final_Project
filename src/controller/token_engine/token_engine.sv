@@ -26,6 +26,7 @@ module token_engine (
 
     input logic n_tile_is_first_i,
     input logic n_tile_is_last_i,
+    input logic [7:0] Already_Compute_Row_i,
     input logic is_bias_i,
 
 
@@ -242,6 +243,8 @@ L2C_init_fifo_pe #(
     .n_tile_is_first_i(n_tile_is_first_i), // 是否為第一個 tile
     .n_tile_is_last_i(n_tile_is_last_i),   // 是否為最後一個 tile
 
+    //* 計數目前正在計算第幾個 output row
+    .Already_Compute_Row_i(Already_Compute_Row), // 已經計算的 row 數量
     .output_row_cnt_i(output_row_cnt), // 每次處理的 row 數
 
 
@@ -255,6 +258,7 @@ L2C_init_fifo_pe #(
     // ofmap base addr require
     .On_real_i(On_real_i),
     .out_C_i(out_C_i),
+    .out_R_i(out_R_i),
 
 //* output
     .ifmap_fifo_base_addr_o(ifmap_fifo_base_addr_matrix),
@@ -282,6 +286,11 @@ L2C_preheat #(
 ) L2C_preheat_dut (
     .clk(clk),
     .rst_n(rst_n),
+
+//* mask 
+    .IC_real_i(IC_real_i), // 實際要啟用的 ifmap FIFO 數量 (0～32)
+    .OC_real_i(OC_real_i), // 實際要啟用的 opsum FIFO 數量 (0～32)
+
     .start_preheat_i(preheat_state),
     .layer_type_i(layer_type_i),
     .ifmap_fifo_done_matrix_i(ifmap_fifo_done_matrix),
@@ -315,6 +324,10 @@ L2C_normal_loop L2C_normal_loop(
 
     .normal_loop_state_i(normal_loop_state), // 啟動 normal loop
     .layer_type_i(layer_type_i),
+
+//* mask
+    .IC_real_i(IC_real_i),
+    .OC_real_i(OC_real_i),
 
 
 //* Tile Infomation

@@ -15,6 +15,10 @@ module L2C_normal_loop(
     input logic clk,
     input logic rst_n,
 
+
+    input logic [7:0] IC_real_i, // input channel
+    input logic [7:0] OC_real_i, // output channel
+
     input logic normal_loop_state_i, // 啟動 normal loop
     input logic [1:0] layer_type_i,  
 
@@ -91,6 +95,52 @@ module L2C_normal_loop(
         endcase
     end
 assign normal_loop_done_o = (nl_cs == DONE);
+
+
+
+//========================================================
+// 根據 layer_type 決定前幾個 FIFO 需要啟用 ( 根據 IC_real_i 和 OC_real_i )
+//========================================================
+
+always_comb begin
+    if (nl_cs == SET_NUM) 
+        case (layer_type_i)
+            `POINTWISE: ifmap_need_pop_matrix_o = (IC_real_i == 8'd0)? 32'h0: ((32'h1 << IC_real_i) - 1);//32'hFFFF_FFFF; // preheat pointwise pop 1 
+            `DEPTHWISE: ifmap_need_pop_matrix_o = (IC_real_i == 8'd0)? 32'h0: ((32'h1 << (IC_real_i * 3)) - 1);//32'h3FFF_FFFF; // preheat depthwise pop all
+            `STANDARD: ifmap_need_pop_matrix_o = (IC_real_i == 8'd0)? 32'h0: ((32'h1 << (IC_real_i * 3)) - 1);//32'h3FFF_FFFF; // 30
+            `LINEAR: ifmap_need_pop_matrix_o = (IC_real_i == 8'd0)? 32'h0: ((32'h1 << IC_real_i) - 1);//32'hFFFF_FFFF; // preheat linear pop all
+            default: ifmap_need_pop_matrix_o = 32'b0;
+        endcase
+    else 
+        ifmap_need_pop_matrix_o = 32'b0;
+end
+
+always_comb begin
+    if (nl_cs == SET_NUM) 
+        case (layer_type_i)
+            `POINTWISE: ipsum_need_pop_matrix_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1);//32'hFFFF_FFFF; // preheat pointwise pop 1 
+            `DEPTHWISE: ipsum_need_pop_matrix_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1);//32'h0000_03FF; // 10
+            `STANDARD: ipsum_need_pop_matrix_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1);//32'h0000_03FF; // 10
+            `LINEAR: ipsum_need_pop_matrix_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1);//32'hFFFFFFFF; // preheat linear pop all
+            default: ipsum_need_pop_matrix_o = 32'b0;
+        endcase
+    else 
+        ipsum_need_pop_matrix_o = 32'b0;
+end
+
+always_comb begin
+    if (nl_cs == SET_NUM) 
+        case (layer_type_i)
+            `POINTWISE:opsum_need_push_matrix_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1);//32'hFFFF_FFFF; // preheat pointwise push 1
+            `DEPTHWISE: opsum_need_push_matrix_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1);//32'h0000_03FF; //  10
+            `STANDARD: opsum_need_push_matrix_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1);//32'h0000_03FF; // 10
+            `LINEAR: opsum_need_push_matrix_o = (OC_real_i == 8'd0)? 32'h0: ((32'h1 << OC_real_i) - 1);//32'hFFFFFFFF; // preheat linear push all
+            default: opsum_need_push_matrix_o = 32'b0;
+        endcase
+    else 
+        opsum_need_push_matrix_o = 32'b0;
+end
+
 
 //========================================================
 // 根據 layer_type 決定每個 FIFO 要 pop 幾次
@@ -242,45 +292,6 @@ always_comb begin
 
 end
 
-
-always_comb begin
-    if (nl_cs == SET_NUM) 
-        case (layer_type_i)
-            `POINTWISE: ifmap_need_pop_matrix_o = 32'hFFFF_FFFF; // preheat pointwise pop 1 
-            `DEPTHWISE: ifmap_need_pop_matrix_o = 32'h3FFF_FFFF; // preheat depthwise pop all
-            `STANDARD: ifmap_need_pop_matrix_o = 32'h3FFF_FFFF; // 30
-            `LINEAR: ifmap_need_pop_matrix_o = 32'hFFFF_FFFF; // preheat linear pop all
-            default: ifmap_need_pop_matrix_o = 32'b0; // preheat pointwise pop 1
-        endcase
-    else 
-        ifmap_need_pop_matrix_o = 32'b0;
-end
-
-always_comb begin
-    if (nl_cs == SET_NUM) 
-        case (layer_type_i)
-            `POINTWISE: ipsum_need_pop_matrix_o = 32'hFFFF_FFFF; // preheat pointwise pop 1 
-            `DEPTHWISE: ipsum_need_pop_matrix_o = 32'h0000_03FF; // 10
-            `STANDARD: ipsum_need_pop_matrix_o = 32'h0000_03FF; // 10
-            `LINEAR: ipsum_need_pop_matrix_o = 32'hFFFFFFFF; // preheat linear pop all
-            default: ipsum_need_pop_matrix_o = 32'b0; // preheat pointwise pop 1
-        endcase
-    else 
-        ipsum_need_pop_matrix_o = 32'b0;
-end
-
-always_comb begin
-    if (nl_cs == SET_NUM) 
-        case (layer_type_i)
-            `POINTWISE:opsum_need_push_matrix_o = 32'hFFFF_FFFF; // preheat pointwise push 1
-            `DEPTHWISE: opsum_need_push_matrix_o = 32'h0000_03FF; //  10 
-            `STANDARD: opsum_need_push_matrix_o = 32'h0000_03FF; // 10
-            `LINEAR: opsum_need_push_matrix_o = 32'hFFFFFFFF; // preheat linear push all
-            default: opsum_need_push_matrix_o = 32'b0; // preheat pointwise push 1
-        endcase
-    else 
-        opsum_need_push_matrix_o = 32'b0;
-end
 
 
 endmodule

@@ -6,8 +6,8 @@ import numpy as np
 random.seed(42)
 np.random.seed(42)
 
-# TODO: 調整以下參數以符合實際需求
-COMPUTE_ROW = 5
+#TODO: CONFIGURE SETTINGS
+COMPUTE_ROW = 3
 
 
 
