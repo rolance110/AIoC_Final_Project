@@ -116,6 +116,8 @@ end
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         write_ptr <= 16'd0;
+    else if (opsum_fifo_reset_i)
+        write_ptr <= 16'd0;
     else if (opsum_fifo_pop_o)
         write_ptr <= write_ptr + 16'd2; // opsum 2 byte
 end
@@ -127,6 +129,8 @@ logic [2:0] req_cnt;
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         req_cnt <= 3'd0;
+    else if (opsum_fifo_reset_i)
+        req_cnt <= 3'd0; // Reset request count on reset
     else if (op_cs == IDLE || op_cs == CAN_PUSH)
         req_cnt <= 3'd0; // Reset request count in IDLE state
     else if (opsum_permit_pop_i)
@@ -196,6 +200,8 @@ assign opsum_fifo_pop_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可
 // push count 累加
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || op_cs == IDLE)
+        push_cnt <= 32'd0;
+    else if (opsum_fifo_reset_i)
         push_cnt <= 32'd0;
     else if (opsum_fifo_push_o)
         push_cnt <= push_cnt + 32'd1;

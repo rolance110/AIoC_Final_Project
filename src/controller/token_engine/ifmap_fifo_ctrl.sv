@@ -132,7 +132,9 @@ end
 
 // 讀取地址管理 // push count
 always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n || ifmap_fifo_reset_i)
+    if (!rst_n)
+        push_cnt <= 16'd0;
+    else if (ifmap_fifo_reset_i)
         push_cnt <= 16'd0;
     else if (ifmap_permit_push_i)
         push_cnt <= push_cnt + 16'd1;
@@ -140,7 +142,9 @@ end
 
 logic [15:0] read_ptr;
 always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n || ifmap_fifo_reset_i)
+    if (!rst_n)
+        read_ptr <= 16'd0;
+    else if (ifmap_fifo_reset_i)
         read_ptr <= 16'd0;
     else if(left_pad)
         read_ptr <= read_ptr;
@@ -154,6 +158,8 @@ logic [2:0] req_cnt;
 
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
+        req_cnt <= 3'd0;
+    else if (ifmap_fifo_reset_i)
         req_cnt <= 3'd0;
     else if (if_cs == IDLE || if_cs == CAN_POP)
         req_cnt <= 3'd0; // Reset request count in IDLE state
@@ -235,6 +241,8 @@ assign ifmap_fifo_pop_o = (if_cs == CAN_POP) && !ifmap_fifo_empty_i && pe_array_
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || if_cs == IDLE)
         pop_cnt <= 5'd0;
+    else if (ifmap_fifo_reset_i)
+        pop_cnt <= 32'd0;
     else if (ifmap_fifo_pop_o)
         pop_cnt <= pop_cnt + 32'd1;
 end

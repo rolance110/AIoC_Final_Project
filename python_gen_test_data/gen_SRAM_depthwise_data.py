@@ -6,12 +6,19 @@ import numpy as np
 random.seed(42)
 np.random.seed(42)
 
+# TODO: 調整以下參數以符合實際需求
+COMPUTE_ROW = 4 
+
+
+
+
+
+
 # === 卷積參數 ===
 IMG_H, IMG_W = 224, 224  # 輸入圖像尺寸
 C = 10                    # 通道數（輸入與輸出相同）
 KERNEL_SIZE = 3           # 核大小 3x3
 PAD_TOP, PAD_BOTTOM, PAD_LEFT, PAD_RIGHT = 1, 1, 1, 1  # 填充
-COMPUTE_ROW = 3           # 每塊計算行數
 OUTPUT_ROW = COMPUTE_ROW - 2  # 輸出行數 = 1
 # TILE_H, TILE_W 是指包含 padding 的尺寸，但不寫入 padding 到 SRAM
 EFFECTIVE_H = COMPUTE_ROW

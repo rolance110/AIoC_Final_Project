@@ -129,7 +129,9 @@ end
 
     // 讀取地址管理
 always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n || ipsum_fifo_reset_i)
+    if (!rst_n)
+        read_ptr <= 16'd0;
+    else if (ipsum_fifo_reset_i)
         read_ptr <= 16'd0;
     else if (ipsum_permit_push_i)
         read_ptr <= read_ptr + 16'd2; // half word push (2 bytes)
@@ -142,6 +144,8 @@ logic [2:0] req_cnt;
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         req_cnt <= 3'd0;
+    else if (ipsum_fifo_reset_i)
+        req_cnt <= 3'd0; // Reset request count on reset
     else if (ip_cs == IDLE || ip_cs == CAN_POP)
         req_cnt <= 3'd0; // Reset request count in IDLE state
     else if (ipsum_permit_push_i)
@@ -201,6 +205,8 @@ assign ipsum_fifo_pop_o = (ip_cs == CAN_POP) && !ipsum_fifo_empty_i && pe_array_
 // pop count 累加
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || ip_cs == IDLE)
+        pop_cnt <= 32'd0;
+    else if (ipsum_fifo_reset_i)
         pop_cnt <= 32'd0;
     else if (ipsum_fifo_pop_o)
         pop_cnt <= pop_cnt + 32'd1;
