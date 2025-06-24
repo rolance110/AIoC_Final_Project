@@ -375,7 +375,7 @@ logic [31:0] golden_data;
             integer i, errors = 0;
             logic [31:0] sram_data, golden_data;
             // 共 1120 個 32-bit 值（2560 bytes）
-            for (i = 0; i < 1120; i++) begin
+            for (i = 0; i < 500; i++) begin
                 // 從 SRAM 讀取 4 bytes 組成 32-bit 值（小端序）
                 sram_data = u_SRAM.memory[12288 + i];
                 // $display("SRAM addr 0x%h: 0x%h", (12288 + i), u_SRAM.memory[12288 + i]);

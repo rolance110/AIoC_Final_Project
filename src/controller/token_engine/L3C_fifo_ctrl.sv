@@ -18,6 +18,8 @@ module L3C_fifo_ctrl #(
     input logic [1:0] pad_R_i,
     input logic [1:0] pad_L_i,
 
+    // todo: IDLE when preheat -> normal_loop
+    input logic normal_loop_state_i,
 
     // todo: fifo_mask
     input preheat_state_i,
@@ -95,6 +97,30 @@ module L3C_fifo_ctrl #(
     //* pe array move enable
     output logic pe_array_move_o
 );
+logic preheat_state_delay1;
+logic preheat_state_delay2;
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        preheat_state_delay1 <= 1'b0;
+        preheat_state_delay2 <= 1'b0;
+    end else begin
+        preheat_state_delay1 <= preheat_state_i;
+        preheat_state_delay2 <= preheat_state_delay1;
+    end
+end
+logic normal_loop_state_delay1;
+logic normal_loop_state_delay2;
+always_ff@(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        normal_loop_state_delay1 <= 1'b0;
+        normal_loop_state_delay2 <= 1'b0;
+    end else begin
+        normal_loop_state_delay1 <= normal_loop_state_i;
+        normal_loop_state_delay2 <= normal_loop_state_delay1;
+    end
+end
+
+logic state_delay_finished;
 
 logic [31:0] ifmap_is_POP_state_matrix;
 logic [31:0] ipsum_is_POP_state_matrix;
@@ -104,7 +130,14 @@ assign ifmap_fifo_ready = &((ifmap_is_POP_state_matrix & ~ifmap_fifo_empty_matri
 assign ipsum_fifo_ready = &((ipsum_is_POP_state_matrix & ~ipsum_fifo_empty_matrix_i) | ipsum_fifo_done_matrix_o); // bound with ipsum_fifo_pop_matrix_o
 assign opsum_fifo_ready = &((opsum_is_PUSH_state_matrix & ~opsum_fifo_full_matrix_i) | opsum_fifo_done_matrix_o); // bound with opsum_fifo_push_matrix_o
 
-assign pe_array_move_o = ifmap_fifo_ready & ipsum_fifo_ready & opsum_fifo_ready; // PE array move enable
+
+logic delete_pe_array_move_preheat; // delete PE array move enable
+assign delete_pe_array_move_preheat = preheat_state_i & ~preheat_state_delay2; // PE array move enable for preheat state
+logic delete_pe_array_move_normal_loop; // delete PE array move enable
+assign delete_pe_array_move_normal_loop = preheat_state_delay2 & normal_loop_state_i;
+
+
+assign pe_array_move_o = ifmap_fifo_ready & ipsum_fifo_ready & opsum_fifo_ready & ~delete_pe_array_move_preheat & ~delete_pe_array_move_normal_loop; // PE array move enable
 
 // logic pe_array_move_i;
 // assign pe_array_move_i = &ifmap_fifo_pop_matrix_o ; // bound with ifmap_fifo_pop_matrix_o

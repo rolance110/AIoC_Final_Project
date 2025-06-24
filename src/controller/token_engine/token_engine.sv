@@ -425,6 +425,10 @@ L3C_fifo_ctrl #(
     .pad_R_i(pad_R_i), // padding row right
     .pad_L_i(pad_L_i), // padding row left
 
+//todo: IDLE when PREHEAT -> NORMAL_LOOP
+    // .preheat_state_i(preheat_state), // 是否處於 preheat 狀態
+    .normal_loop_state_i(normal_loop_state), // 是否處於 normal loop 狀態
+
 
 //* busy
     .fifo_glb_busy_i(glb_read_req || glb_write_req), //fixme FIFO <=> GLB 是否忙碌

@@ -71,10 +71,11 @@ typedef enum logic [1:0] {
 } state_t;
 
 state_t if_cs, if_ns;
-logic [15:0] read_ptr;
+logic [15:0] push_cnt;
 logic [31:0]  pop_cnt;
 logic        refill_mode;
-
+logic right_pad;
+logic left_pad;
 // 狀態記憶
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)
@@ -129,14 +130,24 @@ always_ff @(posedge clk or negedge rst_n) begin
         pop_num_buf <= ifmap_pop_num_i;
 end
 
-    // 讀取地址管理
+// 讀取地址管理 // push count
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n || ifmap_fifo_reset_i)
+        push_cnt <= 16'd0;
+    else if (ifmap_permit_push_i)
+        push_cnt <= push_cnt + 16'd1;
+end
+
+logic [15:0] read_ptr;
 always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n || ifmap_fifo_reset_i)
         read_ptr <= 16'd0;
+    else if(left_pad)
+        read_ptr <= read_ptr;
     else if (ifmap_permit_push_i)
         read_ptr <= read_ptr + 16'd1;
 end
- 
+
 assign ifmap_glb_read_addr_o = ifmap_fifo_base_addr_i + read_ptr;
 
 logic [2:0] req_cnt;
@@ -180,16 +191,15 @@ always_ff@(posedge clk or negedge rst_n) begin
     end
 end
 
-logic right_pad;
-logic left_pad;
-assign left_pad = read_ptr < pad_L_i;
-assign right_pad = ($signed({1'b0,in_C_i}) - $signed({1'b0,read_ptr})) < $signed({1'b0, pad_R_i});
+
+assign left_pad = push_cnt < pad_L_i;
+assign right_pad = ($signed({1'b0,in_C_i}) - $signed({1'b0,push_cnt})) < $signed({1'b0, pad_R_i});
 
 logic is_padding;
 always_ff@(posedge clk or negedge rst_n) begin
     if (!rst_n)
         is_padding <= 1'b0;
-    else if (ifmap_glb_read_addr_o[31]) // zero address is 32'h8000_0000 up
+    else if (ifmap_glb_read_addr_o[31] || left_pad || right_pad) // zero address is 32'h8000_0000 up
         is_padding <= 1'b1;
     else
         is_padding <= 1'b0;

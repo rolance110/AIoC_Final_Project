@@ -382,43 +382,18 @@ always_ff@(posedge clk or negedge rst_n)begin
             ipsum_fifo_base_addr_o[i1] <= ipsum_glb_base_addr_i + i1 * On_real_i*2;
         end
     end
-    // else if(layer_type_i == `POINTWISE && init_fifo_pe_state_i)begin
-    // // output channel 0
-    //     ipsum_fifo_base_addr_o[0] <= ipsum_glb_base_addr_i;
-    // // output channel 1
-    //     ipsum_fifo_base_addr_o[1] <= ipsum_glb_base_addr_i + On_real_i*2;
-    // // output channel 2
-    //     ipsum_fifo_base_addr_o[2] <= ipsum_glb_base_addr_i + 2*On_real_i*2;
-    // // output channel 3
-    //     ipsum_fifo_base_addr_o[3] <= ipsum_glb_base_addr_i + 3*On_real_i*2;
-    // // output channel 4
-    //     ipsum_fifo_base_addr_o[4] <= ipsum_glb_base_addr_i + 4*On_real_i*2;
-    // // output channel 5
-    //     ipsum_fifo_base_addr_o[5] <= ipsum_glb_base_addr_i + 5*On_real_i*2;
-    // // output channel 31
-    //     ipsum_fifo_base_addr_o[31] <= ipsum_glb_base_addr_i + 31*On_real_i*2;
-    // end
+
     else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i)begin
-    // output channel 0
         ipsum_fifo_base_addr_o[0] <= ipsum_glb_base_addr_i; // row1
-        ipsum_fifo_base_addr_o[1] <= ipsum_glb_base_addr_i + in_C_i; // row2
-        ipsum_fifo_base_addr_o[2] <= ipsum_glb_base_addr_i + 2*in_C_i; // row3
-    // output channel 1
-        ipsum_fifo_base_addr_o[3] <= ipsum_glb_base_addr_i + tile_n_i*in_C_i; // row1
-        ipsum_fifo_base_addr_o[4] <= ipsum_glb_base_addr_i + tile_n_i*in_C_i + in_C_i; // row2
-        ipsum_fifo_base_addr_o[5] <= ipsum_glb_base_addr_i + tile_n_i*in_C_i + 2*in_C_i; // row3
-    // output channel 2
-        ipsum_fifo_base_addr_o[6] <= ipsum_glb_base_addr_i + 2*tile_n_i*in_C_i;
-        ipsum_fifo_base_addr_o[7] <= ipsum_glb_base_addr_i + 2*tile_n_i*in_C_i + in_C_i;
-        ipsum_fifo_base_addr_o[8] <= ipsum_glb_base_addr_i + 2*tile_n_i*in_C_i + 2*in_C_i;
-    // output channel 3
-        ipsum_fifo_base_addr_o[9]  <= ipsum_glb_base_addr_i + 3*tile_n_i*in_C_i;
-        ipsum_fifo_base_addr_o[10] <= ipsum_glb_base_addr_i + 3*tile_n_i*in_C_i + in_C_i;
-        ipsum_fifo_base_addr_o[11] <= ipsum_glb_base_addr_i + 3*tile_n_i*in_C_i + 2*in_C_i; 
-    // output channel 9
-        ipsum_fifo_base_addr_o[27]  <= ipsum_glb_base_addr_i + 9*tile_n_i*in_C_i;
-        ipsum_fifo_base_addr_o[28] <= ipsum_glb_base_addr_i + 9*tile_n_i*in_C_i + in_C_i;
-        ipsum_fifo_base_addr_o[29] <= ipsum_glb_base_addr_i + 9*tile_n_i*in_C_i + 2*in_C_i;       
+        ipsum_fifo_base_addr_o[1] <= ipsum_glb_base_addr_i + (On_real_i*out_C_i)*2; // row1
+        ipsum_fifo_base_addr_o[2] <= ipsum_glb_base_addr_i + (2*On_real_i*out_C_i)*2;
+        ipsum_fifo_base_addr_o[3]  <= ipsum_glb_base_addr_i + (3*On_real_i*out_C_i)*2;
+        ipsum_fifo_base_addr_o[4] <= ipsum_glb_base_addr_i + (4*On_real_i*out_C_i)*2;
+        ipsum_fifo_base_addr_o[5] <= ipsum_glb_base_addr_i + (5*On_real_i*out_C_i)*2;
+        ipsum_fifo_base_addr_o[6] <= ipsum_glb_base_addr_i + (6*On_real_i*out_C_i)*2;
+        ipsum_fifo_base_addr_o[7] <= ipsum_glb_base_addr_i + (7*On_real_i*out_C_i)*2;
+        ipsum_fifo_base_addr_o[8] <= ipsum_glb_base_addr_i + (8*On_real_i*out_C_i)*2;
+        ipsum_fifo_base_addr_o[9]  <= ipsum_glb_base_addr_i + (9*On_real_i*out_C_i)*2;
     end
 end
 
@@ -500,24 +475,16 @@ always_ff@(posedge clk or negedge rst_n)begin
     else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i)begin
     // output channel 0
         opsum_fifo_base_addr_o[0] <= opsum_glb_base_addr_i; // row1
-        opsum_fifo_base_addr_o[1] <= opsum_glb_base_addr_i + in_C_i; // row2
-        opsum_fifo_base_addr_o[2] <= opsum_glb_base_addr_i + 2*in_C_i; // row3
-    // output channel 1
-        opsum_fifo_base_addr_o[3] <= opsum_glb_base_addr_i + On_real_i*in_C_i; // row1
-        opsum_fifo_base_addr_o[4] <= opsum_glb_base_addr_i + On_real_i*in_C_i + in_C_i; // row2
-        opsum_fifo_base_addr_o[5] <= opsum_glb_base_addr_i + On_real_i*in_C_i + 2*in_C_i; // row3
-    // output channel 2
-        opsum_fifo_base_addr_o[6] <= opsum_glb_base_addr_i + 2*On_real_i*in_C_i;
-        opsum_fifo_base_addr_o[7] <= opsum_glb_base_addr_i + 2*On_real_i*in_C_i + in_C_i;
-        opsum_fifo_base_addr_o[8] <= opsum_glb_base_addr_i + 2*On_real_i*in_C_i + 2*in_C_i;
-    // output channel 3
-        opsum_fifo_base_addr_o[9]  <= opsum_glb_base_addr_i + 3*On_real_i*in_C_i;
-        opsum_fifo_base_addr_o[10] <= opsum_glb_base_addr_i + 3*On_real_i*in_C_i + in_C_i;
-        opsum_fifo_base_addr_o[11] <= opsum_glb_base_addr_i + 3*On_real_i*in_C_i + 2*in_C_i; 
-    // output channel 9
-        opsum_fifo_base_addr_o[27]  <= opsum_glb_base_addr_i + 9*On_real_i*in_C_i;
-        opsum_fifo_base_addr_o[28] <= opsum_glb_base_addr_i + 9*On_real_i*in_C_i + in_C_i;
-        opsum_fifo_base_addr_o[29] <= opsum_glb_base_addr_i + 9*On_real_i*in_C_i + 2*in_C_i;       
+        opsum_fifo_base_addr_o[1] <= opsum_glb_base_addr_i + (On_real_i*out_C_i)*2; // row2
+        opsum_fifo_base_addr_o[2] <= opsum_glb_base_addr_i + (2*On_real_i*out_C_i)*2;; // row3
+        opsum_fifo_base_addr_o[3] <= opsum_glb_base_addr_i + (3*On_real_i*out_C_i)*2; // row1
+        opsum_fifo_base_addr_o[4] <= opsum_glb_base_addr_i + (4*On_real_i*out_C_i)*2; // row2
+        opsum_fifo_base_addr_o[5] <= opsum_glb_base_addr_i + (5*On_real_i*out_C_i)*2; // row3
+        opsum_fifo_base_addr_o[6] <= opsum_glb_base_addr_i + (6*On_real_i*out_C_i)*2;
+        opsum_fifo_base_addr_o[7] <= opsum_glb_base_addr_i + (7*On_real_i*out_C_i)*2;
+        opsum_fifo_base_addr_o[8] <= opsum_glb_base_addr_i + (8*On_real_i*out_C_i)*2;
+        opsum_fifo_base_addr_o[9]  <= opsum_glb_base_addr_i + (9*On_real_i*out_C_i)*2;
+    
     end
 end
 
