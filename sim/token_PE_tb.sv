@@ -299,7 +299,7 @@ logic [31:0] write_data;
             opsum_GLB_base_addr_i = 32'h0000_3000;
             
             is_bias_i = 0; //*
-            tile_n_i = 32'd4; //* 1 tile has tile_n_i row
+            tile_n_i = 32'd5; //* 1 tile has tile_n_i row
 
             in_C_i = 8'd224;
             in_R_i = 8'd224;
@@ -313,7 +313,7 @@ logic [31:0] write_data;
             out_R_i = 8'd224;
             IC_real_i = 8'd10;
             OC_real_i = 8'd10;
-            On_real_i = 32'd2; //* tile_n_i - 2
+            On_real_i = 32'd3; //* tile_n_i - 2
             ipsum_read_en = 0;
             ipsum_add_en = 1;
 
@@ -375,7 +375,7 @@ logic [31:0] golden_data;
             integer i, errors = 0;
             logic [31:0] sram_data, golden_data;
             // 共 1120 個 32-bit 值（2560 bytes）
-            for (i = 0; i < 1120; i++) begin
+            for (i = 0; i < 2240; i++) begin
                 // 從 SRAM 讀取 4 bytes 組成 32-bit 值（小端序）
                 sram_data = u_SRAM.memory[12288 + i];
                 // $display("SRAM addr 0x%h: 0x%h", (12288 + i), u_SRAM.memory[12288 + i]);
@@ -387,10 +387,10 @@ logic [31:0] golden_data;
                              i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
                     errors++;
                 end
-                // else begin
-                //     $display("Match at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
-                //              i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
-                // end
+                else begin
+                    // $display("Match at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+                    //          i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
+                end
             end
             // 報告結果
             if (errors == 0) begin

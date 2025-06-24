@@ -227,11 +227,6 @@ always_comb begin
 end
 
 
-
-
-
-
-
 assign ifmap_fifo_push_mod_o  = 1'b0; //fixme: 預設只支援單 byte push（可自行加 burst 條件）
 
 // CAN_POP 控制

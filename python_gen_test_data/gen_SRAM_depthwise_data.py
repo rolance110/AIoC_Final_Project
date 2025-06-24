@@ -7,7 +7,7 @@ random.seed(42)
 np.random.seed(42)
 
 # TODO: 調整以下參數以符合實際需求
-COMPUTE_ROW = 4 
+COMPUTE_ROW = 5
 
 
 
@@ -33,7 +33,7 @@ WORD_SIZE = 4                # 每個字組 4 bytes
 # 基址（字組單位，轉為位元組）
 WEIGHT_BASE_WORD = 0x0000_0000
 IFMAP_BASE_WORD  = 0x0000_1000
-BIAS_BASE_WORD   = 0x0000_2500
+BIAS_BASE_WORD   = 0x0000_2900
 IPSUM_BASE_WORD  = 0x0000_2000
 OPSUM_BASE_WORD  = 0x0000_3000
 
@@ -52,7 +52,7 @@ sram = np.zeros(TOTAL_SRAM_SIZE, dtype=np.uint8)
 # === 初始化資料 ===
 weight = np.random.randint(0, 6, size=(C, KERNEL_SIZE, KERNEL_SIZE), dtype=np.uint8)
 ifmap = np.random.randint(0, 6, size=(C, EFFECTIVE_H, EFFECTIVE_W), dtype=np.uint8)  # SRAM 不儲存 padding
-ipsum = np.random.randint(5, 11, size=(C, OUTPUT_ROW, IMG_W), dtype=np.uint16)
+ipsum = np.random.randint(5, 10, size=(C, OUTPUT_ROW, IMG_W), dtype=np.uint16)
 bias = np.random.randint(0, 10, size=(C,), dtype=np.uint16)
 
 
@@ -94,6 +94,7 @@ ipsum_flat = ipsum.flatten()
 print(f"Ipsum shape: {ipsum.shape}, flat length: {len(ipsum_flat)}")
 print(f"Ipsum flat: {ipsum_flat}")
 print("Ipsum flat (first 20 values):", ipsum_flat[:20])
+
 # 每兩個 int16 值合併為 4-byte 小端序
 for i in range(0, len(ipsum_flat), 2):
     val0 = ipsum_flat[i] & 0xFFFF
@@ -107,6 +108,18 @@ for i in range(0, len(ipsum_flat), 2):
     sram[addr + 1] = b2
     sram[addr + 2] = b1
     sram[addr + 3] = b0
+# 檢查寫入再讀出是否一致
+for pair in range(0, len(ipsum_flat)//2):
+    addr = IPSUM_BASE + pair*4
+    word = (sram[addr] << 24) | (sram[addr+1] << 16) | \
+           (sram[addr+2] << 8) | sram[addr+3]
+
+    val1 = ipsum_flat[pair*2 + 1] if pair*2 + 1 < len(ipsum_flat) else 0
+    val0 = ipsum_flat[pair*2]
+
+    expected = (val1 << 16) | val0        # 你的格式
+    assert word == expected, f"mismatch @pair {pair}"
+
 
 # === 寫入 Bias（每個 int16 小端序） ===
 for i, val in enumerate(bias):
@@ -152,32 +165,32 @@ print(f"Ifmap shape: {ifmap.shape}, Golden opsum shape: {golden_opsum.shape}")
 # === 顯示 Golden Opsum 計算過程（不使用 pandas）===
 
 
-for c in range(3):  # channel
-    for r in range(1):  # row
-        for col in range(221, 224):  # column
-            print("=" * 60)
-            print(f"Channel: {c}, Row: {r}, Col: {col}")
-            base_val = int(bias[c]) if is_bias else int(ipsum[c][r][col])
-            print(f"{'Bias' if is_bias else 'Ipsum'}: {base_val}")
-            psum = base_val
+# for c in range(3, 4):              # channel 3 (from 0)
+#     for r in range(2, 3):          # row 2     (from 0)
+#         for col in range(96, 106):  # column 48 (from 0)
+#             print("=" * 60)
+#             print(f"Channel: {c}, Row: {r}, Col: {col}")
+#             base_val = int(bias[c]) if is_bias else int(ipsum[c][r][col])
+#             print(f"{'Bias' if is_bias else 'Ipsum'}: {base_val}")
+#             psum = base_val
 
-            for kr in range(KERNEL_SIZE):
-                for kc in range(KERNEL_SIZE):
-                    ifmap_r = r + kr - PAD_TOP
-                    ifmap_col = col + kc - PAD_LEFT
-                    if 0 <= ifmap_r < EFFECTIVE_H and 0 <= ifmap_col < EFFECTIVE_W:
-                        a = ifmap[c][ifmap_r][ifmap_col]
-                        src = f"ifmap[{ifmap_r}][{ifmap_col}]={a}"
-                    else:
-                        a = 0
-                        src = "PAD=0"
-                    b = weight[c][kr][kc]
-                    product = int(a) * int(b)
-                    psum += product
-                    print(f"{src:<20} * weight[{kr}][{kc}]={b:<2} => {product}")
+#             for kr in range(KERNEL_SIZE):
+#                 for kc in range(KERNEL_SIZE):
+#                     ifmap_r = r + kr - PAD_TOP
+#                     ifmap_col = col + kc - PAD_LEFT
+#                     if 0 <= ifmap_r < EFFECTIVE_H and 0 <= ifmap_col < EFFECTIVE_W:
+#                         a = ifmap[c][ifmap_r][ifmap_col]
+#                         src = f"ifmap[{ifmap_r}][{ifmap_col}]={a}"
+#                     else:
+#                         a = 0
+#                         src = "PAD=0"
+#                     b = weight[c][kr][kc]
+#                     product = int(a) * int(b)
+#                     psum += product
+#                     print(f"{src:<20} * weight[{kr}][{kc}]={b:<2} => {product}")
 
-            print(f"Final Output: {psum}")
-            print()
+#             print(f"Final Output: {psum}")
+#             print()
 
 # print(weight_flat)
 # === 儲存 memory.hex 檔 ===
