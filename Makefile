@@ -6,6 +6,7 @@ inc_dir := ./include
 sim_dir := ./sim
 bld_dir := ./build
 log_dir := ./log
+py_dir := ./python_gen_test_data
 FSDB_DEF :=
 ifeq ($(FSDB),1)
 FSDB_DEF := +FSDB
@@ -38,16 +39,16 @@ $(syn_dir):
 $(wave_dir):
 	mkdir -p $(wave_dir)
 # RTL simulation
-rtl_all: rtl0 rtl1
+rtl_all: calc_tile_n_tb Layer_Decoder_tb
 
-rtl0: | $(bld_dir) $(wave_dir)
+calc_tile_n_tb: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/calc_tile_n_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
 	+define+$(FSDB_DEF) \
 
-rtl1: | $(bld_dir) $(wave_dir)
+Layer_Decoder_tb: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/Layer_Decoder_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
@@ -55,19 +56,21 @@ rtl1: | $(bld_dir) $(wave_dir)
 	+define+$(FSDB_DEF)
 
 
-rtl2_o: | $(bld_dir) $(wave_dir)
+Tile_Scheduler_old_tb: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/Tile_Scheduler_old_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
 	+define+$(FSDB_DEF)
-rtl2: | $(bld_dir) $(wave_dir)
+	
+Tile_Scheduler_tb: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/Tile_Scheduler_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
 	+define+$(FSDB_DEF)
-rtl3: | $(bld_dir) $(wave_dir)
+
+TS_AXI_wrapper_tb: | $(bld_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/TS_AXI_wrapper_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
@@ -131,6 +134,22 @@ opsum_fifo_ctrl_tb: | $(bld_dir) $(wave_dir)
 
 
 # Utilities
+
+gen_pointwise_test:
+	@echo "Generate Pointwise Testbench SRAM Data..."
+	cd $(py_dir); \
+	python gen_SRAM_pointwise_data.py
+
+gen_depthwise_test:
+	@echo "Generate Depthwise Testbench SRAM Data..."
+	cd $(py_dir); \
+	python gen_SRAM_depthwise_data.py
+
+gen_random_test:
+	@echo "Generate Random Testbench SRAM Data..."
+	cd $(py_dir); \
+	python gen_SRAM_random_data.py
+
 nWave: | $(wave_dir)
 	@echo "Launching nWave in background..."
 	cd $(wave_dir); \

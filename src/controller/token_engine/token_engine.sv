@@ -29,6 +29,8 @@ module token_engine (
     input logic [7:0] Already_Compute_Row_i,
     input logic is_bias_i,
 
+    input logic [1:0] stride_i,
+
 
     input logic [31:0] tile_n_i,
 
@@ -240,6 +242,7 @@ L2C_init_fifo_pe #(
     .is_bias_i(is_bias_i), // 判斷現在 ipsum_fifo 是要輸入 bias or ipsum
 
     //* For 3x3 convolution pad
+    .stride_i(stride_i), // stride
     .n_tile_is_first_i(n_tile_is_first_i), // 是否為第一個 tile
     .n_tile_is_last_i(n_tile_is_last_i),   // 是否為最後一個 tile
 

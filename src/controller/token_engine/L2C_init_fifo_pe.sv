@@ -36,6 +36,7 @@ module L2C_init_fifo_pe #(
     input logic [31:0] output_row_cnt_i,
     input logic n_tile_is_first_i, // 是否為第一個 tile
     input logic n_tile_is_last_i, // 是否為最後一個 tile
+    input logic [1:0] stride_i,
     
     //* Form Tile_Scheduler
     // require by every module
@@ -124,7 +125,7 @@ always_ff@(posedge clk or negedge rst_n)begin
         ifmap_fifo_base_addr_o[30] <= ifmap_glb_base_addr_i + 30*tile_n_i;
         ifmap_fifo_base_addr_o[31] <= ifmap_glb_base_addr_i + 31*tile_n_i;
     end
-    else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i)begin
+    else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i && (stride_i == 2'd1))begin
         if(n_tile_is_first_i) begin // First Tile
             if(output_row_cnt_i == 32'd0) begin    
                 // input channel 1
@@ -399,6 +400,104 @@ always_ff@(posedge clk or negedge rst_n)begin
             end
         end
     end
+    else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i && (stride_i == 2'd2))begin
+        // 取出每 channel 的起始地址
+        // base[ch] = ifmap_glb_base_addr_i + ch * tile_n_i * in_C_i
+        // 1) First Tile：處理「頂端 padding」
+        if (n_tile_is_first_i) begin
+    
+            // ------- 第 0 條 ofmap row -------
+            if (output_row_cnt_i == 0) begin
+                // 輸出行對應 input center = 0*2 = 0
+                // window rows = [center-1, center, center+1] = [-1, 0, 1]
+                for (int ch = 0; ch < 10; ch++) begin
+                    int base = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
+                    fifo_addr[ch*3 + 0] = `ZERO_ZONE;        // row -1 → pad
+                    fifo_addr[ch*3 + 1] = base + 0*in_C_i;    // row  0
+                    fifo_addr[ch*3 + 2] = base + 1*in_C_i;    // row +1
+                end
+            end
+    
+            // ------- 第 1 條 ofmap row -------
+            else if (output_row_cnt_i == 1) begin
+                // center = 1*2 = 2 → window [1,2,3]
+                for (int ch = 0; ch < 10; ch++) begin
+                    int b = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
+                    fifo_addr[ch*3 + 0] = b + 1*in_C_i; // row  1
+                    fifo_addr[ch*3 + 1] = b + 2*in_C_i; // row  2
+                    fifo_addr[ch*3 + 2] = b + 3*in_C_i; // row  3
+                end
+            end
+    
+        // ------- 其後每條 ofmap row -------
+            else begin
+                // 對所有 30 個 FIFO 都平移 + 2*in_C_i
+                for (int k = 0; k < TOTAL_FIFO; k++)
+                    fifo_addr[k] = fifo_addr[k] + 2*in_C_i;
+            end
+        end
+    
+        // 2) Last Tile：處理「底端 padding」
+        else if (n_tile_is_last_i) begin
+    
+            // （a）如果剛進入且立刻就是最後一列 ofmap
+            if (output_row_cnt_i == 0 && current_compute_output_row == out_R_i) begin
+            // center = out_R_i*2 → window [out_R_i*2 -1, out_R_i*2, out_R_i*2+1]
+                for (int ch = 0; ch < 10; ch++) begin
+                    int b = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
+                    fifo_addr[ch*3 + 0] = b + (out_R_i*2 -1)*in_C_i; // 上一行
+                    fifo_addr[ch*3 + 1] = b + (out_R_i*2   )*in_C_i; // 本行
+                    fifo_addr[ch*3 + 2] = `ZERO_ZONE;                // 下一行 → pad
+                end   
+            end
+    
+            // （b）第一次進入最後 tile 但還沒到最底
+            else if (output_row_cnt_i == 0) begin
+                // 同 Common 首行：center = 0
+                for (int ch = 0; ch < 10; ch++) begin
+                    int b = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
+                    fifo_addr[ch*3 + 0] = b + 0*in_C_i;
+                    fifo_addr[ch*3 + 1] = b + 1*in_C_i;
+                    fifo_addr[ch*3 + 2] = b + 2*in_C_i;
+                end
+            end
+    
+            // （c）剛好要算最後一行 ofmap
+            else if (current_compute_output_row == out_R_i) begin
+            // 平移上兩層、最下層 pad
+                for (int ch = 0; ch < 10; ch++) begin
+                    fifo_addr[ch*3 + 0] = fifo_addr[ch*3 + 0] + 2*in_C_i;
+                    fifo_addr[ch*3 + 1] = fifo_addr[ch*3 + 1] + 2*in_C_i;
+                    fifo_addr[ch*3 + 2] = `ZERO_ZONE;
+                end
+            end
+        
+            // （d）其他行：純平移
+            else begin
+                for (int k = 0; k < TOTAL_FIFO; k++)
+                    fifo_addr[k] = fifo_addr[k] + 2*in_C_i;
+            end
+        end
+    
+      // 3) Common Tile：純讀取內部連續資料
+        else begin
+            if (output_row_cnt_i == 0) begin
+            // 首行：center = 0 → window [‐1,0,1]
+                for (int ch = 0; ch < 10; ch++) begin
+                    int b = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
+                    fifo_addr[ch*3 + 0] = `ZERO_ZONE;
+                    fifo_addr[ch*3 + 1] = b + 0*in_C_i;
+                    fifo_addr[ch*3 + 2] = b + 1*in_C_i;
+                end
+            end
+            else begin
+                // 其後行：平移
+                for (int k = 0; k < TOTAL_FIFO; k++)
+                    fifo_addr[k] = fifo_addr[k] + 2*in_C_i;
+            end
+        end
+    end  // ← end of stride_i==2
+
     // else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i && n_tile_is_first_i)begin
     //     if(output_row_cnt_i == 32'd0) begin
     //         // input channel 1

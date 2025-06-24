@@ -92,6 +92,8 @@ module token_PE_tb;
 
     // conv_unit 的輸出訊號
     logic [31:0]       opsum_pop_data [31:0];
+
+    logic [1:0] stride;
     
 
 logic [31:0] opsum_fifo_pop_data_matrix_i[31:0];
@@ -156,6 +158,7 @@ logic [31:0] write_data;
         .opsum_GLB_base_addr_i(opsum_GLB_base_addr_i),
         .is_bias_i(is_bias_i), 
         .tile_n_i(tile_n_i),
+        .stride_i(stride), // stride 設定
         .in_C_i(in_C_i),
         .in_R_i(in_R_i),
         .pad_R_i(pad_R_i),
@@ -286,7 +289,7 @@ logic [31:0] write_data;
             // glb_read_data_i = 32'd0;// read from SRAM
             ipsum_read_en = 0;
             ipsum_add_en = 1;
-
+            stride = 2'd1;
             // 重置解除
             #20 rst_n = 1;
 
@@ -317,6 +320,7 @@ logic [31:0] write_data;
             Already_Compute_Row = Already_COMP_ROW; // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad 
             n_tile_is_first_i = 1; // 第一個 tile
             n_tile_is_last_i = 0; // 不是最後一個 tile
+            stride = 2'd1;
             pad_R_i = 2'd1;
             pad_L_i = 2'd1;
             pad_T_i = 2'd1;
