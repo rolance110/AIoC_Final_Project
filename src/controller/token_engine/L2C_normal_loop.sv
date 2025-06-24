@@ -225,9 +225,9 @@ always_comb begin
                 end
             end
             `DEPTHWISE: begin
-                ipsum_pop_num_matrix_o[0] = out_C_i-1;// - 32'd1; //* preheat pop 1
+                ipsum_pop_num_matrix_o[0] = out_C_i/*-1*/;// - 32'd1; //FIXME:* preheat pop 1
                 for(j1 = 1; j1 < 10; j1++)begin
-                    ipsum_pop_num_matrix_o[j1] = out_C_i;
+                    ipsum_pop_num_matrix_o[j1] = out_C_i+1;//FIXME: 加一減一 要一直試 ???
                 end
             end
             `STANDARD: begin

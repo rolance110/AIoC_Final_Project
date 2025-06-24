@@ -23,6 +23,8 @@ else ifeq ($(TYPE),3)
 TYPE_DEF := +STANDARD_TYPE
 else ifeq ($(TYPE),4)
 TYPE_DEF := +LINEAR_TYPE
+else ifeq ($(TYPE),5)
+TYPE_DEF := +DEPTHWISE_STRIDE2_TYPE
 endif
 
 CYCLE=`grep -v '^$$' $(root_dir)/sim/CYCLE`

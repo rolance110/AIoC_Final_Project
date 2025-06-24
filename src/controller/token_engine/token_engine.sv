@@ -436,6 +436,9 @@ L3C_fifo_ctrl #(
     .ipsum_fifo_reset_i(ipsum_fifo_reset_o),
     .opsum_fifo_reset_i(opsum_fifo_reset_o),
 
+//* stride
+    .stride_i(stride_i), // stride 2'b00: 1, 2'b01: 2, 2'b10: 3, 2'b11: 4
+
 //* padding right left
     .in_C_i(in_C_i), // 來自 Layer Decoder 的輸入 C
     .pad_R_i(pad_R_i), // padding row right

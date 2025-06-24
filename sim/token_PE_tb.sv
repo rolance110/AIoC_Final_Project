@@ -130,7 +130,16 @@ initial begin
         $readmemh("../sim/depthwise_golden.hex", golden_opsum);
         $display("===== Golden data loaded from depthwise_golden.hex =====");
         // $readmemh("../sim/memory.hex", u_SRAM.memory);
-        $display("===== SRAM initialized from memory.hex =====");
+        $display("===== SRAM initialized from depthwise_golden.hex =====");
+    `elsif DEPTHWISE_STRIDE2_TYPE
+        // // 讀取 depthwise_memory.hex 到 SRAM
+        $readmemh("../sim/depthwise_stride2_memory.hex", u_SRAM.memory);
+        $display("===== SRAM initialized from depthwise_stride2_memory.hex =====");
+        // 讀取 depthwise_golden.hex 到 golden_opsum 陣列
+        $readmemh("../sim/depthwise_stride2_golden.hex", golden_opsum);
+        $display("===== Golden data loaded from depthwise_stride2_golden.hex =====");
+
+        $display("===== SRAM initialized from depthwise_stride2_golden.hex =====");
     `endif
 end
 logic [31:0] write_data;
@@ -344,6 +353,48 @@ logic [31:0] write_data;
           #500000
             $display("Simulation Failed: No pass_done_o signal received.");
             $finish;
+        `elsif DEPTHWISE_STRIDE2_TYPE
+            rst_n = 0;
+            pass_start_i = 0;
+            layer_type_i = `DEPTHWISE;
+            weight_GLB_base_addr_i = 32'h0000_0000;
+            ifmap_GLB_base_addr_i = 32'h0000_1000;
+            ipsum_GLB_base_addr_i = 32'h0000_2000;
+            bias_GLB_base_addr_i = 32'h0000_2900;
+            opsum_GLB_base_addr_i = 32'h0000_3000;
+            
+            is_bias_i = 0; //*
+            tile_n_i = 3; //* 1 tile has tile_n_i row
+
+            in_C_i = 8'd114;
+            in_R_i = 8'd114;
+            Already_Compute_Row = Already_COMP_ROW; // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad 
+            n_tile_is_first_i = 1; // 第一個 tile
+            n_tile_is_last_i = 0; // 不是最後一個 tile
+            stride = 2'd2;
+            pad_R_i = 2'd1;
+            pad_L_i = 2'd1;
+            pad_T_i = 2'd1;
+            pad_B_i = 2'd1;
+            out_C_i = 8'd57;
+            out_R_i = 8'd57;
+            IC_real_i = 8'd10;
+            OC_real_i = 8'd10;
+            On_real_i = 1; //* tile_n_i - 2
+            ipsum_read_en = 0;
+            ipsum_add_en = 1;
+
+            // 重置解除
+            #20 rst_n = 1;
+
+            // 啟動 token_engine
+            #10 pass_start_i = 1;
+            #10 pass_start_i = 0;
+
+            // 模擬運行一段時間
+          #500000
+            $display("Simulation Failed: No pass_done_o signal received.");
+            $finish;
         `endif
     end
 integer i, errors;
@@ -414,8 +465,37 @@ logic [31:0] golden_data;
                 $display("Verification FAILED: Found %0d mismatches!", errors);
             end
         end
+    `elsif DEPTHWISE_STRIDE2_TYPE
+        // 驗證 GLB opsum 區塊與 golden 數據
+        $display("===== Verifying opsum data in SRAM with depthwise_stride2_golden.hex =====");
+        begin
+            integer i, errors = 0;
+            logic [31:0] sram_data, golden_data;
+            // 共 1120 個 32-bit 值（2560 bytes）
+            for (i = 0; i < 285; i++) begin
+                // 從 SRAM 讀取 4 bytes 組成 32-bit 值（小端序）
+                sram_data = u_SRAM.memory[12288 + i];
+                // 從 golden_opsum 讀取對應值
+                golden_data = golden_opsum[i];
+                // 比較
+                if (u_SRAM.memory[12288 + i] !== golden_data) begin
+                    $display("Mismatch at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+                             i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
+                    errors++;
+                end
+                else begin
+                    $display("Match at index %0d (SRAM addr 0x%h): SRAM=0x%h, Golden=0x%h",
+                             i, (12288 + i), u_SRAM.memory[12288 + i], golden_data);
+                end
+            end
+            // 報告結果
+            if (errors == 0) begin
+                $display("Verification PASSED: All opsum data matches golden data!");
+            end else begin
+                $display("Verification FAILED: Found %0d mismatches!", errors);
+            end
+        end
     `endif
-
         $finish;
     end
 
