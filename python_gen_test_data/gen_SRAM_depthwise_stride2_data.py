@@ -8,7 +8,7 @@ random.seed(42)
 np.random.seed(42)
 
 #TODO: CONFIGURE SETTINGS
-COMPUTE_ROW = 3
+COMPUTE_ROW = 5
 
 # === 卷積參數 ===
 IMG_H, IMG_W = 114, 114  # 輸入圖像尺寸

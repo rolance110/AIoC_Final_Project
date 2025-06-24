@@ -446,45 +446,45 @@ always_ff@(posedge clk or negedge rst_n)begin
             end
             else if(output_row_cnt_i == 32'd1) begin
                 // input channel 1
-                ifmap_fifo_base_addr_o[0] <= ifmap_glb_base_addr_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[2] <= ifmap_glb_base_addr_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[0] <= ifmap_glb_base_addr_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[2] <= ifmap_glb_base_addr_i + 3*in_C_i;
                 // input channel 2
-                ifmap_fifo_base_addr_o[3] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[5] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[3] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[5] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 3*in_C_i;
                 // input channel 3
-                ifmap_fifo_base_addr_o[6] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[8] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[6] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[8] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 3*in_C_i;
                 // input channel 4
-                ifmap_fifo_base_addr_o[9]  <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[11] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[9]  <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[11] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 3*in_C_i;
                 // input channel 5
-                ifmap_fifo_base_addr_o[12] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[14] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[12] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[14] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 3*in_C_i;
                 // input channel 6
-                ifmap_fifo_base_addr_o[15] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[17] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[15] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[17] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 3*in_C_i;
                 // input channel 7
-                ifmap_fifo_base_addr_o[18] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[20] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[18] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[20] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 3*in_C_i;
                 // input channel 8
-                ifmap_fifo_base_addr_o[21] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[23] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[21] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[23] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 3*in_C_i;
                 // input channel 9
-                ifmap_fifo_base_addr_o[24] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[26] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[24] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[26] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 3*in_C_i;
                 // input channel 10
-                ifmap_fifo_base_addr_o[27] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 2*in_C_i;
-                ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 3*in_C_i;
-                ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 4*in_C_i;
+                ifmap_fifo_base_addr_o[27] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 1*in_C_i;
+                ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 3*in_C_i;
             end
             else if(output_row_cnt_i > 32'd1) begin // after pad row, it is regular
                 for(k=0; k<30; k=k+1)begin

@@ -364,7 +364,7 @@ logic [31:0] write_data;
             opsum_GLB_base_addr_i = 32'h0000_3000;
             
             is_bias_i = 0; //*
-            tile_n_i = 3; //* 1 tile has tile_n_i row
+            tile_n_i = 5; //* 1 tile has tile_n_i row
 
             in_C_i = 8'd114;
             in_R_i = 8'd114;
@@ -380,7 +380,7 @@ logic [31:0] write_data;
             out_R_i = 8'd57;
             IC_real_i = 8'd10;
             OC_real_i = 8'd10;
-            On_real_i = 1; //* tile_n_i - 2
+            On_real_i = 2; //* tile_n_i - 2
             ipsum_read_en = 0;
             ipsum_add_en = 1;
 
