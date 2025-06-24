@@ -189,7 +189,7 @@ always_comb begin
             `LINEAR: begin
                 ipsum_pop_num_matrix_o[0] = On_real_i - 32'd1; //* preheat pop 1
                 for(j1 = 1; j1 < 32; j1++)begin
-                    ipsum_pop_num_matrix_o[j1] = On_real_i;
+                    ipsum_pop_num_matrix_o[j1] = On_real_i+1;
                 end
             end
         endcase

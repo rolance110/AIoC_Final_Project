@@ -5,6 +5,7 @@ wave_dir := ./wave
 inc_dir := ./include
 sim_dir := ./sim
 bld_dir := ./build
+log_dir := ./log
 FSDB_DEF :=
 ifeq ($(FSDB),1)
 FSDB_DEF := +FSDB
@@ -28,6 +29,8 @@ MAX=`grep -v '^$$' $(root_dir)/sim/MAX`
 
 $(bld_dir):
 	mkdir -p $(bld_dir)
+$(log_dir):
+	mkdir -p $(log_dir)
 
 $(syn_dir):
 	mkdir -p $(syn_dir)
@@ -110,11 +113,12 @@ ifmap_fifo_ctrl: | $(bld_dir) $(wave_dir)
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+define+$(FSDB_DEF) \
 
-token_PE_tb: | $(bld_dir) $(wave_dir)
+token_PE_tb: | $(bld_dir) $(log_dir) $(wave_dir)
 	cd $(bld_dir); \
 	vcs -R -sverilog $(root_dir)/$(sim_dir)/token_PE_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
+	-l $(root_dir)/$(log_dir)/token_PE.log \
 	+define+$(FSDB_DEF)$(TYPE_DEF)\
 
 opsum_fifo_ctrl_tb: | $(bld_dir) $(wave_dir)
