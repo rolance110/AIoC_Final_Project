@@ -193,7 +193,7 @@ end
 
 
 assign left_pad = push_cnt < pad_L_i;
-assign right_pad = ($signed({1'b0,in_C_i}) - $signed({1'b0,push_cnt})) < $signed({1'b0, pad_R_i});
+assign right_pad = (($signed({1'b0,in_C_i} + $signed({1'b0,pad_R_i}) + $signed({1'b0,pad_L_i}) - 1) - $signed({1'b0,push_cnt}))) < $signed({1'b0, pad_R_i});
 
 logic is_padding;
 always_ff@(posedge clk or negedge rst_n) begin

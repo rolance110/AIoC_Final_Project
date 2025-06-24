@@ -145,9 +145,9 @@ print(f"Ifmap shape: {ifmap.shape}, Golden opsum shape: {golden_opsum.shape}")
 # === 顯示 Golden Opsum 計算過程（不使用 pandas）===
 
 
-for c in range(2):  # 前 2 個通道
-    for r in range(1):  # 前 2 個 row
-        for col in range(5):  # 前 3 個 column
+for c in range(3):  # channel
+    for r in range(1):  # row
+        for col in range(221, 224):  # column
             print("=" * 60)
             print(f"Channel: {c}, Row: {r}, Col: {col}")
             base_val = int(bias[c]) if is_bias else int(ipsum[c][r][col])

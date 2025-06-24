@@ -5,7 +5,7 @@ Command: vcs -R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 +define++FSDB_ALL+DEPTHWISE_TYPE
 *** Using c compiler gcc instead of cc ...
                          Chronologic VCS (TM)
-       Version W-2024.09-SP2_Full64 -- Tue Jun 24 13:31:19 2025
+       Version W-2024.09-SP2_Full64 -- Tue Jun 24 14:59:23 2025
 
                     Copyright (c) 1991 - 2025 Synopsys, Inc.
    This software and the associated documentation are proprietary to Synopsys,
@@ -121,14 +121,15 @@ Warning-[PCWM-W] Port connection width mismatch
 
 Starting vcs inline pass...
 25 modules and 0 UDP read.
-	However, due to incremental compilation, no re-compilation is necessary.
+recompiling module token_PE_tb
+	However, due to incremental compilation, only 1 module needs to be compiled. 
 make[1]: Entering directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/csrc' \
 
 rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
 if [ -x ../simv ]; then chmod a-x ../simv; fi
 g++  -o ../simv      -rdynamic  -Wl,-rpath='$ORIGIN'/simv.daidir -Wl,-rpath=./simv.daidir \
 -Wl,-rpath=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib -L/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib \
--Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _1453739_archive_1.so \
+-Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _1475085_archive_1.so \
 _prev_archive_1.so   SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
 rmar_llvm_0_0.o            -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
 -luclinative /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
@@ -141,7 +142,7 @@ make[1]: Leaving directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final
 Command: /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/./simv +notimingcheck -a /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log +define++FSDB_ALL+DEPTHWISE_TYPE
 Chronologic VCS simulator copyright 1991-2024
 Contains Synopsys proprietary information.
-Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 24 13:31 2025
+Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 24 14:59 2025
 *Verdi* Loading libsscore_vcs202409.so
 FSDB Dumper for VCS, Release Verdi_W-2024.09-SP2, Linux x86_64/64bit, 03/03/2025
 (C) 1996 - 2025 by Synopsys, Inc.
@@ -274,7 +275,7 @@ Match at index 107 (SRAM addr 0x0000306b): SRAM=0x0044004a, Golden=0x0044004a
 Match at index 108 (SRAM addr 0x0000306c): SRAM=0x004c0052, Golden=0x004c0052
 Match at index 109 (SRAM addr 0x0000306d): SRAM=0x00200039, Golden=0x00200039
 Match at index 110 (SRAM addr 0x0000306e): SRAM=0x001c0020, Golden=0x001c0020
-Mismatch at index 111 (SRAM addr 0x0000306f): SRAM=0x0012001e, Golden=0x0023002b
+Match at index 111 (SRAM addr 0x0000306f): SRAM=0x0023002b, Golden=0x0023002b
 Match at index 112 (SRAM addr 0x00003070): SRAM=0x00280023, Golden=0x00280023
 Match at index 113 (SRAM addr 0x00003071): SRAM=0x002e0025, Golden=0x002e0025
 Match at index 114 (SRAM addr 0x00003072): SRAM=0x001d0027, Golden=0x001d0027
@@ -386,7 +387,7 @@ Match at index 219 (SRAM addr 0x000030db): SRAM=0x002a003c, Golden=0x002a003c
 Match at index 220 (SRAM addr 0x000030dc): SRAM=0x001f0025, Golden=0x001f0025
 Match at index 221 (SRAM addr 0x000030dd): SRAM=0x00320022, Golden=0x00320022
 Match at index 222 (SRAM addr 0x000030de): SRAM=0x002f0032, Golden=0x002f0032
-Mismatch at index 223 (SRAM addr 0x000030df): SRAM=0x0009001f, Golden=0x00150026
+Match at index 223 (SRAM addr 0x000030df): SRAM=0x00150026, Golden=0x00150026
 Match at index 224 (SRAM addr 0x000030e0): SRAM=0x0021001b, Golden=0x0021001b
 Match at index 225 (SRAM addr 0x000030e1): SRAM=0x001e001c, Golden=0x001e001c
 Match at index 226 (SRAM addr 0x000030e2): SRAM=0x0016001d, Golden=0x0016001d
@@ -498,7 +499,7 @@ Match at index 331 (SRAM addr 0x0000314b): SRAM=0x001f0017, Golden=0x001f0017
 Match at index 332 (SRAM addr 0x0000314c): SRAM=0x00250015, Golden=0x00250015
 Match at index 333 (SRAM addr 0x0000314d): SRAM=0x002f001b, Golden=0x002f001b
 Match at index 334 (SRAM addr 0x0000314e): SRAM=0x00300023, Golden=0x00300023
-Mismatch at index 335 (SRAM addr 0x0000314f): SRAM=0x001c0023, Golden=0x002c0032
+Match at index 335 (SRAM addr 0x0000314f): SRAM=0x002c0032, Golden=0x002c0032
 Match at index 336 (SRAM addr 0x00003150): SRAM=0x002c001f, Golden=0x002c001f
 Match at index 337 (SRAM addr 0x00003151): SRAM=0x002d002e, Golden=0x002d002e
 Match at index 338 (SRAM addr 0x00003152): SRAM=0x00270020, Golden=0x00270020
@@ -610,7 +611,7 @@ Match at index 443 (SRAM addr 0x000031bb): SRAM=0x001a0026, Golden=0x001a0026
 Match at index 444 (SRAM addr 0x000031bc): SRAM=0x001e001d, Golden=0x001e001d
 Match at index 445 (SRAM addr 0x000031bd): SRAM=0x00200017, Golden=0x00200017
 Match at index 446 (SRAM addr 0x000031be): SRAM=0x00290018, Golden=0x00290018
-Mismatch at index 447 (SRAM addr 0x000031bf): SRAM=0x0013001a, Golden=0x001e0023
+Match at index 447 (SRAM addr 0x000031bf): SRAM=0x001e0023, Golden=0x001e0023
 Match at index 448 (SRAM addr 0x000031c0): SRAM=0x00590032, Golden=0x00590032
 Match at index 449 (SRAM addr 0x000031c1): SRAM=0x004b0053, Golden=0x004b0053
 Match at index 450 (SRAM addr 0x000031c2): SRAM=0x0055003a, Golden=0x0055003a
@@ -722,7 +723,7 @@ Match at index 555 (SRAM addr 0x0000322b): SRAM=0x00600061, Golden=0x00600061
 Match at index 556 (SRAM addr 0x0000322c): SRAM=0x0059004a, Golden=0x0059004a
 Match at index 557 (SRAM addr 0x0000322d): SRAM=0x00570036, Golden=0x00570036
 Match at index 558 (SRAM addr 0x0000322e): SRAM=0x0066003f, Golden=0x0066003f
-Mismatch at index 559 (SRAM addr 0x0000322f): SRAM=0x00360027, Golden=0x004a004f
+Match at index 559 (SRAM addr 0x0000322f): SRAM=0x004a004f, Golden=0x004a004f
 Match at index 560 (SRAM addr 0x00003230): SRAM=0x002c0018, Golden=0x002c0018
 Match at index 561 (SRAM addr 0x00003231): SRAM=0x0030003e, Golden=0x0030003e
 Match at index 562 (SRAM addr 0x00003232): SRAM=0x001d0030, Golden=0x001d0030
@@ -834,7 +835,7 @@ Match at index 667 (SRAM addr 0x0000329b): SRAM=0x0035001e, Golden=0x0035001e
 Match at index 668 (SRAM addr 0x0000329c): SRAM=0x00320015, Golden=0x00320015
 Match at index 669 (SRAM addr 0x0000329d): SRAM=0x0034002a, Golden=0x0034002a
 Match at index 670 (SRAM addr 0x0000329e): SRAM=0x001e0016, Golden=0x001e0016
-Mismatch at index 671 (SRAM addr 0x0000329f): SRAM=0x001e0011, Golden=0x0032002a
+Match at index 671 (SRAM addr 0x0000329f): SRAM=0x0032002a, Golden=0x0032002a
 Match at index 672 (SRAM addr 0x000032a0): SRAM=0x00420021, Golden=0x00420021
 Match at index 673 (SRAM addr 0x000032a1): SRAM=0x004b0039, Golden=0x004b0039
 Match at index 674 (SRAM addr 0x000032a2): SRAM=0x003e0068, Golden=0x003e0068
@@ -946,7 +947,7 @@ Match at index 779 (SRAM addr 0x0000330b): SRAM=0x00430038, Golden=0x00430038
 Match at index 780 (SRAM addr 0x0000330c): SRAM=0x004b0035, Golden=0x004b0035
 Match at index 781 (SRAM addr 0x0000330d): SRAM=0x00430034, Golden=0x00430034
 Match at index 782 (SRAM addr 0x0000330e): SRAM=0x00320040, Golden=0x00320040
-Mismatch at index 783 (SRAM addr 0x0000330f): SRAM=0x00080006, Golden=0x0021001f
+Match at index 783 (SRAM addr 0x0000330f): SRAM=0x0021001f, Golden=0x0021001f
 Match at index 784 (SRAM addr 0x00003310): SRAM=0x000c0015, Golden=0x000c0015
 Match at index 785 (SRAM addr 0x00003311): SRAM=0x001b0015, Golden=0x001b0015
 Match at index 786 (SRAM addr 0x00003312): SRAM=0x00240027, Golden=0x00240027
@@ -1058,7 +1059,7 @@ Match at index 891 (SRAM addr 0x0000337b): SRAM=0x001c002b, Golden=0x001c002b
 Match at index 892 (SRAM addr 0x0000337c): SRAM=0x002c0025, Golden=0x002c0025
 Match at index 893 (SRAM addr 0x0000337d): SRAM=0x002c0025, Golden=0x002c0025
 Match at index 894 (SRAM addr 0x0000337e): SRAM=0x002e0026, Golden=0x002e0026
-Mismatch at index 895 (SRAM addr 0x0000337f): SRAM=0x000a0020, Golden=0x00120020
+Match at index 895 (SRAM addr 0x0000337f): SRAM=0x00120020, Golden=0x00120020
 Match at index 896 (SRAM addr 0x00003380): SRAM=0x0046003a, Golden=0x0046003a
 Match at index 897 (SRAM addr 0x00003381): SRAM=0x00320041, Golden=0x00320041
 Match at index 898 (SRAM addr 0x00003382): SRAM=0x002c003b, Golden=0x002c003b
@@ -1170,7 +1171,7 @@ Match at index 1003 (SRAM addr 0x000033eb): SRAM=0x0030001c, Golden=0x0030001c
 Match at index 1004 (SRAM addr 0x000033ec): SRAM=0x0035002a, Golden=0x0035002a
 Match at index 1005 (SRAM addr 0x000033ed): SRAM=0x005a0032, Golden=0x005a0032
 Match at index 1006 (SRAM addr 0x000033ee): SRAM=0x004b0062, Golden=0x004b0062
-Mismatch at index 1007 (SRAM addr 0x000033ef): SRAM=0x000b002d, Golden=0x001f004b
+Match at index 1007 (SRAM addr 0x000033ef): SRAM=0x001f004b, Golden=0x001f004b
 Match at index 1008 (SRAM addr 0x000033f0): SRAM=0x0035001e, Golden=0x0035001e
 Match at index 1009 (SRAM addr 0x000033f1): SRAM=0x00370033, Golden=0x00370033
 Match at index 1010 (SRAM addr 0x000033f2): SRAM=0x002b0029, Golden=0x002b0029
@@ -1282,12 +1283,12 @@ Match at index 1115 (SRAM addr 0x0000345b): SRAM=0x003c0042, Golden=0x003c0042
 Match at index 1116 (SRAM addr 0x0000345c): SRAM=0x00360031, Golden=0x00360031
 Match at index 1117 (SRAM addr 0x0000345d): SRAM=0x001c002b, Golden=0x001c002b
 Match at index 1118 (SRAM addr 0x0000345e): SRAM=0x0032002c, Golden=0x0032002c
-Mismatch at index 1119 (SRAM addr 0x0000345f): SRAM=0x001b002d, Golden=0x00360036
-Verification FAILED: Found 10 mismatches!
+Match at index 1119 (SRAM addr 0x0000345f): SRAM=0x00360036, Golden=0x00360036
+Verification PASSED: All opsum data matches golden data!
 $finish called from file "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv", line 404.
 $finish at simulation time               124535
            V C S   S i m u l a t i o n   R e p o r t 
 Time: 124535
-CPU Time:      5.050 seconds;       Data structure size:   0.8Mb
-Tue Jun 24 13:31:29 2025
-CPU time: 3.715 seconds to compile + .340 seconds to elab + .194 seconds to link + 5.075 seconds in simulation
+CPU Time:      4.450 seconds;       Data structure size:   0.8Mb
+Tue Jun 24 14:59:31 2025
+CPU time: 2.970 seconds to compile + .346 seconds to elab + .198 seconds to link + 4.491 seconds in simulation

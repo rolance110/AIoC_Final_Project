@@ -107,36 +107,36 @@ always_comb begin
                 end
             end
             `DEPTHWISE: begin
-                ifmap_pop_num_matrix_o[0] = real_num_with_pad - 32'd3; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[1] = real_num_with_pad - 32'd3; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[2] = real_num_with_pad - 32'd3; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[3] = real_num_with_pad - 32'd6; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[4] = real_num_with_pad - 32'd6; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[5] = real_num_with_pad - 32'd6; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[6] = real_num_with_pad - 32'd9; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[7] = real_num_with_pad - 32'd9; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[8] = real_num_with_pad - 32'd9; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[9] = real_num_with_pad - 32'd12; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[10] = real_num_with_pad - 32'd12; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[11] = real_num_with_pad - 32'd12; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[12] = real_num_with_pad - 32'd15; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[13] = real_num_with_pad - 32'd15; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[14] = real_num_with_pad - 32'd15; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[15] = real_num_with_pad - 32'd18; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[16] = real_num_with_pad - 32'd18; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[17] = real_num_with_pad - 32'd18; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[18] = real_num_with_pad - 32'd21; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[19] = real_num_with_pad - 32'd21; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[20] = real_num_with_pad - 32'd21; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[21] = real_num_with_pad - 32'd24; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[22] = real_num_with_pad - 32'd24; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[23] = real_num_with_pad - 32'd24; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[24] = real_num_with_pad - 32'd27; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[25] = real_num_with_pad - 32'd27; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[26] = real_num_with_pad - 32'd27; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[27] = real_num_with_pad - 32'd30; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[28] = real_num_with_pad - 32'd30; // preheat depthwise pop all
-                ifmap_pop_num_matrix_o[29] = real_num_with_pad - 32'd30; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[0] = real_num_with_pad - 32'd3 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[1] = real_num_with_pad - 32'd3 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[2] = real_num_with_pad - 32'd3 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[3] = real_num_with_pad - 32'd6 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[4] = real_num_with_pad - 32'd6 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[5] = real_num_with_pad - 32'd6 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[6] = real_num_with_pad - 32'd9 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[7] = real_num_with_pad - 32'd9 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[8] = real_num_with_pad - 32'd9 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[9] = real_num_with_pad - 32'd12 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[10] = real_num_with_pad - 32'd12 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[11] = real_num_with_pad - 32'd12 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[12] = real_num_with_pad - 32'd15 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[13] = real_num_with_pad - 32'd15 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[14] = real_num_with_pad - 32'd15 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[15] = real_num_with_pad - 32'd18 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[16] = real_num_with_pad - 32'd18 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[17] = real_num_with_pad - 32'd18 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[18] = real_num_with_pad - 32'd21 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[19] = real_num_with_pad - 32'd21 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[20] = real_num_with_pad - 32'd21 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[21] = real_num_with_pad - 32'd24 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[22] = real_num_with_pad - 32'd24 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[23] = real_num_with_pad - 32'd24 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[24] = real_num_with_pad - 32'd27 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[25] = real_num_with_pad - 32'd27 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[26] = real_num_with_pad - 32'd27 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[27] = real_num_with_pad - 32'd30 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[28] = real_num_with_pad - 32'd30 + 32'd1; // preheat depthwise pop all
+                ifmap_pop_num_matrix_o[29] = real_num_with_pad - 32'd30 + 32'd1; // preheat depthwise pop all
             end
             `STANDARD: begin
                 for(j = 0; j < 32; j++)begin
@@ -175,7 +175,7 @@ always_comb begin
                 end
             end
             `DEPTHWISE: begin
-                ipsum_pop_num_matrix_o[0] = out_C_i - 32'd1; //* preheat pop 1
+                ipsum_pop_num_matrix_o[0] = out_C_i-1;// - 32'd1; //* preheat pop 1
                 for(j1 = 1; j1 < 10; j1++)begin
                     ipsum_pop_num_matrix_o[j1] = out_C_i;
                 end
