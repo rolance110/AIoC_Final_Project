@@ -401,246 +401,234 @@ always_ff@(posedge clk or negedge rst_n)begin
         end
     end
     else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i && (stride_i == 2'd2))begin
-        // 取出每 channel 的起始地址
-        // base[ch] = ifmap_glb_base_addr_i + ch * tile_n_i * in_C_i
-        // 1) First Tile：處理「頂端 padding」
-        if (n_tile_is_first_i) begin
-    
-            // ------- 第 0 條 ofmap row -------
-            if (output_row_cnt_i == 0) begin
-                // 輸出行對應 input center = 0*2 = 0
-                // window rows = [center-1, center, center+1] = [-1, 0, 1]
-                for (int ch = 0; ch < 10; ch++) begin
-                    int base = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
-                    fifo_addr[ch*3 + 0] = `ZERO_ZONE;        // row -1 → pad
-                    fifo_addr[ch*3 + 1] = base + 0*in_C_i;    // row  0
-                    fifo_addr[ch*3 + 2] = base + 1*in_C_i;    // row +1
-                end
+        if(n_tile_is_first_i) begin // First Tile
+            if(output_row_cnt_i == 32'd0) begin    
+                // input channel 1
+                ifmap_fifo_base_addr_o[0] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i;
+                ifmap_fifo_base_addr_o[2] <= ifmap_glb_base_addr_i + in_C_i;
+                // input channel 2
+                ifmap_fifo_base_addr_o[3] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[5] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + in_C_i;
+                // input channel 3 
+                ifmap_fifo_base_addr_o[6] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[8] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + in_C_i;
+                // input channel 4
+                ifmap_fifo_base_addr_o[9]  <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[11] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + in_C_i;
+                // input channel 5
+                ifmap_fifo_base_addr_o[12] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[14] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + in_C_i;
+                // input channel 6
+                ifmap_fifo_base_addr_o[15] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[17] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + in_C_i;
+                // input channel 7
+                ifmap_fifo_base_addr_o[18] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[20] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + in_C_i;
+                // input channel 8
+                ifmap_fifo_base_addr_o[21] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[23] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + in_C_i;
+                // input channel 9
+                ifmap_fifo_base_addr_o[24] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[26] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + in_C_i;
+                // input channel 10
+                ifmap_fifo_base_addr_o[27] <= `ZERO_ZONE;
+                ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + in_C_i;
             end
-    
-            // ------- 第 1 條 ofmap row -------
-            else if (output_row_cnt_i == 1) begin
-                // center = 1*2 = 2 → window [1,2,3]
-                for (int ch = 0; ch < 10; ch++) begin
-                    int b = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
-                    fifo_addr[ch*3 + 0] = b + 1*in_C_i; // row  1
-                    fifo_addr[ch*3 + 1] = b + 2*in_C_i; // row  2
-                    fifo_addr[ch*3 + 2] = b + 3*in_C_i; // row  3
-                end
+            else if(output_row_cnt_i == 32'd1) begin
+                // input channel 1
+                ifmap_fifo_base_addr_o[0] <= ifmap_glb_base_addr_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[2] <= ifmap_glb_base_addr_i + 4*in_C_i;
+                // input channel 2
+                ifmap_fifo_base_addr_o[3] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[5] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 4*in_C_i;
+                // input channel 3
+                ifmap_fifo_base_addr_o[6] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[8] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 4*in_C_i;
+                // input channel 4
+                ifmap_fifo_base_addr_o[9]  <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[11] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 4*in_C_i;
+                // input channel 5
+                ifmap_fifo_base_addr_o[12] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[14] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 4*in_C_i;
+                // input channel 6
+                ifmap_fifo_base_addr_o[15] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[17] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 4*in_C_i;
+                // input channel 7
+                ifmap_fifo_base_addr_o[18] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[20] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 4*in_C_i;
+                // input channel 8
+                ifmap_fifo_base_addr_o[21] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[23] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 4*in_C_i;
+                // input channel 9
+                ifmap_fifo_base_addr_o[24] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[26] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 4*in_C_i;
+                // input channel 10
+                ifmap_fifo_base_addr_o[27] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 2*in_C_i;
+                ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 3*in_C_i;
+                ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 4*in_C_i;
             end
-    
-        // ------- 其後每條 ofmap row -------
-            else begin
-                // 對所有 30 個 FIFO 都平移 + 2*in_C_i
-                for (int k = 0; k < TOTAL_FIFO; k++)
-                    fifo_addr[k] = fifo_addr[k] + 2*in_C_i;
+            else if(output_row_cnt_i > 32'd1) begin // after pad row, it is regular
+                for(k=0; k<30; k=k+1)begin
+                    ifmap_fifo_base_addr_o[k] <= ifmap_fifo_base_addr_o[k] + 2*in_C_i;
+                end
             end
         end
-    
-        // 2) Last Tile：處理「底端 padding」
-        else if (n_tile_is_last_i) begin
-    
-            // （a）如果剛進入且立刻就是最後一列 ofmap
-            if (output_row_cnt_i == 0 && current_compute_output_row == out_R_i) begin
-            // center = out_R_i*2 → window [out_R_i*2 -1, out_R_i*2, out_R_i*2+1]
-                for (int ch = 0; ch < 10; ch++) begin
-                    int b = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
-                    fifo_addr[ch*3 + 0] = b + (out_R_i*2 -1)*in_C_i; // 上一行
-                    fifo_addr[ch*3 + 1] = b + (out_R_i*2   )*in_C_i; // 本行
-                    fifo_addr[ch*3 + 2] = `ZERO_ZONE;                // 下一行 → pad
-                end   
+        else if(n_tile_is_last_i)begin // Last Tile
+            if((output_row_cnt_i == 32'd0) && (current_compute_output_row == out_R_i))begin // initial 
+                // input channel 1
+                ifmap_fifo_base_addr_o[0] <= ifmap_glb_base_addr_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[2] <= `ZERO_ZONE;
+                // input channel 2
+                ifmap_fifo_base_addr_o[3] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[5] <= `ZERO_ZONE;
+                // input channel 3 
+                ifmap_fifo_base_addr_o[6] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[8] <= `ZERO_ZONE;
+                // input channel 4
+                ifmap_fifo_base_addr_o[9]  <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[11] <= `ZERO_ZONE;
+                // input channel 5
+                ifmap_fifo_base_addr_o[12] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[14] <= `ZERO_ZONE;
+                // input channel 6
+                ifmap_fifo_base_addr_o[15] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[17] <= `ZERO_ZONE;
+                // input channel 7
+                ifmap_fifo_base_addr_o[18] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[20] <= `ZERO_ZONE;
+                // input channel 8
+                ifmap_fifo_base_addr_o[21] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[23] <= `ZERO_ZONE;
+                // input channel 9
+                ifmap_fifo_base_addr_o[24] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[26] <= `ZERO_ZONE;
+                // input channel 10
+                ifmap_fifo_base_addr_o[27] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + (out_R_i-1)*2*in_C_i;
+                ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + ((out_R_i-1)*2+1)*in_C_i;
+                ifmap_fifo_base_addr_o[29] <= `ZERO_ZONE;
             end
-    
-            // （b）第一次進入最後 tile 但還沒到最底
-            else if (output_row_cnt_i == 0) begin
-                // 同 Common 首行：center = 0
-                for (int ch = 0; ch < 10; ch++) begin
-                    int b = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
-                    fifo_addr[ch*3 + 0] = b + 0*in_C_i;
-                    fifo_addr[ch*3 + 1] = b + 1*in_C_i;
-                    fifo_addr[ch*3 + 2] = b + 2*in_C_i;
-                end
-            end
-    
-            // （c）剛好要算最後一行 ofmap
-            else if (current_compute_output_row == out_R_i) begin
-            // 平移上兩層、最下層 pad
-                for (int ch = 0; ch < 10; ch++) begin
-                    fifo_addr[ch*3 + 0] = fifo_addr[ch*3 + 0] + 2*in_C_i;
-                    fifo_addr[ch*3 + 1] = fifo_addr[ch*3 + 1] + 2*in_C_i;
-                    fifo_addr[ch*3 + 2] = `ZERO_ZONE;
-                end
-            end
-        
-            // （d）其他行：純平移
-            else begin
-                for (int k = 0; k < TOTAL_FIFO; k++)
-                    fifo_addr[k] = fifo_addr[k] + 2*in_C_i;
+            else if(output_row_cnt_i == 32'd0)begin // initial 
+                // input channel 1
+                ifmap_fifo_base_addr_o[0] <= ifmap_glb_base_addr_i;
+                ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i + in_C_i;
+                ifmap_fifo_base_addr_o[2] <= ifmap_glb_base_addr_i + 2*in_C_i;
+                // input channel 2
+                ifmap_fifo_base_addr_o[3] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[5] <= ifmap_glb_base_addr_i + tile_n_i*in_C_i + 2*in_C_i;
+                // input channel 3 
+                ifmap_fifo_base_addr_o[6] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[8] <= ifmap_glb_base_addr_i + 2*tile_n_i*in_C_i + 2*in_C_i;
+                // input channel 4
+                ifmap_fifo_base_addr_o[9]  <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[11] <= ifmap_glb_base_addr_i + 3*tile_n_i*in_C_i + 2*in_C_i;
+                // input channel 5
+                ifmap_fifo_base_addr_o[12] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[14] <= ifmap_glb_base_addr_i + 4*tile_n_i*in_C_i + 2*in_C_i;
+                // input channel 6
+                ifmap_fifo_base_addr_o[15] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[17] <= ifmap_glb_base_addr_i + 5*tile_n_i*in_C_i + 2*in_C_i;
+                // input channel 7
+                ifmap_fifo_base_addr_o[18] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[20] <= ifmap_glb_base_addr_i + 6*tile_n_i*in_C_i + 2*in_C_i;
+                // input channel 8
+                ifmap_fifo_base_addr_o[21] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[23] <= ifmap_glb_base_addr_i + 7*tile_n_i*in_C_i + 2*in_C_i;
+                // input channel 9
+                ifmap_fifo_base_addr_o[24] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[26] <= ifmap_glb_base_addr_i + 8*tile_n_i*in_C_i + 2*in_C_i;
+                // input channel 10
+                ifmap_fifo_base_addr_o[27] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i;
+                ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + in_C_i;
+                ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*in_C_i + 2*in_C_i;
             end
         end
-    
-      // 3) Common Tile：純讀取內部連續資料
-        else begin
-            if (output_row_cnt_i == 0) begin
-            // 首行：center = 0 → window [‐1,0,1]
-                for (int ch = 0; ch < 10; ch++) begin
-                    int b = ifmap_glb_base_addr_i + ch*tile_n_i*in_C_i;
-                    fifo_addr[ch*3 + 0] = `ZERO_ZONE;
-                    fifo_addr[ch*3 + 1] = b + 0*in_C_i;
-                    fifo_addr[ch*3 + 2] = b + 1*in_C_i;
-                end
-            end
-            else begin
-                // 其後行：平移
-                for (int k = 0; k < TOTAL_FIFO; k++)
-                    fifo_addr[k] = fifo_addr[k] + 2*in_C_i;
+        else if(current_compute_output_row == out_R_i)begin
+            // input channel 1
+            ifmap_fifo_base_addr_o[0] <= ifmap_fifo_base_addr_o[0] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[1] <= ifmap_fifo_base_addr_o[1] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[2] <= `ZERO_ZONE;
+            // input channel 2
+            ifmap_fifo_base_addr_o[3] <= ifmap_fifo_base_addr_o[3] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[4] <= ifmap_fifo_base_addr_o[4] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[5] <= `ZERO_ZONE;
+            // input channel 3
+            ifmap_fifo_base_addr_o[6] <= ifmap_fifo_base_addr_o[6] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[7] <= ifmap_fifo_base_addr_o[7] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[8] <= `ZERO_ZONE;
+            // input channel 4
+            ifmap_fifo_base_addr_o[9]  <= ifmap_fifo_base_addr_o[9] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[10] <= ifmap_fifo_base_addr_o[10] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[11] <= `ZERO_ZONE;
+            // input channel 5
+            ifmap_fifo_base_addr_o[12] <= ifmap_fifo_base_addr_o[12] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[13] <= ifmap_fifo_base_addr_o[13] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[14] <= `ZERO_ZONE;
+            // input channel 6
+            ifmap_fifo_base_addr_o[15] <= ifmap_fifo_base_addr_o[15] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[16] <= ifmap_fifo_base_addr_o[16] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[17] <= `ZERO_ZONE;
+            // input channel 7
+            ifmap_fifo_base_addr_o[18] <= ifmap_fifo_base_addr_o[18] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[19] <= ifmap_fifo_base_addr_o[19] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[20] <= `ZERO_ZONE;
+            // input channel 8
+            ifmap_fifo_base_addr_o[21] <= ifmap_fifo_base_addr_o[21] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[22] <= ifmap_fifo_base_addr_o[22] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[23] <= `ZERO_ZONE;
+            // input channel 9
+            ifmap_fifo_base_addr_o[24] <= ifmap_fifo_base_addr_o[24] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[25] <= ifmap_fifo_base_addr_o[25] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[26] <= `ZERO_ZONE;
+            // input channel 10
+            ifmap_fifo_base_addr_o[27] <= ifmap_fifo_base_addr_o[27] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[28] <= ifmap_fifo_base_addr_o[28] + 2*in_C_i;
+            ifmap_fifo_base_addr_o[29] <= `ZERO_ZONE;
+        end
+        else begin // after initial row, it is regular
+            for(k=0; k<30; k=k+1)begin
+                ifmap_fifo_base_addr_o[k] <= ifmap_fifo_base_addr_o[k] + 2*in_C_i;
             end
         end
-    end  // ← end of stride_i==2
-
-    // else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i && n_tile_is_first_i)begin
-    //     if(output_row_cnt_i == 32'd0) begin
-    //         // input channel 1
-    //         ifmap_fifo_base_addr_o[0] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i;
-    //         ifmap_fifo_base_addr_o[2] <= ifmap_glb_base_addr_i + (in_C_i);
-    //         // input channel 2
-    //         ifmap_fifo_base_addr_o[3] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[5] <= ifmap_glb_base_addr_i + tile_n_i*(in_C_i) + (in_C_i);
-    //         // input channel 3 
-    //         ifmap_fifo_base_addr_o[6] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[8] <= ifmap_glb_base_addr_i + 2*tile_n_i*(in_C_i) + (in_C_i);
-    //         // input channel 4
-    //         ifmap_fifo_base_addr_o[9]  <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[11] <= ifmap_glb_base_addr_i + 3*tile_n_i*(in_C_i) + (in_C_i);
-    //         // input channel 5
-    //         ifmap_fifo_base_addr_o[12] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[14] <= ifmap_glb_base_addr_i + 4*tile_n_i*(in_C_i) + (in_C_i);
-    //         // input channel 6
-    //         ifmap_fifo_base_addr_o[15] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[17] <= ifmap_glb_base_addr_i + 5*tile_n_i*(in_C_i) + (in_C_i);
-    //         // input channel 7
-    //         ifmap_fifo_base_addr_o[18] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[20] <= ifmap_glb_base_addr_i + 6*tile_n_i*(in_C_i) + (in_C_i);
-    //         // input channel 8
-    //         ifmap_fifo_base_addr_o[21] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[23] <= ifmap_glb_base_addr_i + 7*tile_n_i*(in_C_i) + (in_C_i);
-    //         // input channel 9
-    //         ifmap_fifo_base_addr_o[24] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[26] <= ifmap_glb_base_addr_i + 8*tile_n_i*(in_C_i) + (in_C_i);
-    //         // input channel 10
-    //         ifmap_fifo_base_addr_o[27] <= `ZERO_ZONE;
-    //         ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i) + (in_C_i);
-    //     end
-    //     else if(output_row_cnt_i == 32'd1) begin
-    //         // input channel 1
-    //         ifmap_fifo_base_addr_o[0] <= ifmap_glb_base_addr_i;
-    //         ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i + (in_C_i);
-    //         ifmap_fifo_base_addr_o[2] <= ifmap_glb_base_addr_i + 2*(in_C_i);
-    //         // input channel 2
-    //         ifmap_fifo_base_addr_o[3] <= ifmap_glb_base_addr_i + tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[5] <= ifmap_glb_base_addr_i + tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 3
-    //         ifmap_fifo_base_addr_o[6] <= ifmap_glb_base_addr_i + 2*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[8] <= ifmap_glb_base_addr_i + 2*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 4
-    //         ifmap_fifo_base_addr_o[9]  <= ifmap_glb_base_addr_i + 3*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[11] <= ifmap_glb_base_addr_i + 3*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 5
-    //         ifmap_fifo_base_addr_o[12] <= ifmap_glb_base_addr_i + 4*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[14] <= ifmap_glb_base_addr_i + 4*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 6
-    //         ifmap_fifo_base_addr_o[15] <= ifmap_glb_base_addr_i + 5*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[17] <= ifmap_glb_base_addr_i + 5*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 7
-    //         ifmap_fifo_base_addr_o[18] <= ifmap_glb_base_addr_i + 6*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[20] <= ifmap_glb_base_addr_i + 6*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 8
-    //         ifmap_fifo_base_addr_o[21] <= ifmap_glb_base_addr_i + 7*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[23] <= ifmap_glb_base_addr_i + 7*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 9
-    //         ifmap_fifo_base_addr_o[24] <= ifmap_glb_base_addr_i + 8*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[26] <= ifmap_glb_base_addr_i + 8*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 10
-    //         ifmap_fifo_base_addr_o[27] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //     end
-    //     else if(output_row_cnt_i > 32'd1) begin // after pad row, it is regular
-    //         for(k=0; k<31; k++)begin
-    //             ifmap_fifo_base_addr_o[k] <= ifmap_fifo_base_addr_o[k] + in_C_i;
-    //         end
-    //     end
-    // end
-    // else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i && n_tile_is_last_i)begin
-    // end
-    // else if(layer_type_i == `DEPTHWISE && init_fifo_pe_state_i)begin //todo: not first & not last
-    //     if(output_row_cnt_i == 32'd0) begin
-    //         // input channel 1
-    //         ifmap_fifo_base_addr_o[0] <= ifmap_glb_base_addr_i;
-    //         ifmap_fifo_base_addr_o[1] <= ifmap_glb_base_addr_i + (in_C_i);
-    //         ifmap_fifo_base_addr_o[2] <= ifmap_glb_base_addr_i + 2*(in_C_i);
-    //         // input channel 2
-    //         ifmap_fifo_base_addr_o[3] <= ifmap_glb_base_addr_i + tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[4] <= ifmap_glb_base_addr_i + tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[5] <= ifmap_glb_base_addr_i + tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 3
-    //         ifmap_fifo_base_addr_o[6] <= ifmap_glb_base_addr_i + 2*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[7] <= ifmap_glb_base_addr_i + 2*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[8] <= ifmap_glb_base_addr_i + 2*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 4
-    //         ifmap_fifo_base_addr_o[9]  <= ifmap_glb_base_addr_i + 3*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[10] <= ifmap_glb_base_addr_i + 3*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[11] <= ifmap_glb_base_addr_i + 3*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 5
-    //         ifmap_fifo_base_addr_o[12] <= ifmap_glb_base_addr_i + 4*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[13] <= ifmap_glb_base_addr_i + 4*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[14] <= ifmap_glb_base_addr_i + 4*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 6
-    //         ifmap_fifo_base_addr_o[15] <= ifmap_glb_base_addr_i + 5*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[16] <= ifmap_glb_base_addr_i + 5*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[17] <= ifmap_glb_base_addr_i + 5*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 7
-    //         ifmap_fifo_base_addr_o[18] <= ifmap_glb_base_addr_i + 6*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[19] <= ifmap_glb_base_addr_i + 6*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[20] <= ifmap_glb_base_addr_i + 6*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 8
-    //         ifmap_fifo_base_addr_o[21] <= ifmap_glb_base_addr_i + 7*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[22] <= ifmap_glb_base_addr_i + 7*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[23] <= ifmap_glb_base_addr_i + 7*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 9
-    //         ifmap_fifo_base_addr_o[24] <= ifmap_glb_base_addr_i + 8*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[25] <= ifmap_glb_base_addr_i + 8*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[26] <= ifmap_glb_base_addr_i + 8*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //         // input channel 10
-    //         ifmap_fifo_base_addr_o[27] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i);
-    //         ifmap_fifo_base_addr_o[28] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i) + (in_C_i);
-    //         ifmap_fifo_base_addr_o[29] <= ifmap_glb_base_addr_i + 9*tile_n_i*(in_C_i) + 2*(in_C_i);
-    //     end
-    //     else if(output_row_cnt_i > 32'd0) begin
-    //         for(k=0; k<31; k++)begin
-    //             ifmap_fifo_base_addr_o[k] <= ifmap_fifo_base_addr_o[k] + in_C_i;
-    //         end
-    //     end
-    // end
+    end
 end
+
+
 integer i1, i2;
 //* ====================== ipsum_glb_base_addr_i ======================
 logic [31:0] ipsum_glb_base_addr_i_sel;

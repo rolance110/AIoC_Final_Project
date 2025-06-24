@@ -5,7 +5,7 @@ Command: vcs -R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 +define++FSDB_ALL+DEPTHWISE_TYPE
 *** Using c compiler gcc instead of cc ...
                          Chronologic VCS (TM)
-       Version W-2024.09-SP2_Full64 -- Tue Jun 24 23:42:23 2025
+       Version W-2024.09-SP2_Full64 -- Wed Jun 25 00:59:42 2025
 
                     Copyright (c) 1991 - 2025 Synopsys, Inc.
    This software and the associated documentation are proprietary to Synopsys,
@@ -139,7 +139,7 @@ Warning-[PCWM-W] Port connection width mismatch
 
 Starting vcs inline pass...
 25 modules and 0 UDP read.
-recompiling module token_PE_tb
+recompiling module L2C_init_fifo_pe
 	However, due to incremental compilation, only 1 module needs to be compiled. 
 make[1]: Entering directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/csrc' \
 
@@ -147,7 +147,7 @@ rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
 if [ -x ../simv ]; then chmod a-x ../simv; fi
 g++  -o ../simv      -rdynamic  -Wl,-rpath='$ORIGIN'/simv.daidir -Wl,-rpath=./simv.daidir \
 -Wl,-rpath=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib -L/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib \
--Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _1576337_archive_1.so \
+-Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _10217_archive_1.so \
 _prev_archive_1.so   SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
 rmar_llvm_0_0.o            -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
 -luclinative /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
@@ -160,7 +160,7 @@ make[1]: Leaving directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final
 Command: /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/./simv +notimingcheck -a /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log +define++FSDB_ALL+DEPTHWISE_TYPE
 Chronologic VCS simulator copyright 1991-2024
 Contains Synopsys proprietary information.
-Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 24 23:43 2025
+Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 00:59 2025
 *Verdi* Loading libsscore_vcs202409.so
 FSDB Dumper for VCS, Release Verdi_W-2024.09-SP2, Linux x86_64/64bit, 03/03/2025
 (C) 1996 - 2025 by Synopsys, Inc.
@@ -1307,6 +1307,6 @@ $finish called from file "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 $finish at simulation time               124535
            V C S   S i m u l a t i o n   R e p o r t 
 Time: 124535
-CPU Time:      5.050 seconds;       Data structure size:   0.8Mb
-Tue Jun 24 23:43:37 2025
-CPU time: 3.110 seconds to compile + .298 seconds to elab + .342 seconds to link + 5.071 seconds in simulation
+CPU Time:      4.730 seconds;       Data structure size:   0.8Mb
+Wed Jun 25 00:59:51 2025
+CPU time: 3.025 seconds to compile + .306 seconds to elab + .197 seconds to link + 4.753 seconds in simulation
