@@ -112,5 +112,5 @@ def quantize_bias_folder(folder):
         print("x_scale, w_scale =", x_scale, w_scale)
 
 if __name__ == "__main__":
-    quantized_folder = "/home2/aoc2025/n26131520/params_quant_linear/"
+    quantized_folder = "/home2/aoc2025/n26131520/MobileNetV2_test/params_quant_linear/"
     quantize_bias_folder(quantized_folder)

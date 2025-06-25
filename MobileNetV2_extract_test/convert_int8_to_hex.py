@@ -114,5 +114,5 @@ def batch_convert_int8_with_shape_one_line(folder):
 
 if __name__ == "__main__":
     # 路徑
-    weights_folder = "/home2/aoc2025/n26131520/params_quant_linear/"
+    weights_folder = "/home2/aoc2025/n26131520/MobileNetV2_test/params_quant_linear/"
     batch_convert_int8_with_shape_one_line(weights_folder)

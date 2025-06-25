@@ -122,5 +122,5 @@ def compute_scaling_exponents(folder, out_txt="scaling_exponents.txt",  out_hex=
 
 
 if __name__ == "__main__":
-    folder = "/home2/aoc2025/n26131520/params_quant_linear/"
+    folder = "/home2/aoc2025/n26131520/MobileNetV2_test/params_quant_linear/"
     compute_scaling_exponents(folder)

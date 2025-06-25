@@ -132,6 +132,7 @@ if __name__ == '__main__':
     # 1) Extract float parameters
     raw_f = torch.load(float_pt, map_location='cpu')
     fsd   = raw_f.state_dict() if isinstance(raw_f, torch.nn.Module) else raw_f
+    base = os.path.dirname(os.path.abspath(__file__))
     extract_float_model(fsd, out_dir=os.path.join(base, 'params_float'))
 
     # 載入 state_dict
@@ -163,4 +164,5 @@ if __name__ == '__main__':
     qmodel.load_state_dict(sd, strict=False)
 
     # 6) 儲存的資料夾
+    base = os.path.dirname(os.path.abspath(__file__))
     extract_quant_from_module(qmodel, out_dir=os.path.join(base, 'params_quant_linear'))

@@ -97,7 +97,7 @@ def build_and_reload_from_txt(txt_dir: str, calibrate_loader=None):
     return qmodel
 
 if __name__ == "__main__":
-    txt_dir = "/home2/aoc2025/n26131520/params_quant_linear/"  
+    txt_dir = "/home2/aoc2025/n26131520/MobileNetV2_test/params_quant_linear/"  
    
     qmodel = build_and_reload_from_txt(txt_dir, calibrate_loader=None)
 

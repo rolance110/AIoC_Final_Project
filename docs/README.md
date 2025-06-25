@@ -53,4 +53,8 @@ typing-extensions         4.12.2
 tzdata                    2025.1        
 wheel                     0.45.1        
 xz                        5.6.4         
-zlib                      1.2.13        
+zlib                      1.2.13 
+
+### extract_params.py
+
+### convert_int8_to_hex.py
