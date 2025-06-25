@@ -12,6 +12,9 @@ module pe_array_controller(
     input logic [31:0] ipsum_fifo_pop_matrix_i,
     input logic [31:0] opsum_fifo_push_matrix_i,
 
+    input [7:0] IC_real_i,
+    input [7:0] OC_real_i,
+
     output logic PE_stall_matrix_o [31:0][31:0], // 32*32 PE array stall matrix
     output logic PE_en_matrix_o [31:0][31:0],  // 32*32 PE array enable matrix
 
@@ -47,28 +50,36 @@ always_comb begin
     end
 end
 
+
+int row_num, col_num;
+
 always_comb begin
-    if(preheat_state_i)begin
-        for(i=0; i<32; i++) begin
-            for(j=0; j<32; j++) begin
-                PE_en_matrix_o[i][j] = 1'b1; 
+    // 1. 計算需要啟用的 row/col；超過 32 時做剪裁
+
+    if (layer_type_i == `POINTWISE) begin
+        row_num = OC_real_i;
+        col_num = IC_real_i;
+    end else begin
+        row_num = OC_real_i * 3;
+        col_num = IC_real_i * 3;
+    end
+
+    // 2. 只有在 preheat 或 normal_loop 兩種狀態才打開
+    for (int r = 0; r < 32; r++) begin
+        for (int c = 0; c < 32; c++) begin
+            if(r < row_num) begin
+                if(c < col_num) begin
+                    PE_en_matrix_o[r][c] = 1'b1; // 啟用
+                end else begin
+                    PE_en_matrix_o[r][c] = 1'b0; // 不啟
+                end
             end
+            else 
+                PE_en_matrix_o[r][c] = 1'b0; // 不啟用
         end
     end
-    else if(normal_loop_state_i) begin
-        for(i=0; i<32; i++) begin
-            for(j=0; j<32; j++) begin
-                PE_en_matrix_o[i][j] = 1'b1; 
-            end
-        end
-    end
-    else begin
-        for(i=0; i<32; i++) begin
-            for(j=0; j<32; j++) begin
-                PE_en_matrix_o[i][j] = 1'b0; // 預熱階段不需要 啟動 pe 計算
-            end
-        end
-    end
+
 end
+
 
 endmodule

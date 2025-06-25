@@ -5,7 +5,7 @@ Command: vcs -R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 +define++FSDB_ALL+DEPTHWISE_STRIDE2_TYPE
 *** Using c compiler gcc instead of cc ...
                          Chronologic VCS (TM)
-       Version W-2024.09-SP2_Full64 -- Wed Jun 25 15:34:44 2025
+       Version W-2024.09-SP2_Full64 -- Wed Jun 25 15:43:20 2025
 
                     Copyright (c) 1991 - 2025 Synopsys, Inc.
    This software and the associated documentation are proprietary to Synopsys,
@@ -123,29 +123,29 @@ DLA_Controller, "token_engine u_token_engine( .clk (clk),  .rst_n (rst_n),  .pas
 
 
 Warning-[IWNF] Implicit wire has no fanin
-../src/controller/token_engine/token_engine.sv, 576
+../src/controller/token_engine/token_engine.sv, 582
   Implicit wire 'flag' does not have any driver, please make sure this is 
   intended.
 
 
 Warning-[IWNF] Implicit wire has no fanin
-../src/controller/token_engine/token_engine.sv, 578
+../src/controller/token_engine/token_engine.sv, 584
   Implicit wire 'WEB' does not have any driver, please make sure this is 
   intended.
 
 
 Warning-[INAV] Index into non-array variable
-../src/controller/token_engine/token_engine.sv, 571
+../src/controller/token_engine/token_engine.sv, 577
 token_engine, "flag[0]"
   Bit/Part-select specified for non array variable.
   Base object: flag
   Of type: wire
   Declared at:
-  "../src/controller/token_engine/token_engine.sv", 576.
+  "../src/controller/token_engine/token_engine.sv", 582.
 
 
 Warning-[PCWM-W] Port connection width mismatch
-../src/controller/token_engine/token_engine.sv, 571
+../src/controller/token_engine/token_engine.sv, 577
 "PPU #(32) PPU( .clk (clk),  .rst_n (rst_n),  .data_in (glb_write_data_from_arbiter),  .scaling_factor (scaling_factor),  .relu_en (flag[0]),  .need_ppu (Need_PPU_i),  .WEB (WEB),  .data_out (glb_write_data_o));"
   The following 1-bit expression is connected to 4-bit port "WEB" of module 
   "PPU", instance "PPU".
@@ -367,15 +367,18 @@ Warning-[PCWM-W] Port connection width mismatch
 
 Starting vcs inline pass...
 24 modules and 0 UDP read.
-recompiling module token_PE_tb
-	However, due to incremental compilation, only 1 module needs to be compiled. 
+recompiling module pe_array_controller
+recompiling module token_engine
+recompiling module pe_array
+3 of 24 modules done
+	However, due to incremental compilation, only 3 modules need to be compiled. 
 make[1]: Entering directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/csrc' \
 
 rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
 if [ -x ../simv ]; then chmod a-x ../simv; fi
 g++  -o ../simv      -rdynamic  -Wl,-rpath='$ORIGIN'/simv.daidir -Wl,-rpath=./simv.daidir \
 -Wl,-rpath=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib -L/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib \
--Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _219631_archive_1.so \
+-Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _226781_archive_1.so \
 _prev_archive_1.so   SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
 rmar_llvm_0_0.o            -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
 -luclinative /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
@@ -388,7 +391,7 @@ make[1]: Leaving directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final
 Command: /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/./simv +notimingcheck -a /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log +define++FSDB_ALL+DEPTHWISE_STRIDE2_TYPE
 Chronologic VCS simulator copyright 1991-2024
 Contains Synopsys proprietary information.
-Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 15:34 2025
+Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 15:43 2025
 *Verdi* Loading libsscore_vcs202409.so
 FSDB Dumper for VCS, Release Verdi_W-2024.09-SP2, Linux x86_64/64bit, 03/03/2025
 (C) 1996 - 2025 by Synopsys, Inc.
@@ -700,6 +703,6 @@ $finish called from file "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 $finish at simulation time               106715
            V C S   S i m u l a t i o n   R e p o r t 
 Time: 106715
-CPU Time:      5.750 seconds;       Data structure size:   1.7Mb
-Wed Jun 25 15:34:53 2025
-CPU time: 2.939 seconds to compile + .275 seconds to elab + .184 seconds to link + 5.769 seconds in simulation
+CPU Time:      5.900 seconds;       Data structure size:   1.7Mb
+Wed Jun 25 15:43:31 2025
+CPU time: 4.324 seconds to compile + .277 seconds to elab + .186 seconds to link + 5.920 seconds in simulation

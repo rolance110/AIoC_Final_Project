@@ -19,8 +19,10 @@ module pe (
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             weight_reg <= 8'sd0;
-        else if (w_load_en)
-            weight_reg <= w_in;
+        else if(PE_en) begin
+            if(w_load_en)
+                weight_reg <= w_in;
+        end
     end
 
     always_comb begin
@@ -33,10 +35,10 @@ module pe (
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             ifmap_out <= 8'sd0;
-        else if (PE_stall)
-            ifmap_out <= ifmap;
-        // else
-        //     ifmap_out <= 8'd0;
+        else if(PE_en) begin
+            if (PE_stall)
+                ifmap_out <= ifmap;
+        end
     end
 
 

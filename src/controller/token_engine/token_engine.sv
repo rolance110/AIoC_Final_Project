@@ -190,6 +190,12 @@ pe_array_controller pe_array_controller(
     .ipsum_fifo_pop_matrix_i(ipsum_fifo_pop_matrix_o),
     .opsum_fifo_push_matrix_i(opsum_fifo_push_matrix_o),
 
+    .IC_real_i(IC_real_i),
+    .OC_real_i(OC_real_i),
+
+
+
+
     .pe_array_move_i(pe_array_move), // PE array move enable
 
 //* output
