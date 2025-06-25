@@ -21,10 +21,10 @@ module Tile_Scheduler #(
     input  logic [1:0] kH_i, kW_i, // kernel height, width
 
     input  logic [31:0]   tile_n_i,         // todo
-    input  logic [31:0]   tile_D_i,         // input channels per tile
-    input  logic [31:0]   tile_K_i,         // output channels per tile
-    input  logic [31:0]   tile_D_f_i,       // input channels per tile (filter)
-    input  logic [31:0]   tile_K_f_i,       // output channels per tile (filter)
+    input  logic [7:0]   tile_D_i,         // input channels per tile
+    input  logic [7:0]   tile_K_i,         // output channels per tile
+    input  logic [7:0]   tile_D_f_i,       // input channels per tile (filter)
+    input  logic [7:0]   tile_K_f_i,       // output channels per tile (filter)
 
     input  logic [1:0]    layer_type_i,     // 0=PW, 1=DW, 2=STD, 3=LIN
     input  logic [1:0]    stride_i,         // stride
@@ -32,12 +32,12 @@ module Tile_Scheduler #(
     input  logic [1:0]    pad_L_i, pad_R_i, // padding
 
     input  logic [7:0]    in_R_i,           // ifmap/ofmap height
-    input  logic [9:0]    in_C_i,           // ifmap/ofmap width
-    input  logic [9:0]    in_D_i,           // input channel total
+    input  logic [7:0]    in_C_i,           // ifmap/ofmap width
+    input  logic [10:0]    in_D_i,           // input channel total
 
-    input  logic [9:0]    out_K_i,         // ifmap/ofmap height
+    input  logic [10:0]    out_K_i,         // ifmap/ofmap height
     input  logic [7:0]    out_R_i,          // ofmap height
-    input  logic [9:0]    out_C_i,          // ofmap width
+    input  logic [7:0]    out_C_i,          // ofmap width
 
     input  logic [31:0]   base_ifmap_i,
     input  logic [31:0]   base_weight_i,
@@ -49,10 +49,15 @@ module Tile_Scheduler #(
 
     //=== DMA Interface ===
     output logic          dma_enable_o,
-    output logic          dma_read_o,   // 1=read DRAM, 0=write DRAM
-    output logic [31:0]   dma_addr_o,
+    output logic [31:0] dma_src_o,
+    output logic [31:0] dma_dest_o,
+
     output logic [31:0]   dma_len_o,
     input  logic          dma_interrupt_i,
+
+    output logic          dma_read_o,   // 1=read DRAM, 0=write DRAM
+    output logic [31:0]   dma_addr_o,
+    
 
   //=== Token Engine Interface ===
     output logic          pass_start_o, // Pass start signal
@@ -63,9 +68,8 @@ module Tile_Scheduler #(
     output logic [31:0]   GLB_opsum_base_addr_o,
     output logic [31:0]   GLB_bias_base_addr_o, // Bias base address
     output logic [31:0]   GLB_ipsum_base_addr_o, // Ipsum base address
-    output logic [3:0]    flags_o,       // ReLU / Linear / Residual / Bias
 
-    output logic [7:0] On_real_o, 
+    output logic [31:0] On_real_o, 
     output logic [7:0] IC_real_o,
     output logic [7:0] OC_real_o,
 
@@ -76,7 +80,6 @@ module Tile_Scheduler #(
 // Tile 3-loop index
 logic [7:0] k_idx, d_idx;
 
-assign flags_o = flags_i; // pass flags to next stage
 logic bias_en;
 logic filter_en;
 logic reach_last_D_tile;

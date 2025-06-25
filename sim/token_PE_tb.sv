@@ -90,6 +90,8 @@ module token_PE_tb;
     logic n_tile_is_last_i;
     logic [7:0] Already_Compute_Row;
 
+    logic [3:0] flags;
+
     // conv_unit 的輸出訊號
     logic [31:0]       opsum_pop_data [31:0];
 
@@ -166,6 +168,7 @@ logic [31:0] write_data;
         .bias_GLB_base_addr_i(bias_GLB_base_addr_i),
         .opsum_GLB_base_addr_i(opsum_GLB_base_addr_i),
         .is_bias_i(is_bias_i), 
+        .flags_i(flags), // flags 設定
         .tile_n_i(tile_n_i),
         .stride_i(stride), // stride 設定
         .in_C_i(in_C_i),
@@ -299,6 +302,7 @@ logic [31:0] write_data;
             ipsum_read_en = 0;
             ipsum_add_en = 1;
             stride = 2'd1;
+            flags = 4'b0000;
             // 重置解除
             #20 rst_n = 1;
 
@@ -341,6 +345,7 @@ logic [31:0] write_data;
             On_real_i = COMPUTE_ROW - 32'd2; //* tile_n_i - 2
             ipsum_read_en = 0;
             ipsum_add_en = 1;
+            flags = 4'b0000;
 
             // 重置解除
             #20 rst_n = 1;
@@ -383,6 +388,7 @@ logic [31:0] write_data;
             On_real_i = 2; //* tile_n_i - 2
             ipsum_read_en = 0;
             ipsum_add_en = 1;
+            flags = 4'b0000;
 
             // 重置解除
             #20 rst_n = 1;

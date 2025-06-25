@@ -49,7 +49,6 @@ module Tile_Scheduler_tb;
  logic [1:0]    pad_R_o; // padding
  logic [1:0]    stride_o;
  logic [1:0]    layer_type_o; // 0=PW; 1=DW; 2=STD; 3=LIN
- logic [3:0]    flags_o;       // ReLU / Linear / Residual / Bias logic [6:0]    out_R_o, out_C_o // output size
   logic [6:0]   out_C_o; // output size  
 logic         tile_reach_max_o; // tile reach max signal
   // Clock Gen
@@ -120,8 +119,6 @@ Tile_Scheduler #(
    .stride_o(stride_o), 
    // Layer type
    .layer_type_o(layer_type_o), 
-   // Flags
-   .flags_o(flags_o), 
    // Output size
    .out_R_o(out_R_o), 
    .out_C_o(out_C_o),

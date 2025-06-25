@@ -1,4 +1,4 @@
-module top(
+module DSC(
     input logic clk,
     input logic rst_n,
 
@@ -76,45 +76,42 @@ module top(
 
 //* CONV.FIFO Interface
 logic ifmap_fifo_reset; // Reset signal for IFMAP FIFO
-logic [7:0] ifmap_fifo_push_data_matrix; // Data to push into IFMAP FIFO
-logic [7:0] ifmap_fifo_push_mod_matrix; // Modified data to push into IFMAP FIFO
-logic ifmap_fifo_push_matrix; // Push signal for IFMAP FIFO
-logic ifmap_fifo_pop_matrix; // Pop signal for IFMAP FIFO
-logic ifmap_fifo_full_matrix; // Full signal for IFMAP FIFO
-logic ifmap_fifo_empty_matrix; // Empty signal for IFMAP FIFO
+logic [31:0] ifmap_fifo_push_data_matrix  [31:0] ; // Data to push into IFMAP FIFO
+logic [31:0] ifmap_fifo_push_mod_matrix; // Modified data to push into IFMAP FIFO
+logic [31:0] ifmap_fifo_push_matrix; // Push signal for IFMAP FIFO
+logic [31:0] ifmap_fifo_pop_matrix; // Pop signal for IFMAP FIFO
+logic [31:0] ifmap_fifo_full_matrix; // Full signal for IFMAP FIFO
+logic [31:0] ifmap_fifo_empty_matrix; // Empty signal for IFMAP FIFO
 
 logic ipsum_fifo_reset; // Reset signal for IPSUM FIFO
-logic [7:0] ipsum_fifo_push_data_matrix; // Data to push into IPSUM FIFO
-logic [7:0] ipsum_fifo_push_mod_matrix; // Modified data to push into IPSUM FIFO
-logic ipsum_fifo_push_matrix; // Push signal for IPSUM FIFO
-logic ipsum_fifo_pop_matrix; // Pop signal for IPSUM FIFO
-logic ipsum_fifo_full_matrix; // Full signal for IPSUM FIFO
-logic ipsum_fifo_empty_matrix; // Empty signal for IPSUM FIFO
+logic [31:0] ipsum_fifo_push_data_matrix [31:0] ; // Data to push into IPSUM FIFO
+logic [31:0] ipsum_fifo_push_mod_matrix; // Modified data to push into IPSUM FIFO
+logic [31:0] ipsum_fifo_push_matrix; // Push signal for IPSUM FIFO
+logic [31:0] ipsum_fifo_pop_matrix; // Pop signal for IPSUM FIFO
+logic [31:0] ipsum_fifo_full_matrix; // Full signal for IPSUM FIFO
+logic [31:0] ipsum_fifo_empty_matrix; // Empty signal for IPSUM FIFO
 
 logic opsum_fifo_reset; // Reset signal for OPSUM FIFO
-logic [7:0] opsum_fifo_push_data_matrix; // Data to push into OPSUM FIFO
-logic [7:0] opsum_fifo_push_mod_matrix; // Modified data to push into OPSUM FIFO
-logic opsum_fifo_push_matrix; // Push signal for OPSUM FIFO
-logic opsum_fifo_pop_matrix; // Pop signal for OPSUM FIFO
-logic opsum_fifo_full_matrix; // Full signal for OPSUM FIFO
-logic opsum_fifo_empty_matrix; // Empty signal for OPSUM FIFO
+logic [31:0] opsum_fifo_push_data_matrix[31:0] ; // Data to push into OPSUM FIFO
+logic [31:0] opsum_fifo_push_mod_matrix; // Modified data to push into OPSUM FIFO
+logic [31:0] opsum_fifo_push_matrix; // Push signal for OPSUM FIFO
+logic [31:0] opsum_fifo_pop_matrix; // Pop signal for OPSUM FIFO
+logic [31:0] opsum_fifo_full_matrix; // Full signal for OPSUM FIFO
+logic [31:0] opsum_fifo_empty_matrix; // Empty signal for OPSUM FIFO
 
-logic [31:0] opsum_fifo_pop_data_matrix; // Data popped from OPSUM FIFO
+logic [31:0] opsum_fifo_pop_data_matrix [31:0] ; // Data popped from OPSUM FIFO
 
 //* CONV.PE_ARRAY Interface
-logic [7:0] PE_en_matrix; // PE enable matrix
-logic [7:0] PE_stall_matrix; // PE stall matrix
+logic PE_en_matrix [31:0][31:0] ; // PE enable matrix
+logic PE_stall_matrix [31:0][31:0] ; // PE stall matrix
 
 //* CONV.PE_ARRAY.WEIGHT Interface
 logic [7:0] weight_in; // Weight input
-logic [7:0] weight_load_en_matrix; // Weight load enable matrix
+logic weight_load_en_matrix [31:0][31:0] ; // Weight load enable matrix
 
 
-
-
-
-
-
+//* CONV need Signal
+logic [1:0] layer_type; //todo: After Buffer
 
 
 DLA_Controller #(
@@ -200,33 +197,33 @@ DLA_Controller #(
     .ifmap_fifo_push_mod_matrix_o(ifmap_fifo_push_mod_matrix),
     .ifmap_fifo_push_matrix_o(ifmap_fifo_push_matrix),
     .ifmap_fifo_pop_matrix_o(ifmap_fifo_pop_matrix),
-    .ifmap_fifo_full_matrix_i(ifmap_fifo_full_matrix_i),
-    .ifmap_fifo_empty_matrix_i(ifmap_fifo_empty_matrix_i),
+    .ifmap_fifo_full_matrix_i(ifmap_fifo_full_matrix),
+    .ifmap_fifo_empty_matrix_i(ifmap_fifo_empty_matrix),
 
-    .ipsum_fifo_reset_o(ipsum_fifo_reset_o),
-    .ipsum_fifo_push_data_matrix_o(ipsum_fifo_push_data_matrix_o),
-    .ipsum_fifo_push_mod_matrix_o(ipsum_fifo_push_mod_matrix_o),
-    .ipsum_fifo_push_matrix_o(ipsum_fifo_push_matrix_o),
-    .ipsum_fifo_pop_matrix_o(ipsum_fifo_pop_matrix_o),
-    .ipsum_fifo_full_matrix_i(ipsum_fifo_full_matrix_i),
-    .ipsum_fifo_empty_matrix_i(ipsum_fifo_empty_matrix_i),
+    .ipsum_fifo_reset_o(ipsum_fifo_reset),
+    .ipsum_fifo_push_data_matrix_o(ipsum_fifo_push_data_matrix),
+    .ipsum_fifo_push_mod_matrix_o(ipsum_fifo_push_mod_matrix),
+    .ipsum_fifo_push_matrix_o(ipsum_fifo_push_matrix),
+    .ipsum_fifo_pop_matrix_o(ipsum_fifo_pop_matrix),
+    .ipsum_fifo_full_matrix_i(ipsum_fifo_full_matrix),
+    .ipsum_fifo_empty_matrix_i(ipsum_fifo_empty_matrix),
 
-    .opsum_fifo_reset_o(opsum_fifo_reset_o),
-    .opsum_fifo_push_data_matrix_o(opsum_fifo_push_data_matrix_o),
-    .opsum_fifo_push_mod_matrix_o(opsum_fifo_push_mod_matrix_o),
-    .opsum_fifo_push_matrix_o(opsum_fifo_push_matrix_o),
-    .opsum_fifo_pop_matrix_o(opsum_fifo_pop_matrix_o),
-    .opsum_fifo_full_matrix_i(opsum_fifo_full_matrix_i),
-    .opsum_fifo_empty_matrix_i(opsum_fifo_empty_matrix_i),
+    .opsum_fifo_reset_o(opsum_fifo_reset),
+    .opsum_fifo_push_data_matrix_o(opsum_fifo_push_data_matrix),
+    .opsum_fifo_push_mod_matrix_o(opsum_fifo_push_mod_matrix),
+    .opsum_fifo_push_matrix_o(opsum_fifo_push_matrix),
+    .opsum_fifo_pop_matrix_o(opsum_fifo_pop_matrix),
+    .opsum_fifo_full_matrix_i(opsum_fifo_full_matrix),
+    .opsum_fifo_empty_matrix_i(opsum_fifo_empty_matrix),
 
-    .opsum_fifo_pop_data_matrix_i(opsum_fifo_pop_data_matrix_i),
+    .opsum_fifo_pop_data_matrix_i(opsum_fifo_pop_data_matrix),
 
 //* CONV.PE_ARRAY Interface
-    .PE_en_matrix_o(PE_en_matrix_o),
-    .PE_stall_matrix_o(PE_stall_matrix_o),
+    .PE_en_matrix_o(PE_en_matrix),
+    .PE_stall_matrix_o(PE_stall_matrix),
 
 //* CONV.PE_ARRAY.WEIGHT Interface
-    .weight_in(weight_in),
+    .weight_in_o(weight_in),
     .weight_load_en_matrix_o(weight_load_en_matrix)
 );
 
@@ -255,18 +252,18 @@ DLA_Controller #(
         .push_ipsum_mod(ipsum_fifo_push_mod_matrix),
         .push_ipsum_data(ipsum_fifo_push_data_matrix), 
         .pop_ipsum_en(ipsum_fifo_pop_matrix),
-        .ipsum_read_en(ipsum_read_en),
-        .ipsum_add_en(ipsum_add_en),
+        .ipsum_read_en(1'b1), //FIXME:
+        .ipsum_add_en(1'b1),//FIXME:
         .opsum_push_en(opsum_fifo_push_matrix),
         .opsum_pop_en(opsum_fifo_pop_matrix),
         .opsum_pop_mod(opsum_fifo_push_mod_matrix), // 使用 push_mod 作為 pop_mod
-        .ifmap_fifo_full(ifmap_fifo_full),
-        .ifmap_fifo_empty(ifmap_fifo_empty),
-        .ipsum_fifo_full(ipsum_fifo_full),
-        .ipsum_fifo_empty(ipsum_fifo_empty),
-        .opsum_fifo_full(opsum_fifo_full),
-        .opsum_fifo_empty(opsum_fifo_empty),
-        .opsum_pop_data(opsum_pop_data)
+        .ifmap_fifo_full(ifmap_fifo_full_matrix),
+        .ifmap_fifo_empty(ifmap_fifo_empty_matrix),
+        .ipsum_fifo_full(ipsum_fifo_full_matrix),
+        .ipsum_fifo_empty(ipsum_fifo_empty_matrix),
+        .opsum_fifo_full(opsum_fifo_full_matrix),
+        .opsum_fifo_empty(opsum_fifo_empty_matrix),
+        .opsum_pop_data(opsum_fifo_pop_data_matrix)
     );
 
 

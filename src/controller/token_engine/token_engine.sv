@@ -26,8 +26,10 @@ module token_engine (
 
     input logic n_tile_is_first_i,
     input logic n_tile_is_last_i,
-    input logic [7:0] Already_Compute_Row_i,
+    input logic [31:0] Already_Compute_Row_i,
     input logic is_bias_i,
+
+    input logic [3:0] flags_i, // flags[0]: is_bias, flags[1]: is_relu
 
     input logic [1:0] stride_i,
 
@@ -247,7 +249,7 @@ L2C_init_fifo_pe #(
     .n_tile_is_last_i(n_tile_is_last_i),   // 是否為最後一個 tile
 
     //* 計數目前正在計算第幾個 output row
-    .Already_Compute_Row_i(Already_Compute_Row), // 已經計算的 row 數量
+    .Already_Compute_Row_i(Already_Compute_Row_i), // 已經計算的 row 數量
     .output_row_cnt_i(output_row_cnt), // 每次處理的 row 數
 
 

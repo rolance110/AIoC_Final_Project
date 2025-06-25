@@ -34,3 +34,7 @@
 ../src/controller/DMA_address_generator.sv
 ../src/controller/Tile_Scheduler.sv
 ../src/controller/Tile_Scheduler_old.sv
+
+
+../src/controller/DLA_Controller.sv
+../src/DSC.sv

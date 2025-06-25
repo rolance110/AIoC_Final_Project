@@ -66,7 +66,7 @@ module DLA_Controller #(
     input  logic                        rlast_m_i,    	// Read last
     input  logic                        rvalid_m_i,   	// Read valid
     input  logic    [`RRESP_WIDTH-1:0]   rresp_m_i,   	// Read response
-    output logic                        rready_m_o   	// Read ready
+    output logic                        rready_m_o,   	// Read ready
 
 
 
@@ -82,38 +82,38 @@ module DLA_Controller #(
 
 //* CONV.FIFO Interface
     output logic ifmap_fifo_reset_o, // Reset signal for IFMAP FIFO
-    output logic [7:0] ifmap_fifo_push_data_matrix_o, // Data to push into IFMAP FIFO
-    output logic [7:0] ifmap_fifo_push_mod_matrix_o, // Modified data to push into IFMAP FIFO
-    output logic ifmap_fifo_push_matrix_o, // Push signal for IFMAP FIFO
-    output logic ifmap_fifo_pop_matrix_o, // Pop signal for IFMAP FIFO
-    input  logic ifmap_fifo_full_matrix_i, // Full signal for IFMAP FIFO
-    input  logic ifmap_fifo_empty_matrix_i, // Empty signal for IFMAP FIFO
+    output logic [31:0] ifmap_fifo_push_data_matrix_o [31:0] , // Data to push into IFMAP FIFO
+    output logic [31:0] ifmap_fifo_push_mod_matrix_o, // Modified data to push into IFMAP FIFO
+    output logic [31:0] ifmap_fifo_push_matrix_o, // Push signal for IFMAP FIFO
+    output logic [31:0] ifmap_fifo_pop_matrix_o, // Pop signal for IFMAP FIFO
+    input  logic [31:0] ifmap_fifo_full_matrix_i, // Full signal for IFMAP FIFO
+    input  logic [31:0] ifmap_fifo_empty_matrix_i, // Empty signal for IFMAP FIFO
 
     output logic ipsum_fifo_reset_o, // Reset signal for IPSUM FIFO
-    output logic [7:0] ipsum_fifo_push_data_matrix_o, // Data to push into IPSUM FIFO
-    output logic [7:0] ipsum_fifo_push_mod_matrix_o, // Modified data to push into IPSUM FIFO
-    output logic ipsum_fifo_push_matrix_o, // Push signal for IPSUM FIFO
-    output logic ipsum_fifo_pop_matrix_o, // Pop signal for IPSUM FIFO
-    input  logic ipsum_fifo_full_matrix_i, // Full signal for IPSUM FIFO
-    input  logic ipsum_fifo_empty_matrix_i, // Empty signal for IPSUM FIFO
+    output logic [31:0] ipsum_fifo_push_data_matrix_o [31:0] , // Data to push into IPSUM FIFO
+    output logic [31:0] ipsum_fifo_push_mod_matrix_o, // Modified data to push into IPSUM FIFO
+    output logic [31:0] ipsum_fifo_push_matrix_o, // Push signal for IPSUM FIFO
+    output logic [31:0] ipsum_fifo_pop_matrix_o, // Pop signal for IPSUM FIFO
+    input  logic [31:0] ipsum_fifo_full_matrix_i, // Full signal for IPSUM FIFO
+    input  logic [31:0] ipsum_fifo_empty_matrix_i, // Empty signal for IPSUM FIFO
 
     output logic opsum_fifo_reset_o, // Reset signal for OPSUM FIFO
-    output logic [7:0] opsum_fifo_push_data_matrix_o, // Data to push into OPSUM FIFO
-    output logic [7:0] opsum_fifo_push_mod_matrix_o, // Modified data to push into OPSUM FIFO
-    output logic opsum_fifo_push_matrix_o, // Push signal for OPSUM FIFO
-    output logic opsum_fifo_pop_matrix_o, // Pop signal for OPSUM FIFO
-    input  logic opsum_fifo_full_matrix_i, // Full signal for OPSUM FIFO
-    input  logic opsum_fifo_empty_matrix_i, // Empty signal for OPSUM FIFO
+    output logic [31:0] opsum_fifo_push_data_matrix_o [31:0] , // Data to push into OPSUM FIFO
+    output logic [31:0] opsum_fifo_push_mod_matrix_o, // Modified data to push into OPSUM FIFO
+    output logic [31:0] opsum_fifo_push_matrix_o, // Push signal for OPSUM FIFO
+    output logic [31:0] opsum_fifo_pop_matrix_o, // Pop signal for OPSUM FIFO
+    input  logic [31:0] opsum_fifo_full_matrix_i, // Full signal for OPSUM FIFO
+    input  logic [31:0] opsum_fifo_empty_matrix_i, // Empty signal for OPSUM FIFO
 
-    input logic [31:0] opsum_fifo_pop_data_matrix_i, // Data popped from OPSUM FIFO
+    input logic [31:0] opsum_fifo_pop_data_matrix_i [31:0], // Data popped from OPSUM FIFO
 
 //* CONV.PE_ARRAY Interface
-    output logic [7:0] PE_en_matrix_o, // PE enable matrix
-    output logic [7:0] PE_stall_matrix_o, // PE stall matrix
+    output logic PE_en_matrix_o [31:0][31:0] , // PE enable matrix
+    output logic PE_stall_matrix_o [31:0][31:0] , // PE stall matrix
 
 //* CONV.PE_ARRAY.WEIGHT Interface
     output logic [7:0] weight_in_o, // Weight input
-    output logic [7:0] weight_load_en_matrix_o // Weight load enable matrix
+    output logic weight_load_en_matrix_o [31:0][31:0]  // Weight load enable matrix
 
 );
 
@@ -136,7 +136,7 @@ logic [7:0] out_R, out_C;
 
 
 //* Layer Descriptor (uLD) (First Stage)
-    Layer_Decoder (
+    Layer_Decoder #(
         .GLB_BYTES(`GLB_MAX_BYTES),
         .BYTES_I(`BYTES_I),
         .BYTES_W(`BYTES_W),
@@ -198,7 +198,6 @@ logic DMA_enable; // DMA enable signal
 logic DMA_read; // DMA read signal
 logic [31:0] DMA_addr; // DMA address
 logic [31:0] DMA_len; // DMA length
-logic dma_interrupt; // DMA interrupt signal
 logic pass_start; // Pass start signal
 logic pass_done; // Pass done signal
 logic [31:0] GLB_weight_base_addr; // GLB weight base address
@@ -207,21 +206,38 @@ logic [31:0] GLB_opsum_base_addr; // GLB opsum base address
 logic [31:0] GLB_ipsum_base_addr; // GLB ipsum base address
 logic [31:0] GLB_bias_base_addr; // GLB bias base
 
-logic [7:0] On_real; // Output channels
+logic [31:0] On_real; // Output channels
 logic [7:0] OC_real; // Output channels real
 logic [7:0] IC_real; // Input channels real
 
-logic tile_reach_max
+logic [31:0] dma_src; // DMA source address
+logic [31:0] dma_dest; // DMA destination address
+logic [31:0] dma_len; // DMA length
+logic dma_enable;
+
+logic tile_reach_max;
 // DUT Instance
+
+logic uLD_buffer_OK;
+always_ff@(posedge clk or negedge rst_n)begin
+    if(!rst_n) begin
+        uLD_buffer_OK <= 1'b0; // Default to PW layer
+    end 
+    else if(uLD_en_i) begin
+        uLD_buffer_OK <= uLD_en_i; // Update layer type from uLD
+    end
+end
+logic [31:0] dma_addr;
+logic dma_read;
 Tile_Scheduler #(
     .BYTES_I(`BYTES_I),
     .BYTES_W(`BYTES_W),
     .BYTES_P(`BYTES_P)
-) dut (
+) dut_TS (
     .clk(clk),
     .rst_n(rst_n),
 
-    .uLD_en_i(uLD_en),
+    .uLD_en_i(uLD_buffer_OK),
 
     .kH_i(kH),
     .kW_i(kW),
@@ -256,11 +272,17 @@ Tile_Scheduler #(
     .flags_i(flags),
 
     // DMA Interface
+    
     .dma_enable_o(dma_enable), 
+    .dma_src_o(dma_src), 
+    .dma_dest_o(dma_dest),
+    .dma_len_o(dma_len), 
+
+    .dma_interrupt_i(DMA_interrupt_i), 
+
     .dma_read_o(dma_read), 
     .dma_addr_o(dma_addr), 
-    .dma_len_o(dma_len), 
-    .dma_interrupt_i(dma_interrupt), 
+    
 
     // Pass Interface
     .pass_start_o(pass_start), 
@@ -273,9 +295,6 @@ Tile_Scheduler #(
    .GLB_bias_base_addr_o(GLB_bias_base_addr),
    .GLB_ipsum_base_addr_o(GLB_ipsum_base_addr),
 
-   // Flags
-   .flags_o(flags), 
-
     .On_real_o(On_real),
     .OC_real_o(OC_real),
     .IC_real_o(IC_real),
@@ -287,10 +306,10 @@ TS_AXI_wrapper TS_AXI_wrapper_dut (
         .clk(clk),
         .rst_n(rst_n),
 
-        .DMA_src_i(DMA_src),
-        .DMA_dest_i(DMA_dest),
-        .DMA_len_i(DMA_len),
-        .DMA_en_i(DMA_en),
+        .DMA_src_i(dma_src),
+        .DMA_dest_i(dma_dest),
+        .DMA_len_i(dma_len),
+        .DMA_en_i(dma_enable),
 
         .DMA_interrupt_i(DMA_interrupt_i),
 
@@ -334,11 +353,11 @@ TS_AXI_wrapper TS_AXI_wrapper_dut (
     logic is_bias; // 是否有 bias
     assign is_bias = 1'b0; // flags[3] = 1 => 有 bias
     logic [31:0] Already_Compute_Row; // 已經計算過的行數, 主要用於 Depthwise layer 的 padding 計算
-    assing Already_Compute_Row = 32'd0; // 預設為 0, 代表沒有已經計算過的行數
-    logic [31:0] n_tile_is_first; // 是否為第一個 tile
-    assign n_tile_is_first = 32'd1; // 預設為 1, 代表第一個 tile
-    logic [31:0] n_tile_is_last; // 是否為最後一個 tile
-    assign n_tile_is_last = 32'd0; // 預設為 0, 代表最後一個 tile
+    assign Already_Compute_Row = 32'd0; // 預設為 0, 代表沒有已經計算過的行數
+    logic n_tile_is_first; // 是否為第一個 tile
+    assign n_tile_is_first = 1'd1; // 預設為 1, 代表第一個 tile
+    logic n_tile_is_last; // 是否為最後一個 tile
+    assign n_tile_is_last = 1'd0; // 預設為 0, 代表最後一個 tile
     //FIXME: assign is_bias = flags[3] && first_n_tile; // flags[3] = 1 => 有 bias
 //* ==========================================================================
 
@@ -355,6 +374,8 @@ token_engine u_token_engine (
         .ipsum_GLB_base_addr_i(GLB_ipsum_base_addr), 
         .bias_GLB_base_addr_i(GLB_bias_base_addr),
         .opsum_GLB_base_addr_i(GLB_opsum_base_addr),
+        .flags_i(flags),
+
         .is_bias_i(is_bias), 
         .tile_n_i(tile_n),
         .stride_i(stride), // stride 設定
