@@ -31,16 +31,20 @@ module Tile_Scheduler #(
     input  logic [1:0]    pad_T_i, pad_B_i, // padding
     input  logic [1:0]    pad_L_i, pad_R_i, // padding
 
-    input  logic [6:0]    in_R_i,           // ifmap/ofmap height
+    input  logic [7:0]    in_R_i,           // ifmap/ofmap height
     input  logic [9:0]    in_C_i,           // ifmap/ofmap width
     input  logic [9:0]    in_D_i,           // input channel total
+
     input  logic [9:0]    out_K_i,         // ifmap/ofmap height
-    input  logic [6:0]    out_R_i,          // ofmap height
+    input  logic [7:0]    out_R_i,          // ofmap height
     input  logic [9:0]    out_C_i,          // ofmap width
+
     input  logic [31:0]   base_ifmap_i,
     input  logic [31:0]   base_weight_i,
+    input  logic [31:0]   base_ipsum_i, // input partial sum base address
     input  logic [31:0]   base_bias_i,
     input  logic [31:0]   base_ofmap_i,
+
     input  logic [3:0]    flags_i,          // bit3=bias_en
 
     //=== DMA Interface ===
@@ -58,28 +62,21 @@ module Tile_Scheduler #(
     output logic [31:0]   GLB_ifmap_base_addr_o,
     output logic [31:0]   GLB_opsum_base_addr_o,
     output logic [31:0]   GLB_bias_base_addr_o, // Bias base address
-
-    output logic [1:0]    pad_T_o, pad_B_o, pad_L_o, pad_R_o, // padding
-    output logic [1:0]    stride_o,
-    output logic [1:0]    layer_type_o, // 0=PW, 1=DW, 2=STD, 3=LIN
+    output logic [31:0]   GLB_ipsum_base_addr_o, // Ipsum base address
     output logic [3:0]    flags_o,       // ReLU / Linear / Residual / Bias
 
-    output logic [6:0]    out_R_o, out_C_o, // output size
+    output logic [7:0] On_real_o, 
+    output logic [7:0] IC_real_o,
+    output logic [7:0] OC_real_o,
 
     output logic tile_reach_max_o // tile reach max
 );
 
 
 // Tile 3-loop index
-logic [6:0] k_idx, d_idx;
+logic [7:0] k_idx, d_idx;
 
 assign flags_o = flags_i; // pass flags to next stage
-assign layer_type_o = layer_type_i; // pass layer type to next stage
-assign stride_o = stride_i; // pass stride to next stage
-assign pad_T_o = pad_T_i; // pass padding to next stage
-assign pad_B_o = pad_B_i; // pass padding to next stage
-assign pad_L_o = pad_L_i; // pass padding to next stage
-assign pad_R_o = pad_R_i; // pass padding to next stage
 logic bias_en;
 logic filter_en;
 logic reach_last_D_tile;
@@ -94,13 +91,13 @@ logic DMA_filter_finish;
 logic DMA_bias_finish;
 logic DMA_opsum_finish;
 
-logic [6:0] On_idx; // 計數目前正在處理第幾個 On tile
+logic [7:0] On_idx; // 計數目前正在處理第幾個 On tile
 logic layer_first_tile; // 是否為第一個 tile
 logic DMA_ifmap_finish_buf;
 logic DMA_opsum_finish_buf;
 logic DMA_ipsum_finish_buf;
 
-assign layer_first_tile = ((On_idx == 7'b1111111)||(On_idx == 7'd0)) && d_idx == 7'd0 && k_idx == 7'd0; // 第一個 tile
+assign layer_first_tile = ((On_idx == 8'b11111111)||(On_idx == 8'd0)) && d_idx == 8'd0 && k_idx == 8'd0; // 第一個 tile
 always_comb begin
     if (layer_first_tile || reach_last_On_tile) // 第一個 tile
         filter_en = 1'b1;
@@ -109,7 +106,7 @@ always_comb begin
 end
 
 always_comb begin
-    if(flags_i[3] && (layer_first_tile || (d_idx == 7'd0 && On_idx == 7'd0))) // bias enable
+    if(flags_i[3] && (layer_first_tile || (d_idx == 8'd0 && On_idx == 8'd0))) // bias enable
         bias_en = 1'b1;
     else
         bias_en = 1'b0;
@@ -117,7 +114,7 @@ end
 logic ipsum_en;
 
 always_comb begin
-    if(d_idx != 7'd0 && (layer_type_i != `DEPTHWISE)) // input enable
+    if(d_idx != 8'd0 && (layer_type_i != `DEPTHWISE)) // input enable
         ipsum_en = 1'b1;
     else
         ipsum_en = 1'b0;
@@ -261,8 +258,8 @@ end
 
 
 logic [31:0] completed_On_cnt;
-logic [6:0] completed_OC_cnt;
-logic [6:0] completed_IC_cnt;
+logic [7:0] completed_OC_cnt;
+logic [7:0] completed_IC_cnt;
 
 
 
@@ -281,17 +278,15 @@ end
 
 
 
-logic [6:0] On_real; 
-logic [6:0] IC_real;
-logic [6:0] OC_real;
-//* On_real: 目前 tile 實際總共要輸出 On_real 個 On (GLB => DRAM)
-//* IC_real: 目前 tile 實際總共要輸入 IC_real 個 input channel (DRAM => GLB)
-//* OC_real: 目前 tile 實際總共要輸入 OC_real 個 output channel pixel (DRAM <=> GLB)
+
+//* On_real_o: 目前 tile 實際總共要輸出 On_real_o 個 On (GLB => DRAM)
+//* IC_real_o: 目前 tile 實際總共要輸入 IC_real_o 個 input channel (DRAM => GLB)
+//* OC_real_o: 目前 tile 實際總共要輸入 OC_real_o 個 output channel pixel (DRAM <=> GLB)
 logic [31:0] remain_On;
 assign remain_On = max_On_cnt - completed_On_cnt; // 剩餘的 output pixel 數量
-logic [6:0] remain_IC;
+logic [7:0] remain_IC;
 assign remain_IC = in_D_i - completed_IC_cnt; // 剩餘的 input channel 數量
-logic [6:0] remain_OC;
+logic [7:0] remain_OC;
 assign remain_OC = out_K_i - completed_OC_cnt; // 剩餘的 output channel 數量
 
 logic [31:0] tile_On;
@@ -311,25 +306,25 @@ end
 
 always_comb begin
     if(remain_On < tile_On)
-        On_real = remain_On; // 實際輸出的 opsum pixel 數量
+        On_real_o = remain_On; // 實際輸出的 opsum pixel 數量
     else
-        On_real = tile_n_i; // 最多輸出 32 個 opsum pixel
+        On_real_o = tile_n_i; // 最多輸出 32 個 opsum pixel
 end
 
 //todo: 要使用 tile_D_f_i 判斷
 always_comb begin
     if(remain_IC < tile_D_i)
-        IC_real = remain_IC; // 實際輸入的 input channel 數量
+        IC_real_o = remain_IC; // 實際輸入的 input channel 數量
     
     else
-        IC_real = tile_D_i; // 最多輸入 32 個 input channel
+        IC_real_o = tile_D_i; // 最多輸入 32 個 input channel
 end
 
 always_comb begin
     if(remain_OC < tile_K_i)
-        OC_real = remain_OC; // 實際輸出的 output channel 數量
+        OC_real_o = remain_OC; // 實際輸出的 output channel 數量
     else
-        OC_real = tile_K_i; // 最多輸出 32 個 output channel
+        OC_real_o = tile_K_i; // 最多輸出 32 個 output channel
 end
 
 
@@ -371,24 +366,24 @@ always_ff@(posedge clk or negedge rst_n) begin
 end
 always_ff@(posedge clk or negedge rst_n) begin
     if(!rst_n)begin
-        completed_On_cnt <= 7'd0;
-        On_idx <= 7'b1111111;
+        completed_On_cnt <= 8'd0;
+        On_idx <= 8'b11111111;
     end
     else if (cs_ts == uLD_LOAD)begin
-        completed_On_cnt <= 7'd0;
-        On_idx <= 7'b1111111; // 歸 0
+        completed_On_cnt <= 8'd0;
+        On_idx <= 8'b11111111; // 歸 0
     end
     else if (reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
-        completed_On_cnt <= 7'd0; // 
-        On_idx <= 7'b0; // 歸 0
+        completed_On_cnt <= 8'd0; // 
+        On_idx <= 8'b0; // 歸 0
     end
     else if (uLD_LOAD_buf && cs_ts == TILE_IDX_GEN)begin
-        completed_On_cnt <= 7'd0;
-        On_idx <= 7'd0; // 處理下一個 On tile
+        completed_On_cnt <= 8'd0;
+        On_idx <= 8'd0; // 處理下一個 On tile
     end    
     else if (cs_ts == TILE_IDX_GEN)begin
-        completed_On_cnt <= completed_On_cnt + On_real;
-        On_idx <= On_idx + 7'd1; // 處理下一個 On tile
+        completed_On_cnt <= completed_On_cnt + On_real_o;
+        On_idx <= On_idx + 8'd1; // 處理下一個 On tile
     end
 end
 
@@ -396,40 +391,40 @@ end
 //* completed_IC_cnt: 計數目前已完成的 input channel 數量
 always_ff@(posedge clk or negedge rst_n) begin
     if(!rst_n)begin
-        completed_IC_cnt <= 7'd0;
-        d_idx <= 7'd0; // 歸 0
+        completed_IC_cnt <= 8'd0;
+        d_idx <= 8'd0; // 歸 0
     end
     else if (cs_ts == uLD_LOAD)begin //depthwise 不考慮 input channel
-        completed_IC_cnt <= layer_type_i==`DEPTHWISE? in_D_i: 7'd0; 
-        d_idx <= 7'd0; // 歸 0
+        completed_IC_cnt <= layer_type_i==`DEPTHWISE? in_D_i: 8'd0; 
+        d_idx <= 8'd0; // 歸 0
     end
     else if (reach_last_D_tile && reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
-        completed_IC_cnt <= layer_type_i==`DEPTHWISE? in_D_i: 7'd0; 
-        d_idx <= 7'd0; // 歸 0
+        completed_IC_cnt <= layer_type_i==`DEPTHWISE? in_D_i: 8'd0; 
+        d_idx <= 8'd0; // 歸 0
     end
     else if (reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
-        completed_IC_cnt <= completed_IC_cnt + IC_real;
-        d_idx <= d_idx + 7'd1; // 處理下一個 D tile
+        completed_IC_cnt <= completed_IC_cnt + IC_real_o;
+        d_idx <= d_idx + 8'd1; // 處理下一個 D tile
     end
 end
 
 //* completed_OC_cnt: 計數目前已完成的 output channel 數量
 always_ff@(posedge clk or negedge rst_n) begin
     if(!rst_n)begin
-        completed_OC_cnt <= 7'd0;
-        k_idx <= 7'd0; // 歸 0
+        completed_OC_cnt <= 8'd0;
+        k_idx <= 8'd0; // 歸 0
     end
     else if (cs_ts == uLD_LOAD)begin
-        completed_OC_cnt <= 7'd0;
-        k_idx <= 7'd0; // 歸 0
+        completed_OC_cnt <= 8'd0;
+        k_idx <= 8'd0; // 歸 0
     end
     else if (reach_last_K_tile && reach_last_D_tile && reach_last_On_tile && cs_ts == TILE_IDX_GEN)begin
-        completed_OC_cnt <= 7'd0; // 歸 0
-        k_idx <= 7'd0; // 歸 0
+        completed_OC_cnt <= 8'd0; // 歸 0
+        k_idx <= 8'd0; // 歸 0
     end
     else if (reach_last_On_tile && reach_last_D_tile && cs_ts == TILE_IDX_GEN)begin
-        completed_OC_cnt <= completed_OC_cnt + OC_real;
-        k_idx <= k_idx + 7'd1; // 處理下一個 K tile
+        completed_OC_cnt <= completed_OC_cnt + OC_real_o;
+        k_idx <= k_idx + 8'd1; // 處理下一個 K tile
     end
 end
 
@@ -486,9 +481,9 @@ dma_address_generator dma_address_generator(
     .clk(clk),
     .rst_n(rst_n),
     
-    .tile_D_i(IC_real),         //!ic_real 
-    .tile_K_i(OC_real),
-    .tile_n_i(On_real),         //! On_real -> On real 指的是這次 tile 實際會"輸出"的量（避免多輸出）
+    .tile_D_i(IC_real_o),         //!IC_real_o 
+    .tile_K_i(OC_real_o),
+    .tile_n_i(On_real_o),         //! On_real_o -> On real 指的是這次 tile 實際會"輸出"的量（避免多輸出）
                                 //! 不是 tile_n => tile_n 是一次 tile "正常輸入" 的數量（就算是最後面也會讀同樣的量）(假設多讀沒差)
     .tile_D_f_i(tile_D_f_i),       // input channels per tile (filter)
     .tile_K_f_i(tile_K_f_i),       // output channels per tile (filter)

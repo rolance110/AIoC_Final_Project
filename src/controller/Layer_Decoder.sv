@@ -5,7 +5,7 @@
 // control parameters downstream (tile sizes, num_tiles, out_dims, base_addrs…)
 //------------------------------------------------------------------------------
 `include "../include/define.svh"
-module layer_decoder #(
+module Layer_Decoder #(
     parameter int GLB_BYTES  = `GLB_MAX_BYTES, // Global SRAM capacity in bytes
     parameter int BYTES_I    = `BYTES_I, //input feature map bytes
     parameter int BYTES_W    = `BYTES_W, //weight bytes
@@ -19,7 +19,7 @@ module layer_decoder #(
     input  logic [5:0]   layer_id_i,
     input  logic [1:0]   layer_type_i,     // 0=PW,1=DW,2=STD,3=LIN
     
-    input  logic [6:0]   in_R_i, in_C_i,   // input H,W
+    input  logic [7:0]   in_R_i, in_C_i,   // input H,W
     input  logic [10:0]   in_D_i, out_K_i,  // input/out channels
     
     input  logic [1:0]   stride_i,         // stride
@@ -37,11 +37,11 @@ module layer_decoder #(
     output logic [5:0]   layer_id_o,
     output logic [1:0]   layer_type_o,
     
-    output logic [6:0]   padded_R_o, padded_C_o,
+    output logic [7:0]   padded_R_o, padded_C_o,
     output logic [10:0]   in_D_o, out_K_o,
     
     output logic [1:0]   stride_o,
-    output logic [1:0]   pad_H_o, pad_B_o, pad_L_o, pad_R_o,
+    output logic [1:0]   pad_T_o, pad_B_o, pad_L_o, pad_R_o,
 
     output logic [1:0]   kH_o, kW_o, // kernel size    
 
@@ -56,15 +56,18 @@ module layer_decoder #(
 
 //* tile lengths (size not sure)
     output logic [31:0]  tile_n_o, //todo: max number of tiles
-    output logic [6:0]   tile_D_o,
-    output logic [6:0]   tile_K_o,
-    output logic [6:0]   tile_D_f_o, // tile_D_f
-    output logic [6:0]   tile_K_f_o, // tile_K_f
+    output logic [7:0]   tile_D_o,
+    output logic [7:0]   tile_K_o,
+    output logic [7:0]   tile_D_f_o, // tile_D_f
+    output logic [7:0]   tile_K_f_o, // tile_K_f
 
 
+//* Input size (size not sure)
+    output logic [7:0]   in_R_o,
+    output logic [7:0]   in_C_o,
 //* ofmap size (size not sure)
-    output logic [6:0]   out_R_o,
-    output logic [6:0]   out_C_o 
+    output logic [7:0]   out_R_o,
+    output logic [7:0]   out_C_o 
 );
 
 //* Helper: ceil
@@ -72,11 +75,11 @@ function automatic int ceil_div(int a, int b);
     return (a + b - 1) / b;
 endfunction
 
-logic [6:0] padded_R, padded_C;
+logic [7:0] padded_R, padded_C;
 logic [1:0] kH, kW;
-logic [6:0] out_R, out_C;
-logic [6:0] tile_D, tile_K;
-logic [6:0] tile_D_f, tile_K_f;
+logic [7:0] out_R, out_C;
+logic [7:0] tile_D, tile_K;
+logic [7:0] tile_D_f, tile_K_f;
 
 logic [31:0] tile_n; // max number of tiles
 
@@ -111,7 +114,7 @@ always_comb begin
 end
 
 //* M
-logic [6:0] M1, M2, M3;
+logic [7:0] M1, M2, M3;
 always_comb begin
     unique case (layer_type_i)
         `POINTWISE: begin M1 = 7'd1; M2 = 7'd0; M3 = 7'd1; end // Pointwise
@@ -168,7 +171,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         out_K_o         <= 11'd0;
 
         stride_o        <= 2'd0;
-        pad_H_o         <= 2'd0; 
+        pad_T_o         <= 2'd0; 
         pad_B_o         <= 2'd0;
         pad_L_o         <= 2'd0; 
         pad_R_o         <= 2'd0;
@@ -187,7 +190,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         tile_K_o        <= 7'd0;
         tile_D_f_o      <= 7'd0;
         tile_K_f_o      <= 7'd0;
-        
+        in_R_o          <= 7'd0;
+        in_C_o          <= 7'd0;
         out_R_o         <= 7'd0;
         out_C_o         <= 7'd0;
     end 
@@ -202,7 +206,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         out_K_o         <= out_K_i;
         
         stride_o        <= stride_i;
-        pad_H_o         <= pad_T_i;  
+        pad_T_o         <= pad_T_i;  
         pad_B_o         <= pad_B_i;
         pad_L_o         <= pad_L_i;  
         pad_R_o         <= pad_R_i;
@@ -221,7 +225,8 @@ always_ff @(posedge clk or negedge rst_n) begin
         tile_K_o        <= tile_K;
         tile_D_f_o        <= tile_D_f;
         tile_K_f_o        <= tile_K_f;
-
+        in_R_o          <= in_R_i;
+        in_C_o          <= in_C_i;
         out_R_o         <= out_R;
         out_C_o         <= out_C;
     end

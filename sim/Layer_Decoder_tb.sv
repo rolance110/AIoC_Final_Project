@@ -15,7 +15,7 @@ module Layer_Decoder_tb;
     logic         uLD_en_i;
     logic  [5:0]  layer_id_i;
     logic  [1:0]  layer_type_i;
-    logic  [6:0]  in_R_i, in_C_i;
+    logic  [7:0]  in_R_i, in_C_i;
     logic [10:0]  in_D_i, out_K_i;
     logic  [1:0]  stride_i;
     logic  [1:0]  pad_T_i, pad_B_i, pad_L_i, pad_R_i;
@@ -26,20 +26,27 @@ module Layer_Decoder_tb;
     // DUT output
     logic [5:0]   layer_id_o;
     logic [1:0]   layer_type_o;
-    logic [6:0]   padded_R_o, padded_C_o;
+    logic [7:0]   padded_R_o, padded_C_o;
     logic [10:0]  in_D_o, out_K_o;
     logic [1:0]   stride_o;
-    logic [1:0]   pad_H_o, pad_B_o, pad_L_o, pad_R_o;
+    logic [1:0]   pad_T_o, pad_B_o, pad_L_o, pad_R_o;
     logic [1:0]   kH_o, kW_o;
     logic [31:0]  base_ifmap_o, base_weight_o, base_bias_o, base_ofmap_o;
     logic [3:0]   flags_o;
     logic [7:0]   quant_scale_o;
     logic [31:0]  tile_n_o;
-    logic [6:0]   tile_D_o, tile_K_o, tile_D_f_o, tile_K_f_o;
-    logic [6:0]   out_R_o, out_C_o;
+    logic [7:0]   tile_D_o, tile_K_o, tile_D_f_o, tile_K_f_o;
+
+    logic [7:0]   in_R_o, in_C_o; // Input size
+    logic [7:0]   out_R_o, out_C_o;
 
     // DUT Instantiation
-    layer_decoder uut (
+    Layer_Decoder (
+        .GLB_BYTES(`GLB_MAX_BYTES),
+        .BYTES_I(`BYTES_I),
+        .BYTES_W(`BYTES_W),
+        .BYTES_P(`BYTES_P)
+    ) uut (
         .clk(clk),
         .rst_n(rst_n),
         .uLD_en_i(uLD_en_i),
@@ -62,7 +69,7 @@ module Layer_Decoder_tb;
         .padded_R_o(padded_R_o), .padded_C_o(padded_C_o),
         .in_D_o(in_D_o), .out_K_o(out_K_o),
         .stride_o(stride_o),
-        .pad_H_o(pad_H_o), .pad_B_o(pad_B_o),
+        .pad_T_o(pad_T_o), .pad_B_o(pad_B_o),
         .pad_L_o(pad_L_o), .pad_R_o(pad_R_o),
         .kH_o(kH_o), .kW_o(kW_o),
         .base_ifmap_o(base_ifmap_o),
@@ -74,6 +81,7 @@ module Layer_Decoder_tb;
         .tile_n_o(tile_n_o),
         .tile_D_o(tile_D_o), .tile_K_o(tile_K_o),
         .tile_D_f_o(tile_D_f_o), .tile_K_f_o(tile_K_f_o),
+        .in_R_o(out_R_o), .in_C_o(out_C_o),
         .out_R_o(out_R_o), .out_C_o(out_C_o)
     );
 
