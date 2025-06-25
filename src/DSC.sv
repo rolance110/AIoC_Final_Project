@@ -70,8 +70,10 @@ module DSC(
     output logic [31:0]  glb_write_data_o, // GLB write data
     output logic [3:0]   glb_web_o, // GLB write enable
 
-    input  logic [31:0]  glb_read_data_i // GLB read data
+    input  logic [31:0]  glb_read_data_i, // GLB read data
 
+    output logic pass_done_o, //!大哥你拉阿
+    output logic PASS_START
 );
 
 //* CONV.FIFO Interface
@@ -224,7 +226,10 @@ DLA_Controller #(
 
 //* CONV.PE_ARRAY.WEIGHT Interface
     .weight_in_o(weight_in),
-    .weight_load_en_matrix_o(weight_load_en_matrix)
+    .weight_load_en_matrix_o(weight_load_en_matrix),
+
+    .pass_start(PASS_START),
+    .pass_done(pass_done_o) 
 );
 
 

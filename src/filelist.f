@@ -1,4 +1,25 @@
+../sim/SRAM_64KB_AXI.sv
+../sim/SRAM_2MB.sv
+../sim/DRAM/DRAM.sv
+../src/DRAM_wrapper.sv
+../src/SRAM_wrapper.sv
+../src/SRAM_wrapper2.sv
+../src/DMA_wrapper.sv
 
+../include/AXI_define.svh
+../src/AXI/AWADDR_arbiter.sv
+../src/AXI/addr_dec_s.sv
+../src/AXI/R_channel.sv
+../src/AXI/W_channel.sv
+../src/AXI/B_channel.sv
+../src/AXI/ARADDR_arbiter.sv
+../src/AXI/AXI.sv
+
+
+../src/top.sv
+
+
+../include/define.svh
 ../src/ppu/PPU.sv
 ../src/controller/token_engine/ifmap_fifo_ctrl.sv
 ../src/controller/token_engine/ipsum_fifo_ctrl.sv

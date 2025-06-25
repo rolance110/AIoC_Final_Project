@@ -128,8 +128,8 @@ end
 assign padded_R = in_R_i + pad_T_i + pad_B_i; // 計算 padded R
 assign padded_C = in_C_i + pad_L_i + pad_R_i; // 計算 padded C
 
-assign out_R = ceil_div(padded_R - kH, stride_i) + 1;
-assign out_C = ceil_div(padded_C - kW, stride_i) + 1;
+assign out_R = ((padded_R - kH + stride_i - 1)/stride_i ) + 1;
+assign out_C =  ((padded_C - kW + stride_i - 1)/stride_i) + 1;
 
 //* n max
 calc_tile_n #(
@@ -234,5 +234,4 @@ end
 
 
 endmodule
-
 

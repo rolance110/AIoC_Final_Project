@@ -113,8 +113,10 @@ module DLA_Controller #(
 
 //* CONV.PE_ARRAY.WEIGHT Interface
     output logic [7:0] weight_in_o, // Weight input
-    output logic weight_load_en_matrix_o [31:0][31:0]  // Weight load enable matrix
-
+    output logic weight_load_en_matrix_o [31:0][31:0],  // Weight load enable matrix
+    
+    output logic pass_start, // Pass start signal
+    output logic pass_done // Pass done signal
 );
 
 //* After Layer Decoder Buffer Signal
@@ -198,8 +200,8 @@ logic DMA_enable; // DMA enable signal
 logic DMA_read; // DMA read signal
 logic [31:0] DMA_addr; // DMA address
 logic [31:0] DMA_len; // DMA length
-logic pass_start; // Pass start signal
-logic pass_done; // Pass done signal
+// logic pass_start; // Pass start signal
+// logic pass_done; // Pass done signal
 logic [31:0] GLB_weight_base_addr; // GLB weight base address
 logic [31:0] GLB_ifmap_base_addr; // GLB ifmap base address
 logic [31:0] GLB_opsum_base_addr; // GLB opsum base address

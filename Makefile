@@ -140,7 +140,13 @@ opsum_fifo_ctrl_tb: | $(bld_dir) $(wave_dir)
 	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
 	+notimingcheck \
 	+define+$(FSDB_DEF) \
-
+	
+one_layer_tb: | $(bld_dir) $(wave_dir)
+	cd $(bld_dir); \
+	vcs -R -sverilog $(root_dir)/$(sim_dir)/top_tb.sv -f $(root_dir)/$(src_dir)/filelist.f -debug_access+all -full64  \
+	+incdir+$(root_dir)/$(src_dir)+$(root_dir)/$(inc_dir)+$(root_dir)/$(sim_dir) \
+	+notimingcheck \
+	+define+$(FSDB_DEF) \
 
 
 # Utilities
