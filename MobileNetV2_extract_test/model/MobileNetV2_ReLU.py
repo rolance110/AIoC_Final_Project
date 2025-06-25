@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 
 #---------------------------------------------------------------------------#
-# 1) 定义 Inverted Residual Block（倒残差块）
+# 1) Inverted Residual Block
 #---------------------------------------------------------------------------#
 class InvertedResidual(nn.Module):
     def __init__(self, inp, oup, stride, expand_ratio):
@@ -43,7 +43,7 @@ class InvertedResidual(nn.Module):
             return self.conv(x)
 
 #---------------------------------------------------------------------------#
-# 2) 定义 MobileNetV2 主干
+# 2)  MobileNetV2 
 #---------------------------------------------------------------------------#
 class MobileNetV2(nn.Module):
     def __init__(self, num_classes=10, width_mult=1.0):
@@ -60,7 +60,7 @@ class MobileNetV2(nn.Module):
             [6,   320,  1,  1],
         ]
 
-        # 首层 conv2d 3x3，输出 32 channel
+        # 首層 conv2d 3x3，輸出 32 channel
         input_channel = int(32 * width_mult)
         layers = [
             nn.Conv2d(3, input_channel, 3, stride=2, padding=1, bias=False),
@@ -68,7 +68,7 @@ class MobileNetV2(nn.Module):
             nn.ReLU(inplace=True)
         ]
 
-        # 构建一系列倒残差块
+        # Inverted Residual Block
         for t, c, n, s in inverted_residual_setting:
             output_channel = int(c * width_mult)
             for i in range(n):
@@ -91,7 +91,7 @@ class MobileNetV2(nn.Module):
             nn.Linear(last_channel, num_classes)
         )
 
-        # 权重初始化
+        # 權重初始化
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out')
@@ -109,14 +109,14 @@ class MobileNetV2(nn.Module):
         return x
 
     def fuse_modules(self):
-        # 1) fuse 首层 conv-bn-relu
+        # 1) fuse 第一層 conv-bn-relu
         tq.fuse_modules(self.features, ['0', '1', '2'], inplace=True)
 
-        # 2) fuse 所有 InvertedResidual 块内部
+        # 2) fuse 所有 InvertedResidual 内部
         for m in self.features:
             if isinstance(m, InvertedResidual):
-                # layers 顺序：
-                # 如果 expand_ratio != 1: [0:Conv,1:BN,2:ReLU] 扩展；
+                # layers 順序：
+                # 如果 expand_ratio != 1: [0:Conv,1:BN,2:ReLU]；
                 # 然后 [3:Conv_dw,4:BN,5:ReLU]；
                 # 最后 [6:Conv_pw,7:BN]
                 if len(m.conv) == 8:
@@ -124,12 +124,12 @@ class MobileNetV2(nn.Module):
                     tq.fuse_modules(m.conv, ['3','4','5'], inplace=True)
                     tq.fuse_modules(m.conv, ['6','7'], inplace=True)
                 else:
-                    # 当 expand_ratio==1 时，直接从 depthwise 开始
+                    # 當 expand_ratio==1 時，直接從 depthwise 開始
                     tq.fuse_modules(m.conv, ['0','1','2'], inplace=True)
                     tq.fuse_modules(m.conv, ['3','4'], inplace=True)
 
-        # 3) fuse 最后一个 1×1 conv-bn-relu
-        # features 中最后三个层的索引是 -3,-2,-1
+        # 3) fuse 最后一個 1×1 conv-bn-relu
+        # features 中最后三个層的索引是 -3,-2,-1
         N = len(self.features)
         tq.fuse_modules(self.features, [str(N-3), str(N-2), str(N-1)], inplace=True)
 
