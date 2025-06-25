@@ -358,6 +358,8 @@ TS_AXI_wrapper TS_AXI_wrapper_dut (
     assign n_tile_is_first = 1'd1; // 預設為 1, 代表第一個 tile
     logic n_tile_is_last; // 是否為最後一個 tile
     assign n_tile_is_last = 1'd0; // 預設為 0, 代表最後一個 tile
+    logic Need_PPU;
+    assign Need_PPU = 1'b0; // 預設為 0, 代表不需要 PPU
     //FIXME: assign is_bias = flags[3] && first_n_tile; // flags[3] = 1 => 有 bias
 //* ==========================================================================
 
@@ -398,6 +400,8 @@ token_engine u_token_engine (
         .n_tile_is_first_i(n_tile_is_first),
         .n_tile_is_last_i(n_tile_is_last),
         .Already_Compute_Row_i(Already_Compute_Row), // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad
+        .Need_PPU_i(Need_PPU), // 是否需要 PPU
+
 
 //* to GLB
         .glb_web_o(glb_web_o),
