@@ -5,7 +5,7 @@ Command: vcs -R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 +define++FSDB_ALL+DEPTHWISE_STRIDE2_TYPE
 *** Using c compiler gcc instead of cc ...
                          Chronologic VCS (TM)
-       Version W-2024.09-SP2_Full64 -- Wed Jun 25 15:43:20 2025
+       Version W-2024.09-SP2_Full64 -- Wed Jun 25 16:25:34 2025
 
                     Copyright (c) 1991 - 2025 Synopsys, Inc.
    This software and the associated documentation are proprietary to Synopsys,
@@ -63,20 +63,6 @@ Parsing design file '../src/controller/Layer_Decoder.sv'
 Parsing included file '../include/define.svh'.
 Back to file '../src/controller/Layer_Decoder.sv'.
 Parsing design file '../src/controller/DMA_address_generator.sv'
-
-Warning-[DCTTSW] Decimal constant truncated
-  Constant '4' is truncated to 2 bits: 0.
-  "../src/controller/DMA_address_generator.sv", 130
-  Source info:                     2'd3,2'd4: dma_len_o = (stride_i==2'd1)? 
-  (tile_n_i+tile_n_i):tile_n_i;   //!: stride=1 = tile_n_i*2 stride2 = 
-  tile_n_i  (2byte)
-
-
-Warning-[DCTTSW] Decimal constant truncated
-  Constant '4' is truncated to 2 bits: 0.
-  "../src/controller/DMA_address_generator.sv", 190
-  Source info:                 2'd4:begin // opsum PW || DW 
-
 Parsing design file '../src/controller/Tile_Scheduler.sv'
 Parsing included file '../include/define.svh'.
 Back to file '../src/controller/Tile_Scheduler.sv'.
@@ -84,13 +70,6 @@ Parsing design file '../src/controller/Tile_Scheduler_old.sv'
 Parsing included file '../include/define.svh'.
 Back to file '../src/controller/Tile_Scheduler_old.sv'.
 Parsing design file '../src/controller/DLA_Controller.sv'
-
-Warning-[IPDW] Identifier previously declared
-../src/controller/DLA_Controller.sv, 122
-  Second declaration for identifier 'layer_type_o' ignored
-  Identifier 'layer_type_o' previously declared as output port. 
-  [../src/controller/DLA_Controller.sv, 81]
-
 Parsing design file '../src/DSC.sv'
 Top Level Modules:
        token_PE_tb
@@ -121,264 +100,17 @@ DLA_Controller, "token_engine u_token_engine( .clk (clk),  .rst_n (rst_n),  .pas
   Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
   ports.
 
-
-Warning-[IWNF] Implicit wire has no fanin
-../src/controller/token_engine/token_engine.sv, 582
-  Implicit wire 'flag' does not have any driver, please make sure this is 
-  intended.
-
-
-Warning-[IWNF] Implicit wire has no fanin
-../src/controller/token_engine/token_engine.sv, 584
-  Implicit wire 'WEB' does not have any driver, please make sure this is 
-  intended.
-
-
-Warning-[INAV] Index into non-array variable
-../src/controller/token_engine/token_engine.sv, 577
-token_engine, "flag[0]"
-  Bit/Part-select specified for non array variable.
-  Base object: flag
-  Of type: wire
-  Declared at:
-  "../src/controller/token_engine/token_engine.sv", 582.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/token_engine/token_engine.sv, 577
-"PPU #(32) PPU( .clk (clk),  .rst_n (rst_n),  .data_in (glb_write_data_from_arbiter),  .scaling_factor (scaling_factor),  .relu_en (flag[0]),  .need_ppu (Need_PPU_i),  .WEB (WEB),  .data_out (glb_write_data_o));"
-  The following 1-bit expression is connected to 4-bit port "WEB" of module 
-  "PPU", instance "PPU".
-  Expression: WEB
-  Instantiated module defined at: "../src/ppu/PPU.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Layer_Decoder.sv, 140
-"calc_tile_n #(GLB_BYTES, BYTES_I, BYTES_W, BYTES_P) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The following 8-bit expression is connected to 7-bit port "out_C" of module 
-  "calc_tile_n", instance "calc_n_max_u".
-  Expression: out_C
-  Instantiated module defined at: "../src/controller/calc_tile_n.sv", 7
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Layer_Decoder.sv, 140
-"calc_tile_n #(GLB_BYTES, BYTES_I, BYTES_W, BYTES_P) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The following 8-bit expression is connected to 7-bit port "tile_D" of module
-  "calc_tile_n", instance "calc_n_max_u".
-  Expression: tile_D
-  Instantiated module defined at: "../src/controller/calc_tile_n.sv", 7
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Layer_Decoder.sv, 140
-"calc_tile_n #(GLB_BYTES, BYTES_I, BYTES_W, BYTES_P) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The following 8-bit expression is connected to 7-bit port "tile_K" of module
-  "calc_tile_n", instance "calc_n_max_u".
-  Expression: tile_K
-  Instantiated module defined at: "../src/controller/calc_tile_n.sv", 7
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Layer_Decoder.sv, 140
-"calc_tile_n #(GLB_BYTES, BYTES_I, BYTES_W, BYTES_P) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The following 8-bit expression is connected to 7-bit port "tile_D_f" of 
-  module "calc_tile_n", instance "calc_n_max_u".
-  Expression: tile_D_f
-  Instantiated module defined at: "../src/controller/calc_tile_n.sv", 7
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Layer_Decoder.sv, 140
-"calc_tile_n #(GLB_BYTES, BYTES_I, BYTES_W, BYTES_P) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The following 8-bit expression is connected to 7-bit port "tile_K_f" of 
-  module "calc_tile_n", instance "calc_n_max_u".
-  Expression: tile_K_f
-  Instantiated module defined at: "../src/controller/calc_tile_n.sv", 7
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Layer_Decoder.sv, 140
-"calc_tile_n #(GLB_BYTES, BYTES_I, BYTES_W, BYTES_P) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The following 8-bit expression is connected to 7-bit port "M1" of module 
-  "calc_tile_n", instance "calc_n_max_u".
-  Expression: M1
-  Instantiated module defined at: "../src/controller/calc_tile_n.sv", 7
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Layer_Decoder.sv, 140
-"calc_tile_n #(GLB_BYTES, BYTES_I, BYTES_W, BYTES_P) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The following 8-bit expression is connected to 7-bit port "M2" of module 
-  "calc_tile_n", instance "calc_n_max_u".
-  Expression: M2
-  Instantiated module defined at: "../src/controller/calc_tile_n.sv", 7
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Layer_Decoder.sv, 140
-"calc_tile_n #(GLB_BYTES, BYTES_I, BYTES_W, BYTES_P) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The following 8-bit expression is connected to 7-bit port "M3" of module 
-  "calc_tile_n", instance "calc_n_max_u".
-  Expression: M3
-  Instantiated module defined at: "../src/controller/calc_tile_n.sv", 7
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 7-bit port "tile_D_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: IC_real_o
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 7-bit port "tile_K_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: OC_real_o
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 32-bit port "tile_D_f_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: tile_D_f_i
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 32-bit port "tile_K_f_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: tile_K_f_i
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 7-bit port "in_R_i" of module
-  "dma_address_generator", instance "dma_address_generator".
-  Expression: in_R_i
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 10-bit port "in_C_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: in_C_i
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 11-bit expression is connected to 10-bit port "in_D_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: in_D_i
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 11-bit expression is connected to 10-bit port "out_K_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: out_K_i
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 10-bit port "out_R_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: out_R_i
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 10-bit port "out_C_i" of 
-  module "dma_address_generator", instance "dma_address_generator".
-  Expression: out_C_i
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 7-bit port "k_idx" of module 
-  "dma_address_generator", instance "dma_address_generator".
-  Expression: k_idx
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
-
-Warning-[PCWM-W] Port connection width mismatch
-../src/controller/Tile_Scheduler.sv, 483
-"dma_address_generator dma_address_generator( .clk (clk),  .rst_n (rst_n),  .tile_D_i (IC_real_o),  .tile_K_i (OC_real_o),  .tile_n_i (On_real_o),  .tile_D_f_i (tile_D_f_i),  .tile_K_f_i (tile_K_f_i),  .in_R_i (in_R_i),  .in_C_i (in_C_i),  .in_D_i (in_D_i),  .out_K_i (out_K_i),  .out_R_i (out_R_i),  .out_C_i (out_C_i),  .base_ifmap_i (base_ifmap_i),  .base_weight_i (base_weight_i),  .base_bias_i (base_bias_i),  .base_ofmap_i (base_ofmap_i),  .layer_type_i (layer_type_i),  .input_type (input_type),  .dma_interrupt_i (dma_interrupt_i),  .stride_i (stride_i),  .k_idx (k_idx),  .d_idx (d_idx),  .pass_done_i (pass_done_i),  .dma_base_addr_o (dma_addr_o),  .dma_len_o (dma_len_o),  .DMA_ifmap_finish (DMA_ifmap_finish),  .DMA_opsum_finish (DMA_opsum_finish),  .D ... "
-  The following 8-bit expression is connected to 7-bit port "d_idx" of module 
-  "dma_address_generator", instance "dma_address_generator".
-  Expression: d_idx
-  Instantiated module defined at: 
-  "../src/controller/DMA_address_generator.sv", 6
-  Use +lint=PCWM for more details.
-
 Starting vcs inline pass...
 24 modules and 0 UDP read.
-recompiling module pe_array_controller
-recompiling module token_engine
-recompiling module pe_array
-3 of 24 modules done
-	However, due to incremental compilation, only 3 modules need to be compiled. 
+recompiling module DLA_Controller
+	However, due to incremental compilation, only 1 module needs to be compiled. 
 make[1]: Entering directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/csrc' \
 
 rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
 if [ -x ../simv ]; then chmod a-x ../simv; fi
 g++  -o ../simv      -rdynamic  -Wl,-rpath='$ORIGIN'/simv.daidir -Wl,-rpath=./simv.daidir \
 -Wl,-rpath=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib -L/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib \
--Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _226781_archive_1.so \
+-Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _255816_archive_1.so \
 _prev_archive_1.so   SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
 rmar_llvm_0_0.o            -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
 -luclinative /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
@@ -391,7 +123,7 @@ make[1]: Leaving directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final
 Command: /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/./simv +notimingcheck -a /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log +define++FSDB_ALL+DEPTHWISE_STRIDE2_TYPE
 Chronologic VCS simulator copyright 1991-2024
 Contains Synopsys proprietary information.
-Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 15:43 2025
+Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 16:25 2025
 *Verdi* Loading libsscore_vcs202409.so
 FSDB Dumper for VCS, Release Verdi_W-2024.09-SP2, Linux x86_64/64bit, 03/03/2025
 (C) 1996 - 2025 by Synopsys, Inc.
@@ -703,6 +435,6 @@ $finish called from file "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 $finish at simulation time               106715
            V C S   S i m u l a t i o n   R e p o r t 
 Time: 106715
-CPU Time:      5.900 seconds;       Data structure size:   1.7Mb
-Wed Jun 25 15:43:31 2025
-CPU time: 4.324 seconds to compile + .277 seconds to elab + .186 seconds to link + 5.920 seconds in simulation
+CPU Time:      5.760 seconds;       Data structure size:   1.7Mb
+Wed Jun 25 16:25:44 2025
+CPU time: 3.452 seconds to compile + .281 seconds to elab + .187 seconds to link + 5.778 seconds in simulation

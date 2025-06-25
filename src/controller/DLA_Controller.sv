@@ -119,7 +119,7 @@ module DLA_Controller #(
 
 //* After Layer Decoder Buffer Signal
 logic [5:0] layer_id;
-logic [1:0] layer_type_o;
+
 logic [7:0] padded_R, padded_C;
 logic [10:0] in_D, out_K;
 logic [1:0] stride;

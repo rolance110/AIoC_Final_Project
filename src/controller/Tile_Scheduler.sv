@@ -509,15 +509,17 @@ dma_address_generator dma_address_generator(
     .k_idx(k_idx),
     .d_idx(d_idx),
     .pass_done_i(pass_done_i),
-    .dma_base_addr_o(dma_addr_o), //base address
+    .dma_base_addr_o(dma_src_o), //base address
     .dma_len_o(dma_len_o),
 
     //last DMA signal
     .DMA_ifmap_finish(DMA_ifmap_finish),
     .DMA_opsum_finish(DMA_opsum_finish),
     // .DMA_filter_finish(DMA_filter_finish),
-    .DMA_ipsum_finish(DMA_ipsum_finish) 
+    .DMA_ipsum_finish(DMA_ipsum_finish),
     // .DMA_bias_finish(DMA_bias_finish)   
+    .DMADST(dma_dest_o),
+    .cs_ts(cs_ts)
 );
 //DMA_ifmap_finish_buf
 

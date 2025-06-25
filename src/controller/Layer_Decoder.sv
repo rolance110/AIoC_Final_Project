@@ -96,20 +96,20 @@ end
 //* tile_D, tile_K
 always_comb begin
     unique case (layer_type_i)
-        2'd0: begin tile_D = 7'd32; tile_K = 7'd32; end  // Pointwise
-        2'd1: begin tile_D = 7'd10;  tile_K = 7'd10; end // Depthwise
-        2'd2: begin tile_D = 7'd10; tile_K = 7'd10; end  // Standard
-        default: begin tile_D = 7'd32; tile_K = 7'd32; end
+        2'd0: begin tile_D = 11'd32; tile_K = 11'd32; end  // Pointwise
+        2'd1: begin tile_D = 11'd10;  tile_K = 11'd10; end // Depthwise
+        2'd2: begin tile_D = 11'd10; tile_K = 11'd10; end  // Standard
+        default: begin tile_D = 11'd32; tile_K = 11'd32; end
     endcase
 end
 
 //* tile_D_f, tile_K_f
 always_comb begin
     unique case (layer_type_i)
-        2'd0: begin tile_D_f = 7'd32; tile_K_f = 7'd32; end  // Pointwise
-        2'd1: begin tile_D_f = 7'd1;  tile_K_f = 7'd10; end  //* Depthwise kernel size 1x3x3
-        2'd2: begin tile_D_f = 7'd10; tile_K_f = 7'd10; end  // Standard
-        default: begin tile_D_f = 7'd32; tile_K_f = 7'd32; end
+        2'd0: begin tile_D_f = 11'd32; tile_K_f = 11'd32; end  // Pointwise
+        2'd1: begin tile_D_f = 11'd1;  tile_K_f = 11'd10; end  //* Depthwise kernel size 1x3x3
+        2'd2: begin tile_D_f = 11'd10; tile_K_f = 11'd10; end  // Standard
+        default: begin tile_D_f = 11'd32; tile_K_f = 11'd32; end
     endcase
 end
 
@@ -117,10 +117,10 @@ end
 logic [7:0] M1, M2, M3;
 always_comb begin
     unique case (layer_type_i)
-        `POINTWISE: begin M1 = 7'd1; M2 = 7'd0; M3 = 7'd1; end // Pointwise
-        `DEPTHWISE: begin M1 = in_C_i; M2 = 7'd2; M3 = out_C; end // Depthwise
-        `STANDARD: begin M1 = 7'd1; M2 = 7'd0; M3 = 7'd1; end // Standard
-        default: begin M1 = 7'd1; M2 = 7'd0; M3 = 7'd1; end // Linear
+        `POINTWISE: begin M1 = 8'd1; M2 = 8'd0; M3 = 8'd1; end // Pointwise
+        `DEPTHWISE: begin M1 = in_C_i; M2 = 8'd2; M3 = out_C; end // Depthwise
+        `STANDARD: begin M1 = 8'd1; M2 = 8'd0; M3 = 8'd1; end // Standard
+        default: begin M1 = 8'd1; M2 = 8'd0; M3 = 8'd1; end // Linear
     endcase
 end
 
@@ -163,8 +163,8 @@ always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         layer_id_o      <= 6'd0;
         layer_type_o    <= 2'd0;
-        padded_R_o      <= 7'd0; 
-        padded_C_o      <= 7'd0;
+        padded_R_o      <= 8'd0; 
+        padded_C_o      <= 8'd0;
         kH_o           <= 2'd0;
         kW_o           <= 2'd0;
         in_D_o          <= 11'd0; 
@@ -186,14 +186,14 @@ always_ff @(posedge clk or negedge rst_n) begin
         quant_scale_o   <= 8'd0;
         
         tile_n_o         <= 32'd0;
-        tile_D_o        <= 7'd0;
-        tile_K_o        <= 7'd0;
-        tile_D_f_o      <= 7'd0;
-        tile_K_f_o      <= 7'd0;
-        in_R_o          <= 7'd0;
-        in_C_o          <= 7'd0;
-        out_R_o         <= 7'd0;
-        out_C_o         <= 7'd0;
+        tile_D_o        <= 8'd0;
+        tile_K_o        <= 8'd0;
+        tile_D_f_o      <= 8'd0;
+        tile_K_f_o      <= 8'd0;
+        in_R_o          <= 8'd0;
+        in_C_o          <= 8'd0;
+        out_R_o         <= 8'd0;
+        out_C_o         <= 8'd0;
     end 
     else if(uLD_en_i) begin
         layer_id_o      <= layer_id_i;

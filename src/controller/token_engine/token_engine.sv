@@ -579,9 +579,9 @@ PPU #(
     .rst_n(rst_n),
     .data_in(glb_write_data_from_arbiter), // 從 GLB 讀取的數據
     .scaling_factor(scaling_factor), // 從 weight_load_controller 獲取的 scaling factor
-    .relu_en(flag[0]), // 如果是卷積層則啟用 ReLU
+    .relu_en(flags_i[0]), // 如果是卷積層則啟用 ReLU
     .need_ppu(Need_PPU_i), // 來自 Layer Decoder 的 pass_done_o
-    .WEB(WEB),
+    .WEB(glb_web_o),
 
     .data_out(glb_write_data_o) // 輸出到 GLB 寫入數據
 );

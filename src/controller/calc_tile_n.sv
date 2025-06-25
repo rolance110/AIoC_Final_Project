@@ -13,19 +13,19 @@ module calc_tile_n #(
     /* ---- Inputs ---- */
 
     input logic [1:0] layer_type, // 0=PW,1=DW,2=STD,3=LIN
-    input logic [6:0] in_C, // Input channels
-    input logic [6:0] out_C, // Output channels
+    input logic [7:0] in_C, // Input channels
+    input logic [7:0] out_C, // Output channels
 
     input  logic [1:0]  kH,           
     input  logic [1:0]  kW,       
-    input  logic [6:0]  tile_D,       
-    input  logic [6:0]  tile_K,      
-    input  logic [6:0]  tile_D_f,     
-    input  logic [6:0]  tile_K_f,    
+    input  logic [7:0]  tile_D,       
+    input  logic [7:0]  tile_K,      
+    input  logic [7:0]  tile_D_f,     
+    input  logic [7:0]  tile_K_f,    
 
-    input   logic [6:0] M1, // parameter M1
-    input   logic [6:0] M2, // parameter M2
-    input   logic [6:0] M3, // parameter M3
+    input   logic [7:0] M1, // parameter M1
+    input   logic [7:0] M2, // parameter M2
+    input   logic [7:0] M3, // parameter M3
     /* ---- Output ---- */
     output logic [31:0]  tile_n // max number of tiles
 );
