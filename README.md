@@ -164,7 +164,6 @@ model_load/
 附錄:包含各個子模組的test
 | 功能模組                    | 執行指令                         |
 | ----------------------- | ---------------------------- |
-| 運算 one layer( about 15 min)| `make one_layer_tb`        |
 | calc\_tile\_n testbench | `make calc_tile_n_tb`        |
 | Layer Decoder           | `make Layer_Decoder_tb`      |
 | Tile Scheduler          | `make Tile_Scheduler_tb`     |
