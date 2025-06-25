@@ -16,9 +16,9 @@ filelock                  3.18.0
 flatbuffers               25.2.10       
 fonttools                 4.56.0        
 fsspec                    2025.3.0  
-fastdownload              0.0.7 
-fastcore                  1.8.4 
-fastprogress              1.0.3 
+fastdownload              0.0.7 \
+fastcore                  1.8.4 \
+fastprogress              1.0.3 \
 humanfriendly             10.0          
 jinja2                    3.1.6         
 kiwisolver                1.4.8         
