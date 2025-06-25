@@ -4,7 +4,7 @@
 module Layer_Decoder_tb;
 
     // Clock and Reset
-    parameter CLK_PERIOD = 10; // Clock period in ns
+    parameter CLK_PERIOD = 10;
     logic clk = 0;
     logic rst_n = 0;
 
@@ -37,11 +37,11 @@ module Layer_Decoder_tb;
     logic [31:0]  tile_n_o;
     logic [7:0]   tile_D_o, tile_K_o, tile_D_f_o, tile_K_f_o;
 
-    logic [7:0]   in_R_o, in_C_o; // Input size
+    logic [7:0]   in_R_o, in_C_o;   // ✅ 修正命名，不再與 out_R_o 共用
     logic [7:0]   out_R_o, out_C_o;
 
     // DUT Instantiation
-    Layer_Decoder (
+    Layer_Decoder# (
         .GLB_BYTES(`GLB_MAX_BYTES),
         .BYTES_I(`BYTES_I),
         .BYTES_W(`BYTES_W),
@@ -81,14 +81,14 @@ module Layer_Decoder_tb;
         .tile_n_o(tile_n_o),
         .tile_D_o(tile_D_o), .tile_K_o(tile_K_o),
         .tile_D_f_o(tile_D_f_o), .tile_K_f_o(tile_K_f_o),
-        .in_R_o(out_R_o), .in_C_o(out_C_o),
+        .in_R_o(in_R_o), .in_C_o(in_C_o),          // ✅ 修改：與 out 分開
         .out_R_o(out_R_o), .out_C_o(out_C_o)
     );
 
     // Initial test scenario
     initial begin
         $display("==== Start Layer Decoder Test ====");
-        // Initialize inputs
+
         // Reset
         rst_n = 0;
         uLD_en_i = 0;
@@ -119,7 +119,7 @@ module Layer_Decoder_tb;
         $display("DRAM Base Ifmap: %h, Weight: %h, Bias: %h, Ofmap: %h", base_ifmap_i, base_weight_i, base_bias_i, base_ofmap_i);
 
         @(negedge clk);
-        uLD_en_i = 0; // only one cycle
+        uLD_en_i = 0;
         layer_id_i = 6'd0;
         layer_type_i = 2'd0;
         in_R_i = 7'd0; in_C_i = 7'd0;
@@ -134,7 +134,6 @@ module Layer_Decoder_tb;
         flags_i = 4'd0;
         quant_scale_i = 8'd0;
 
-
         @(posedge clk);
 
         $display("[Pointwise Layer] Output=====");
@@ -143,12 +142,29 @@ module Layer_Decoder_tb;
         $display("tile_D = %0d, tile_K = %0d", tile_D_o, tile_K_o);
         $display("padded_R = %0d, padded_C = %0d", padded_R_o, padded_C_o);
 
-        $display("==== Test1 Finished ====");
-
-
-
-
-
+        $display("==== Test1 Finished ====");        $display("\033[38;2;255;0;0m               _._\033[0m");                  // 🔴 紅
+        $display("\033[38;2;255;127;0m           __.{,_.}).__\033[0m");           // 🟠 橙
+        $display("\033[38;2;255;255;0m        .-\"           \"-.\033[0m");         // 🟡 黃
+        $display("\033[38;2;0;255;0m      .'  __.........__  '.\033[0m");         // 🟢 綠
+        $display("\033[38;2;0;255;127m     /.-'`___.......___`'-.\\\033[0m");       // 🟢綠偏青
+        $display("\033[38;2;0;255;255m    /_.-'` /   \\ /   \\ `'-._\\\033[0m");     // 🔵 青
+        $display("\033[38;2;0;127;255m    |     |   '/ \\'   |     |\033[0m");      // 🔵 淺藍
+        $display("\033[38;2;0;0;255m    |      '-'     '-'      |\033[0m");       // 🔵 藍
+        $display("\033[38;2;75;0;130m    ;                       ;\033[0m");       // 🔵 靛
+        $display("\033[38;2;139;0;255m    _\\         ___         /_\033[0m");      // 🟣 紫
+        $display("\033[38;2;255;0;255m   /  '.'-.__  ___  __.-'.'  \\\033[0m");      // 🟣 粉紫
+        $display("\033[38;2;255;0;127m _/_    `'-..._____...-'`    _\\_\033[0m");   // ❤️ 桃紅
+        $display("\033[38;2;255;85;85m/   \\           .           /   \\\033[0m");  // 淺紅
+        $display("\033[38;2;255;170;0m\\____)         .           (____/\033[0m");   // 橘
+        $display("\033[38;2;200;200;0m    \\___________.___________/\033[0m");     // 黃
+        $display("\033[38;2;0;200;100m      \\___________________/\033[0m");       // 淺綠
+        $display("\033[38;2;0;150;200m     (_____________________)\033[0m");  
+        $display("\n\n");
+        $display("***************************************");
+        $display("*   congratulation! simulation pass   *");      // 青藍
+        $display("***************************************");
+        $display("\n\n");
+        
 
         $display("======= All Case Finished =======");
         $finish;

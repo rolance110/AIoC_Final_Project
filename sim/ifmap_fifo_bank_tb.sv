@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-
+`include "../include/define.svh"
 //===========================================================================
 // Testbench: ifmap_fifo_bank_tb
 // Purpose  : Verify functionality of ifmap_fifo_bank and underlying ifmap_fifo instances
@@ -14,11 +14,11 @@ module ifmap_fifo_bank_tb;
     // Control signals for 32 FIFOs
     logic [31:0] push_ifmap_en;
     logic [31:0] push_ifmap_mod;
-    logic [31:0][31:0] push_ifmap_data;
+    logic [31:0] push_ifmap_data[31:0];
     logic [31:0] ifmap_fifo_full;
 
     logic [31:0] pop_ifmap_en;
-    logic [31:0][7:0] pop_ifmap_data;
+    logic [7:0] pop_ifmap_data[31:0];
     logic [31:0] ifmap_fifo_empty;
 
     // Instantiate DUT
@@ -44,7 +44,7 @@ module ifmap_fifo_bank_tb;
         rst_n = 0;
         push_ifmap_en   = '0;
         push_ifmap_mod  = '0;
-        push_ifmap_data = 32'd0;
+        // push_ifmap_data = 32'd0;
         pop_ifmap_en    = '0;
 
         // Reset pulse
@@ -110,6 +110,28 @@ module ifmap_fifo_bank_tb;
         $display("FIFO[2].empty = %b (expected 1)", ifmap_fifo_empty[2]);
 
         $display("=== All tests completed ===");
+        $display("\033[38;2;255;0;0m               _._\033[0m");                  // 🔴 紅
+        $display("\033[38;2;255;127;0m           __.{,_.}).__\033[0m");           // 🟠 橙
+        $display("\033[38;2;255;255;0m        .-\"           \"-.\033[0m");         // 🟡 黃
+        $display("\033[38;2;0;255;0m      .'  __.........__  '.\033[0m");         // 🟢 綠
+        $display("\033[38;2;0;255;127m     /.-'`___.......___`'-.\\\033[0m");       // 🟢綠偏青
+        $display("\033[38;2;0;255;255m    /_.-'` /   \\ /   \\ `'-._\\\033[0m");     // 🔵 青
+        $display("\033[38;2;0;127;255m    |     |   '/ \\'   |     |\033[0m");      // 🔵 淺藍
+        $display("\033[38;2;0;0;255m    |      '-'     '-'      |\033[0m");       // 🔵 藍
+        $display("\033[38;2;75;0;130m    ;                       ;\033[0m");       // 🔵 靛
+        $display("\033[38;2;139;0;255m    _\\         ___         /_\033[0m");      // 🟣 紫
+        $display("\033[38;2;255;0;255m   /  '.'-.__  ___  __.-'.'  \\\033[0m");      // 🟣 粉紫
+        $display("\033[38;2;255;0;127m _/_    `'-..._____...-'`    _\\_\033[0m");   // ❤️ 桃紅
+        $display("\033[38;2;255;85;85m/   \\           .           /   \\\033[0m");  // 淺紅
+        $display("\033[38;2;255;170;0m\\____)         .           (____/\033[0m");   // 橘
+        $display("\033[38;2;200;200;0m    \\___________.___________/\033[0m");     // 黃
+        $display("\033[38;2;0;200;100m      \\___________________/\033[0m");       // 淺綠
+        $display("\033[38;2;0;150;200m     (_____________________)\033[0m");  
+        $display("\n\n");
+        $display("***************************************");
+        $display("*   congratulation! simulation pass   *");      // 青藍
+        $display("***************************************");
+        $display("\n\n");
         $finish;
     end
         //---- Dump FSDB ----

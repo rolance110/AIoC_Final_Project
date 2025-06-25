@@ -1,16 +1,12 @@
-/*==========================================================*
- *  Testbench : tb_calc_tile_n_max
- *  Purpose   : 驗證 calc_tile_n 模組 + GLB 使用百分比
- *==========================================================*/
 `include "../include/define.svh"
 
 module calc_tile_n_max_tb;
 
     //---- Inputs ----
-    logic [6:0] in_C, out_C;
-    logic [6:0] tile_D, tile_K, tile_D_f, tile_K_f;
+    logic [7:0] in_C, out_C; // ❌ 不再連進 DUT，但保留給 M1/M2 計算
+    logic [7:0] tile_D, tile_K, tile_D_f, tile_K_f;
     logic [1:0] layer_type, kH, kW;
-    logic [6:0] M1, M2, M3;
+    logic [7:0] M1, M2, M3;
 
     //---- Output ----
     logic [31:0] tile_n;
@@ -23,7 +19,6 @@ module calc_tile_n_max_tb;
         .BYTES_P(`BYTES_P)
     ) uut (
         .layer_type(layer_type),
-        // .in_C(in_C),
         .out_C(out_C),
         .kH(kH), .kW(kW),
         .tile_D(tile_D), .tile_K(tile_K),
@@ -35,13 +30,13 @@ module calc_tile_n_max_tb;
     //---- Task: 印出 GLB 使用百分比 ----
     task print_glb_usage_percent;
         input [31:0] tile_n;
-        input [6:0] tile_D, tile_K, tile_D_f, tile_K_f;
+        input [7:0] tile_D, tile_K, tile_D_f, tile_K_f;
         input [1:0] kH, kW;
-        input [6:0] M1, M2, M3;
-        input [6:0] in_C, out_C;
+        input [7:0] M1, M2, M3;
+        input [7:0] in_C, out_C;
         input [1:0] layer_type;
 
-        real tmp1, tmp2, tmp3, tmp4, glb_usage, usage_percent;
+        real tmp1, tmp2, tmp3, tmp4, glb_usage;
         begin
             tmp1 = kH * kW * tile_D_f * tile_K_f * `BYTES_W;
             tmp2 = tile_K * `BYTES_P;
@@ -51,8 +46,9 @@ module calc_tile_n_max_tb;
                 default   : tmp4 = in_C * tile_D * `BYTES_I + out_C * tile_K * `BYTES_P;
             endcase
             glb_usage = tmp1 + tmp2 + tile_n * tmp4 - tmp3;
-            usage_percent = (glb_usage * 100.0) / `GLB_MAX_BYTES;
-            $display("🧮 Estimated GLB usage: %.1f KB (%.2f%%)", glb_usage / 1024.0, ((glb_usage / 1024.0)/64.0) * 100.0 );
+            $display("🧮 Estimated GLB usage: %.1f KB (%.2f%%)",
+                     glb_usage / 1024.0,
+                     (glb_usage / 1024.0) / 64.0 * 100.0 );
         end
     endtask
 
