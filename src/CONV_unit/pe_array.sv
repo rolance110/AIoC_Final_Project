@@ -6,10 +6,10 @@ module pe_array #(
     input  logic rst_n,
 
     // ifmap 來源（由 ifmap_fifo 提供）
-    input  logic [7:0] ifmap_row0 [31:0],       // 第一列的輸入資料
+    input  logic signed [7:0] ifmap_row0 [31:0],       // 第一列的輸入資料
 
     // 權重載入控制
-    input  logic [7:0]     weight_in,  // 欲載入的 weight
+    input  logic signed [7:0]     weight_in,  // 欲載入的 weight
     input  logic           w_load_en[31:0][31:0],             // 啟用載入
 
     // PE enable 控制（每個 PE 可被獨立 enable）
@@ -17,10 +17,10 @@ module pe_array #(
     input logic  PE_stall_matrix[31:0][31:0], // 每個 PE 的 stall 狀態
 
     // 輸出結果（給 adder tree）
-    output logic [15:0] mul_out_matrix [31:0][31:0]
+    output logic signed [15:0] mul_out_matrix [31:0][31:0]
 );
-logic [7:0] ifmap_chain_in [31:0][31:0]; // 每個 PE 的 ifmap 輸入
-logic [7:0] ifmap_chain_out [31:0][31:0]; // 每個 PE 的 ifmap 輸出
+logic signed [7:0] ifmap_chain_in [31:0][31:0]; // 每個 PE 的 ifmap 輸入
+logic signed [7:0] ifmap_chain_out [31:0][31:0]; // 每個 PE 的 ifmap 輸出
 
 //.ifmap     (r == 0 ? ifmap_row0[c] : ifmap_chain_out[r-1][c]),
 

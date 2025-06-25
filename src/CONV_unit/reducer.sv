@@ -1,12 +1,12 @@
 // `include "../../include/define.svh" //fixme 模擬時需要註解掉
 module adder_tree_32 (
-    input  logic [15:0] in [31:0],
-    output logic [31:0] sum
+    input  logic signed [15:0] in [31:0],
+    output logic signed [31:0] sum
 );
-    logic [31:0] lvl1 [15:0];
-    logic [31:0] lvl2 [7:0];
-    logic [31:0] lvl3 [3:0];
-    logic [31:0] lvl4 [1:0];
+    logic signed [31:0] lvl1 [15:0];
+    logic signed [31:0] lvl2 [7:0];
+    logic signed [31:0] lvl3 [3:0];
+    logic signed [31:0] lvl4 [1:0];
 
     assign lvl1[ 0] = in[ 0] + in[ 1];
     assign lvl1[ 1] = in[ 2] + in[ 3];
@@ -52,13 +52,13 @@ module reducer (
     input  logic [1:0]         layer_type,
     input  logic               ipsum_add_en,
 
-    input  logic [15:0]        mul_out_matrix [31:0][31:0],
-    input  logic [15:0]        ipsum_out      [31:0],
+    input  logic signed [15:0]        mul_out_matrix [31:0][31:0],
+    input  logic signed [15:0]        ipsum_out      [31:0],
 
-    output logic [15:0]        final_psum     [31:0]
+    output logic signed [15:0]        final_psum     [31:0]
 );
-    logic [31:0] stage1_row [31:0];
-    logic [31:0] stage2_row [9:0];
+    logic signed [31:0] stage1_row [31:0];
+    logic signed [31:0] stage2_row [9:0];
 
     // Stage 1: adder tree per row
     genvar g;

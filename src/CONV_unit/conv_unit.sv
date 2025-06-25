@@ -92,7 +92,7 @@ module conv_unit (
     );
 
     //==================== PE Array ====================
-    logic [15:0] mul_out_matrix [31:0][31:0];
+    logic signed [15:0] mul_out_matrix [31:0][31:0];
     logic [7:0]  dummy_ifmap; // unused (handled in pe_array)
 
     pe_array #(

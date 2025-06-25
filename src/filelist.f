@@ -1,3 +1,5 @@
+
+../src/ppu/PPU.sv
 ../src/controller/token_engine/ifmap_fifo_ctrl.sv
 ../src/controller/token_engine/ipsum_fifo_ctrl.sv
 ../src/controller/token_engine/opsum_fifo_ctrl.sv

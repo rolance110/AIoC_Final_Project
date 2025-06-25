@@ -28,11 +28,13 @@ module token_engine (
     input logic n_tile_is_last_i,
     input logic [31:0] Already_Compute_Row_i,
     input logic is_bias_i,
+    input logic Need_PPU_i,
 
     input logic [3:0] flags_i, // flags[0]: is_bias, flags[1]: is_relu
 
     input logic [1:0] stride_i,
 
+    input logic [5:0] scaling_factor, // 從 weight_load_controller 獲取的 scaling factor
 
     input logic [31:0] tile_n_i,
 
@@ -532,6 +534,8 @@ L3C_fifo_ctrl #(
     .pe_array_move_o(pe_array_move) // PE array move enable
 );
 
+logic [31:0] glb_write_data_from_arbiter;
+
 token_arbiter token_arbiter_dut (
     .clk(clk),
     .rst_n(rst_n),
@@ -555,11 +559,25 @@ token_arbiter token_arbiter_dut (
     .glb_write_o(glb_write_req),
     .glb_addr_o(glb_addr_o),
     .glb_write_web_o(glb_web_o),
-    .glb_write_data_o(glb_write_data_o),
+    .glb_write_data_o(glb_write_data_from_arbiter),
 
     .permit_ifmap_matrix_o(ifmap_permit_push_matrix),
     .permit_ipsum_matrix_o(ipsum_permit_push_matrix),
     .permit_opsum_matrix_o(opsum_permit_pop_matrix)
+);
+
+PPU #(
+    .DATA_BITS(32)
+) PPU (
+    .clk(clk),
+    .rst_n(rst_n),
+    .data_in(glb_write_data_from_arbiter), // 從 GLB 讀取的數據
+    .scaling_factor(scaling_factor), // 從 weight_load_controller 獲取的 scaling factor
+    .relu_en(flag[0]), // 如果是卷積層則啟用 ReLU
+    .need_ppu(Need_PPU_i), // 來自 Layer Decoder 的 pass_done_o
+    .WEB(WEB),
+
+    .data_out(glb_write_data_o) // 輸出到 GLB 寫入數據
 );
 
 endmodule

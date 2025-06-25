@@ -6,8 +6,9 @@ module token_PE_tb;
     parameter POINTWISE_N = 32'd40;
     parameter COMPUTE_ROW = 32'd3;
     // 紀錄之前 tile 已經計算幾個 ofmap row
-    parameter Already_COMP_ROW = 8'd0; // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad
-
+    parameter Already_COMP_ROW = 32'd0; // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad
+    parameter SCALE_FACTOR = 6'd0; // scaling factor
+    parameter NEED_PPU_CONFIG = 0; // 是否需要 PPU 處理
 
 
     // 時鐘和重置訊號
@@ -88,7 +89,7 @@ module token_PE_tb;
     logic [31:0]       opsum_pop_mod;
     logic n_tile_is_first_i;
     logic n_tile_is_last_i;
-    logic [7:0] Already_Compute_Row;
+    logic [31:0] Already_Compute_Row;
 
     logic [3:0] flags;
 
@@ -96,7 +97,7 @@ module token_PE_tb;
     logic [31:0]       opsum_pop_data [31:0];
 
     logic [1:0] stride;
-    
+    logic [5:0] scaling_factor;
 
 logic [31:0] opsum_fifo_pop_data_matrix_i[31:0];
 logic [31:0] glb_addr_o;
@@ -144,6 +145,7 @@ initial begin
         $display("===== SRAM initialized from depthwise_stride2_golden.hex =====");
     `endif
 end
+logic Need_PPU;
 logic [31:0] write_data;
     SRAM_64KB u_SRAM (
         .clk(clk),
@@ -168,6 +170,9 @@ logic [31:0] write_data;
         .bias_GLB_base_addr_i(bias_GLB_base_addr_i),
         .opsum_GLB_base_addr_i(opsum_GLB_base_addr_i),
         .is_bias_i(is_bias_i), 
+
+
+        .Need_PPU_i(Need_PPU),
         .flags_i(flags), // flags 設定
         .tile_n_i(tile_n_i),
         .stride_i(stride), // stride 設定
@@ -303,6 +308,8 @@ logic [31:0] write_data;
             ipsum_add_en = 1;
             stride = 2'd1;
             flags = 4'b0000;
+            scaling_factor = SCALE_FACTOR; // scaling factor
+            Need_PPU = NEED_PPU_CONFIG; // 是否需要 PPU 處理
             // 重置解除
             #20 rst_n = 1;
 
@@ -346,7 +353,8 @@ logic [31:0] write_data;
             ipsum_read_en = 0;
             ipsum_add_en = 1;
             flags = 4'b0000;
-
+            scaling_factor = SCALE_FACTOR; // scaling factor
+            Need_PPU = NEED_PPU_CONFIG; // 是否需要 PPU 處理
             // 重置解除
             #20 rst_n = 1;
 
