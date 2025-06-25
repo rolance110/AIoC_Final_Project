@@ -23,7 +23,7 @@ module calc_tile_n_max_tb;
         .BYTES_P(`BYTES_P)
     ) uut (
         .layer_type(layer_type),
-        .in_C(in_C),
+        // .in_C(in_C),
         .out_C(out_C),
         .kH(kH), .kW(kW),
         .tile_D(tile_D), .tile_K(tile_K),
