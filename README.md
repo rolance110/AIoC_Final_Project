@@ -1,4 +1,12 @@
 # AIoC_Final_Project
+## profiling
+這邊的執行方式跟LAB2一樣:\
+**FP32**:\
+python3 profiling.py $PATH_TO_FP32_MODEL\
+**INT8**:\
+python3 profiling.py $PATH_TO_INT8_MODEL -b power2
+
+
 ## MobileNeV2
 training_and_quantization資料夾內包含AOC_final_MobileNetV2_ReLU_imagenette.ipynb及模型的權重檔，AOC_final_MobileNetV2_ReLU_imagenette.ipynb含有模型訓練和量化流程，可在colab上執行。
 ## MobileNeV2_extract_test
