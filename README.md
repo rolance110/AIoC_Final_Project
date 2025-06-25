@@ -90,7 +90,7 @@ MobileNeV2_extract_test/
 
 在量化模型部署時，`bias` 需要轉換為整數型別。其轉換公式為：
 
-![alt text](../docs/images/bias.png)
+![alt text](/docs/images/bias.png)
 
 
 其中：
@@ -112,11 +112,11 @@ $$
 
 根據
 
-![alt text](../docs/images/quant.png)
+![alt text](/docs/images/quant.png)
 
 使用
 
-![alt text](../docs/images/scaling_factor.png)
+![alt text](/docs/images/scaling_factor.png)
 
 求出n值，讓硬體加速器能使用整數位移近似浮點運算，達到減法與乘法的能耗與延遲優化。
 ### test_quant.py
