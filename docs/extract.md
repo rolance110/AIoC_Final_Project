@@ -89,9 +89,8 @@ MobileNeV2_extract_test/
 
 在量化模型部署時，`bias` 需要轉換為整數型別。其轉換公式為：
 
-$$
-\text{bias}_{\text{int}} = \frac{\text{bias}_{\text{float}}}{\text{x\_scale} \times \text{w\_scale}}
-$$
+![alt text](images/bias.png)
+
 
 其中：
 
@@ -111,15 +110,20 @@ x \cdot w \approx y \ll n \quad \text{or} \quad y \gg n
 $$
 
 根據
-$$
-\bar y_{m,~e,~f} = \text{clanmp} \left[ \left( \left(
-    (\bar b_m + \sum_{c,~r,~s} (\bar x_{c,~Ue+r,~Uf+s} \oplus 128) \cdot \bar w_{m,~c,~r,~s}^T) 
-        \gg \frac{s_x s_w}{s_y} \right) \oplus 128 \right) ,0 , 255\right]
-$$
-使用$\frac{s_x \times s_w}{sy} = 2^n$求出n值，讓硬體加速器能使用整數位移近似浮點運算，達到減法與乘法的能耗與延遲優化。
+
+![alt text](images/quant.png)
+
+使用
+
+![alt text](images/scaling_factor.png)
+
+求出n值，讓硬體加速器能使用整數位移近似浮點運算，達到減法與乘法的能耗與延遲優化。
 ### test_quant.py
 從 .txt 檔案（包含 weight、bias、scale、zero_point 參數）還原出一個已量化的 MobileNetV2 模型，並將其正確套用到 FX Graph Mode Quantization 的 PyTorch 模型上，以進行部署或測試。因為模型的所有參數可由事前量化導出的 .txt 檔案還原，不必依賴原始 .pt 權重，所以可驗證從 extract_params.py提取的參數正確性。
 ## model_load
+
+使用VCS版本:VCS Q-2020.03_Full64
+
 ### 檔案與模組結構
 ```
 model_load/
@@ -130,6 +134,9 @@ model_load/
 ```
 ### read_weight_bias.sv
 因為我們目前沒辦法將提取的參數放入我們硬體DRAM，還要考慮要跟tiling順序一致，及運算問題，所以這邊模擬一個記憶體並將每層的weight、bias依序放入，並顯示存放的位置。
+
+**執行指令:make vcs WV=2**，可在終端看到每一層的存放位址，並可使用**make wave**在nWave看到每一筆的儲存結果。
+
 
 
 
