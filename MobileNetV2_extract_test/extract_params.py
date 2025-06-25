@@ -73,8 +73,6 @@ def extract_quant_from_module(model, out_dir="params_quant_linear"):
             except Exception:
                 pass
 
-
-        # 3) 输出激活的量化参数（如果模块有的话）
         if hasattr(module, 'scale') and hasattr(module, 'zero_point'):
             try:
                 s = float(module.scale)
@@ -86,19 +84,19 @@ def extract_quant_from_module(model, out_dir="params_quant_linear"):
             except Exception:
                 pass
 
-        # —— 最后，从 state_dict 里提取 features_i_scale_0 —— #
+        # —— 從state_dict 裡提取 features_i_scale_0 —— #
         sd = model.state_dict()
         for key, val in sd.items():
-        # 只关心 features_#_scale_0
+        #  features_#_scale_0
             m = re.match(r'features_(\d+)_scale_0', key)
             if not m:
                 continue
-            arr = val.detach().cpu().numpy()         # 这是一个 0-dim tensor → scalar array
+            arr = val.detach().cpu().numpy()         # 0-dim tensor → scalar array
             prefix = key.replace('.', '_')           # e.g. "features_10_scale_0"
             save_array_txt(arr, os.path.join(out_dir, f"{prefix}.txt"))
             print(f"Extracted {prefix}.txt")
 
-        # —— 额外提取 input scale/zero_point —— #
+        # ——  input scale/zero_point —— #
         sd = model.state_dict()
         for key in ("features_0_input_scale_0", "features_0_input_zero_point_0"):
             if key in sd:
@@ -136,21 +134,21 @@ if __name__ == '__main__':
     fsd   = raw_f.state_dict() if isinstance(raw_f, torch.nn.Module) else raw_f
     extract_float_model(fsd, out_dir=os.path.join(base, 'params_float'))
 
-    # 载入 state_dict
+    # 載入 state_dict
     sd = torch.load(quant_pt, map_location='cpu')
 
-    # 1) 构造 FP32 模型
+    # 1)  FP32 模型
     fp_model = MobileNetV2(num_classes=10).eval()
 
-    # 2) 构造 QConfigMapping（**记得用正确的 import**）
+    # 2)  QConfigMapping
     qconfig_mapping = QConfigMapping()
-    # 把全局量化方案设为你自定义的 POWER2
+    # 量化POWER2
     qconfig_mapping.set_global(CustomQConfig.POWER2.value)
 
     # 3) 提供 example_inputs
     example_inputs = torch.randn(1, 3, 224, 224)
 
-    # 4) FX 准备 & 转换（注意用关键字参数）
+    # 4) FX 準備 & 轉換
     prepared = prepare_fx(
         fp_model,
         example_inputs=example_inputs,
@@ -161,8 +159,8 @@ if __name__ == '__main__':
         qconfig_mapping=qconfig_mapping
     ).eval()
 
-    # 5) 把量化好的 state_dict 加载进来
+    # 5) 把量化好的 state_dict 加載進來
     qmodel.load_state_dict(sd, strict=False)
 
-    # 6) 然后再调用你自己的 extract_quant_from_module(qmodel, ...)
+    # 6) 儲存的資料夾
     extract_quant_from_module(qmodel, out_dir=os.path.join(base, 'params_quant_linear'))

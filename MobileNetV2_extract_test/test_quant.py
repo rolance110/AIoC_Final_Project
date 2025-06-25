@@ -41,22 +41,22 @@ def build_and_reload_from_txt(txt_dir: str, calibrate_loader=None):
     orig_sd = qmodel.state_dict()
     new_sd  = {k:v for k,v in orig_sd.items()}
 
-    # 先列出你 txt_dir 底下有哪些 prefix
+    # 先列出 txt_dir 底下有哪些 prefix
     # e.g. ["features_0_conv_0_weight.txt", ...] → prefix="features_0_conv_0"
     files = os.listdir(txt_dir)
     txt_prefixes = set(f.rsplit('_', 1)[0] for f in files)
 
     for prefix in txt_prefixes:
-        # 尝试对应 state_dict 中的 key
+        # 嘗試對應 state_dict 中的 key
         # weight
         wt = os.path.join(txt_dir, f"{prefix}_weight.txt")
         if os.path.isfile(wt):
             iarr = load_array_txt(wt, dtype=np.int8)
-            # 找到对应的 state_dict key
+            # 找到對應的 state_dict key
             key_w = prefix.replace('_', '.').replace('.weight', '') + ".weight"
-            # 实际上 prefix 已经不带 .weight，所以：
+            # 實際上 prefix 已经不帶 .weight，所以：
             key_w = prefix.replace('_', '.') + ".weight"
-            # 读出模块的原 qparam
+            # 讀出原 qparam
             mod = qmodel.get_submodule(prefix.replace('_', '.'))
             wq  = mod.weight()
             scale_w = wq.q_scale(); zp_w = wq.q_zero_point()
@@ -98,7 +98,7 @@ def build_and_reload_from_txt(txt_dir: str, calibrate_loader=None):
 
 if __name__ == "__main__":
     txt_dir = "/home2/aoc2025/n26131520/params_quant_linear/"  
-    # 如果你要再跑一次 calibrate 以收 activation qparams，可傳 calibrate_loader
+   
     qmodel = build_and_reload_from_txt(txt_dir, calibrate_loader=None)
 
    
