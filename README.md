@@ -147,7 +147,36 @@ model_load/
 ### read_weight_bias.sv
 因為我們目前沒辦法將提取的參數放入我們硬體DRAM，還要考慮要跟tiling順序一致，及運算問題，所以這邊模擬一個記憶體並將每層的weight、bias依序放入，並顯示存放的位置。
 
-**執行指令:make vcs WV=2**，可在終端看到每一層的存放位址，並可使用**make wave**在nWave看到每一筆的儲存結果。
+**執行指令:** 
+主要測試:包含各種layer type的測試，包含有無PPU、Relu
+| Layer 類型                    | 執行指令                      |
+| --------------------------- | ------------------------- |
+| pointwise                   | `make token_PE_tb TYPE=1` |
+| depthwise                   | `make token_PE_tb TYPE=2` |
+| depthwise + stride=2        | `make token_PE_tb TYPE=3` |
+| pointwise + PPU + ReLU      | `make token_PE_tb TYPE=4` |
+| depthwise + PPU + ReLU      | `make token_PE_tb TYPE=5` |
+| depthwise + s2 + PPU + ReLU | `make token_PE_tb TYPE=6` |
+| pointwise + PPU             | `make token_PE_tb TYPE=7` |
+| depthwise + PPU             | `make token_PE_tb TYPE=8` |
+| depthwise + s2 + PPU        | `make token_PE_tb TYPE=9` |
+
+附錄:包含各個子模組的test
+| 功能模組                    | 執行指令                         |
+| ----------------------- | ---------------------------- |
+| calc\_tile\_n testbench | `make calc_tile_n_tb`        |
+| Layer Decoder           | `make Layer_Decoder_tb`      |
+| Tile Scheduler          | `make Tile_Scheduler_tb`     |
+| TS AXI Wrapper          | `make TS_AXI_wrapper_tb`     |
+| ifmap FIFO Bank         | `make ifmap_fifo_bank_tb`    |
+| reducer                 | `make reducer_tb`            |
+| opsum FIFO              | `make opsum_fifo_tb`         |
+| opsum FIFO Bank         | `make opsum_fifo_bank_tb`    |
+| convolution unit        | `make conv_unit_tb`          |
+| ifmap FIFO controller   | `make ifmap_fifo_ctrl_tb`    |
+| opsum FIFO controller   | `make opsum_fifo_ctrl_tb`    |
+
+
 
 
 
