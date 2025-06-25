@@ -52,7 +52,7 @@ module Layer_Decoder #(
     output logic [31:0]  base_ofmap_o,
     
     output logic [3:0]   flags_o,
-    output logic [7:0]   quant_scale_o,
+    output logic [5:0]   quant_scale_o,
 
 //* tile lengths (size not sure)
     output logic [31:0]  tile_n_o, //todo: max number of tiles
@@ -183,7 +183,7 @@ always_ff @(posedge clk or negedge rst_n) begin
         
         flags_o         <= 4'd0;
         
-        quant_scale_o   <= 8'd0;
+        quant_scale_o   <= 6'd0;
         
         tile_n_o         <= 32'd0;
         tile_D_o        <= 8'd0;

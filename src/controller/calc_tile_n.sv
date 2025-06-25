@@ -13,7 +13,7 @@ module calc_tile_n #(
     /* ---- Inputs ---- */
 
     input logic [1:0] layer_type, // 0=PW,1=DW,2=STD,3=LIN
-    input logic [7:0] in_C, // Input channels
+    // input logic [7:0] in_C, // Input channels
     input logic [7:0] out_C, // Output channels
 
     input  logic [1:0]  kH,           

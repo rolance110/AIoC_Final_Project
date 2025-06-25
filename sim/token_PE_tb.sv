@@ -163,19 +163,30 @@ logic [31:0] write_data;
         .rst_n(rst_n),
         .pass_start_i(pass_start_i),
         .pass_done_o(pass_done_o),
+
         .layer_type_i(layer_type_i),
+
         .weight_GLB_base_addr_i(weight_GLB_base_addr_i),
         .ifmap_GLB_base_addr_i(ifmap_GLB_base_addr_i),
         .ipsum_GLB_base_addr_i(ipsum_GLB_base_addr_i), 
         .bias_GLB_base_addr_i(bias_GLB_base_addr_i),
         .opsum_GLB_base_addr_i(opsum_GLB_base_addr_i),
+
         .is_bias_i(is_bias_i), 
-
-
         .Need_PPU_i(Need_PPU),
         .flags_i(flags), // flags 設定
+
+        .n_tile_is_first_i(n_tile_is_first_i),
+        .n_tile_is_last_i(n_tile_is_last_i),
+        .Already_Compute_Row_i(Already_Compute_Row), // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad
+
+
+
         .tile_n_i(tile_n_i),
         .stride_i(stride), // stride 設定
+        .scaling_factor_i(scaling_factor), // scaling factor
+
+
         .in_C_i(in_C_i),
         .in_R_i(in_R_i),
         .pad_R_i(pad_R_i),
@@ -189,9 +200,6 @@ logic [31:0] write_data;
         .On_real_i(On_real_i),
         .glb_read_data_i(glb_read_data_i),
         .opsum_fifo_pop_data_matrix_i(opsum_pop_data),
-        .n_tile_is_first_i(n_tile_is_first_i),
-        .n_tile_is_last_i(n_tile_is_last_i),
-        .Already_Compute_Row_i(Already_Compute_Row), // Depthwise layer 會需要根據這個訊號去往上計數 => 確認是否需要 top pad, bottom pad
 
 
 //* to GLB

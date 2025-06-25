@@ -127,7 +127,7 @@ logic [1:0] pad_T, pad_B, pad_L, pad_R;
 logic [1:0] kH, kW;
 logic [31:0] base_ifmap, base_weight, base_bias, base_ipsum, base_ofmap;
 logic [3:0] flags;
-logic [7:0] quant_scale;
+logic [5:0] quant_scale;
 logic [31:0] tile_n;
 logic [7:0] tile_D, tile_K, tile_D_f, tile_K_f;
 
@@ -215,6 +215,8 @@ logic [31:0] dma_dest; // DMA destination address
 logic [31:0] dma_len; // DMA length
 logic dma_enable;
 
+
+logic [7:0] scaling_factor; // Scaling factor for quantization
 logic tile_reach_max;
 // DUT Instance
 
@@ -377,7 +379,7 @@ token_engine u_token_engine (
         .bias_GLB_base_addr_i(GLB_bias_base_addr),
         .opsum_GLB_base_addr_i(GLB_opsum_base_addr),
         .flags_i(flags),
-
+        .scaling_factor_i(quant_scale), // scaling factor
         .is_bias_i(is_bias), 
         .tile_n_i(tile_n),
         .stride_i(stride), // stride 設定

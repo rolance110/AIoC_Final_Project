@@ -5,7 +5,7 @@ Command: vcs -R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 +define++FSDB_ALL+DEPTHWISE_STRIDE2_TYPE
 *** Using c compiler gcc instead of cc ...
                          Chronologic VCS (TM)
-       Version W-2024.09-SP2_Full64 -- Wed Jun 25 16:25:34 2025
+       Version W-2024.09-SP2_Full64 -- Wed Jun 25 16:41:30 2025
 
                     Copyright (c) 1991 - 2025 Synopsys, Inc.
    This software and the associated documentation are proprietary to Synopsys,
@@ -76,30 +76,6 @@ Top Level Modules:
        Tile_Scheduler_old
        DSC
 No TimeScale specified
-
-Warning-[TFIPC] Too few instance port connections
-/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv, 161
-token_PE_tb, "token_engine u_token_engine( .clk (clk),  .rst_n (rst_n),  .pass_start_i (pass_start_i),  .pass_done_o (pass_done_o),  .layer_type_i (layer_type_i),  .weight_GLB_base_addr_i (weight_GLB_base_addr_i),  .ifmap_GLB_base_addr_i (ifmap_GLB_base_addr_i),  .ipsum_GLB_base_addr_i (ipsum_GLB_base_addr_i),  .bias_GLB_base_addr_i (bias_GLB_base_addr_i),  .opsum_GLB_base_addr_i (opsum_GLB_base_addr_i),  .is_bias_i (is_bias_i),  .Need_PPU_i (Need_PPU),  .flags_i (flags),  .tile_n_i (tile_n_i),  .stride_i (stride),  .in_C_i (in_C_i),  .in_R_i (in_R_i),  .pad_R_i (pad_R_i),  .pad_L_i (pad_L_i),  .pad_T_i (pad_T_i),  .pad_B_i (pad_B_i),  .out_C_i (out_C_i),  .out_R_i (out_R_i),  .IC_real_i (IC_real_i),  .OC_real_i (OC_real_i),  .On_real_i (On_real_i),  .glb_read_data_i ... "
-  The above instance has fewer port connections than the module definition.
-  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
-  ports.
-
-
-Warning-[TFIPC] Too few instance port connections
-../src/controller/Layer_Decoder.sv, 140
-Layer_Decoder, "calc_tile_n #(.GLB_BYTES(GLB_BYTES), .BYTES_I(BYTES_I), .BYTES_W(BYTES_W), .BYTES_P(BYTES_P)) calc_n_max_u( .layer_type (layer_type_i),  .out_C (out_C),  .kH (kH),  .kW (kW),  .tile_D (tile_D),  .tile_K (tile_K),  .tile_D_f (tile_D_f),  .tile_K_f (tile_K_f),  .M1 (M1),  .M2 (M2),  .M3 (M3),  .tile_n (tile_n));"
-  The above instance has fewer port connections than the module definition.
-  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
-  ports.
-
-
-Warning-[TFIPC] Too few instance port connections
-../src/controller/DLA_Controller.sv, 368
-DLA_Controller, "token_engine u_token_engine( .clk (clk),  .rst_n (rst_n),  .pass_start_i (pass_start),  .pass_done_o (pass_done),  .layer_type_i (layer_type_o),  .weight_GLB_base_addr_i (GLB_weight_base_addr),  .ifmap_GLB_base_addr_i (GLB_ifmap_base_addr),  .ipsum_GLB_base_addr_i (GLB_ipsum_base_addr),  .bias_GLB_base_addr_i (GLB_bias_base_addr),  .opsum_GLB_base_addr_i (GLB_opsum_base_addr),  .flags_i (flags),  .is_bias_i (is_bias),  .tile_n_i (tile_n),  .stride_i (stride),  .in_C_i (in_C),  .in_R_i (in_R),  .pad_R_i (pad_R),  .pad_L_i (pad_L),  .pad_T_i (pad_T),  .pad_B_i (pad_B),  .out_C_i (out_C),  .out_R_i (out_R),  .IC_real_i (IC_real),  .OC_real_i (OC_real),  .On_real_i (On_real),  .glb_read_data_i (glb_read_data_i),  .opsum_fifo_pop_data_matrix_i (opsum_fifo_po ... "
-  The above instance has fewer port connections than the module definition.
-  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
-  ports.
-
 Starting vcs inline pass...
 24 modules and 0 UDP read.
 recompiling module DLA_Controller
@@ -110,7 +86,7 @@ rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
 if [ -x ../simv ]; then chmod a-x ../simv; fi
 g++  -o ../simv      -rdynamic  -Wl,-rpath='$ORIGIN'/simv.daidir -Wl,-rpath=./simv.daidir \
 -Wl,-rpath=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib -L/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib \
--Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _255816_archive_1.so \
+-Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _271193_archive_1.so \
 _prev_archive_1.so   SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
 rmar_llvm_0_0.o            -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
 -luclinative /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
@@ -123,7 +99,7 @@ make[1]: Leaving directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final
 Command: /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/./simv +notimingcheck -a /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log +define++FSDB_ALL+DEPTHWISE_STRIDE2_TYPE
 Chronologic VCS simulator copyright 1991-2024
 Contains Synopsys proprietary information.
-Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 16:25 2025
+Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 16:41 2025
 *Verdi* Loading libsscore_vcs202409.so
 FSDB Dumper for VCS, Release Verdi_W-2024.09-SP2, Linux x86_64/64bit, 03/03/2025
 (C) 1996 - 2025 by Synopsys, Inc.
@@ -431,10 +407,10 @@ Match at index 282 (SRAM addr 0x0000311a): SRAM=0x004b0054, Golden=0x004b0054
 Match at index 283 (SRAM addr 0x0000311b): SRAM=0x0057006c, Golden=0x0057006c
 Match at index 284 (SRAM addr 0x0000311c): SRAM=0x00760065, Golden=0x00760065
 Verification PASSED: All opsum data matches golden data!
-$finish called from file "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv", line 513.
+$finish called from file "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv", line 521.
 $finish at simulation time               106715
            V C S   S i m u l a t i o n   R e p o r t 
 Time: 106715
-CPU Time:      5.760 seconds;       Data structure size:   1.7Mb
-Wed Jun 25 16:25:44 2025
-CPU time: 3.452 seconds to compile + .281 seconds to elab + .187 seconds to link + 5.778 seconds in simulation
+CPU Time:      6.040 seconds;       Data structure size:   1.7Mb
+Wed Jun 25 16:41:40 2025
+CPU time: 3.189 seconds to compile + .284 seconds to elab + .187 seconds to link + 6.061 seconds in simulation

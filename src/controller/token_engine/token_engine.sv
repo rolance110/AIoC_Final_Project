@@ -24,17 +24,19 @@ module token_engine (
     input logic  [31:0] bias_GLB_base_addr_i,
     input logic  [31:0] opsum_GLB_base_addr_i,
 
+    input logic is_bias_i,
+    input logic Need_PPU_i,
+    input logic [3:0] flags_i, // flags[0]: is_bias, flags[1]: is_relu
+
     input logic n_tile_is_first_i,
     input logic n_tile_is_last_i,
     input logic [31:0] Already_Compute_Row_i,
-    input logic is_bias_i,
-    input logic Need_PPU_i,
 
-    input logic [3:0] flags_i, // flags[0]: is_bias, flags[1]: is_relu
+
 
     input logic [1:0] stride_i,
 
-    input logic [5:0] scaling_factor, // 從 weight_load_controller 獲取的 scaling factor
+    input logic [5:0] scaling_factor_i, // 從 weight_load_controller 獲取的 scaling factor
 
     input logic [31:0] tile_n_i,
 
@@ -578,7 +580,7 @@ PPU #(
     .clk(clk),
     .rst_n(rst_n),
     .data_in(glb_write_data_from_arbiter), // 從 GLB 讀取的數據
-    .scaling_factor(scaling_factor), // 從 weight_load_controller 獲取的 scaling factor
+    .scaling_factor(scaling_factor_i), // 從 weight_load_controller 獲取的 scaling factor
     .relu_en(flags_i[0]), // 如果是卷積層則啟用 ReLU
     .need_ppu(Need_PPU_i), // 來自 Layer Decoder 的 pass_done_o
     .WEB(glb_web_o),
