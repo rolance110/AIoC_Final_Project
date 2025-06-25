@@ -2,10 +2,10 @@ Command: vcs -R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
 -f /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src/filelist.f \
 -debug_access+all -full64 +incdir+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./src+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./include+/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim \
 +notimingcheck -l /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log \
-+define++FSDB_ALL+DEPTHWISE_STRIDE2_TYPE
++define++FSDB_ALL+POINTWISE_TYPE
 *** Using c compiler gcc instead of cc ...
                          Chronologic VCS (TM)
-       Version W-2024.09-SP2_Full64 -- Wed Jun 25 16:41:30 2025
+       Version W-2024.09-SP2_Full64 -- Wed Jun 25 16:58:07 2025
 
                     Copyright (c) 1991 - 2025 Synopsys, Inc.
    This software and the associated documentation are proprietary to Synopsys,
@@ -23,83 +23,14 @@ Command: vcs -R -sverilog /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_P
             Inclusivity and Diversity" (Refer to article 000036315 at
                         https://solvnetplus.synopsys.com)
 
-Parsing design file '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv'
-Parsing included file '../include/define.svh'.
-Back to file '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv'.
-Parsing included file '../sim/SRAM_64KB.sv'.
-Back to file '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv'.
-Parsing design file '../src/ppu/PPU.sv'
-Parsing design file '../src/controller/token_engine/ifmap_fifo_ctrl.sv'
-Parsing design file '../src/controller/token_engine/ipsum_fifo_ctrl.sv'
-Parsing design file '../src/controller/token_engine/opsum_fifo_ctrl.sv'
-Parsing design file '../src/controller/token_engine/weight_load_controller.sv'
-Parsing design file '../src/controller/token_engine/pe_array_controller.sv'
-Parsing design file '../src/controller/token_engine/Layer1_Controller.sv'
-Parsing design file '../src/controller/token_engine/L2C_init_fifo_pe.sv'
-Parsing design file '../src/controller/token_engine/L2C_preheat.sv'
-Parsing design file '../src/controller/token_engine/L2C_normal_loop.sv'
-Parsing design file '../src/controller/token_engine/ipsum_fifo_mask.sv'
-Parsing design file '../src/controller/token_engine/opsum_fifo_mask.sv'
-Parsing design file '../src/controller/token_engine/L3C_fifo_ctrl.sv'
-Parsing design file '../src/controller/token_engine/token_arbiter.sv'
-Parsing design file '../src/controller/token_engine/token_engine.sv'
-Parsing design file '../src/CONV_unit/ifmap_fifo.sv'
-Parsing design file '../src/CONV_unit/ifmap_fifo_bank.sv'
-Parsing design file '../src/CONV_unit/opsum_fifo.sv'
-Parsing design file '../src/CONV_unit/opsum_fifo_bank.sv'
-Parsing design file '../src/CONV_unit/reducer.sv'
-Parsing design file '../src/CONV_unit/pe.sv'
-Parsing design file '../src/CONV_unit/pe_array.sv'
-Parsing design file '../src/CONV_unit/ipsum_fifo.sv'
-Parsing design file '../src/CONV_unit/ipsum_fifo_bank.sv'
-Parsing design file '../src/CONV_unit/conv_unit.sv'
-Parsing design file '../src/controller/calc_tile_n.sv'
-Parsing included file '../include/define.svh'.
-Back to file '../src/controller/calc_tile_n.sv'.
-Parsing design file '../src/controller/TS_AXI_wrapper.sv'
-Parsing included file '../include/define.svh'.
-Back to file '../src/controller/TS_AXI_wrapper.sv'.
-Parsing design file '../src/controller/Layer_Decoder.sv'
-Parsing included file '../include/define.svh'.
-Back to file '../src/controller/Layer_Decoder.sv'.
-Parsing design file '../src/controller/DMA_address_generator.sv'
-Parsing design file '../src/controller/Tile_Scheduler.sv'
-Parsing included file '../include/define.svh'.
-Back to file '../src/controller/Tile_Scheduler.sv'.
-Parsing design file '../src/controller/Tile_Scheduler_old.sv'
-Parsing included file '../include/define.svh'.
-Back to file '../src/controller/Tile_Scheduler_old.sv'.
-Parsing design file '../src/controller/DLA_Controller.sv'
-Parsing design file '../src/DSC.sv'
-Top Level Modules:
-       token_PE_tb
-       Tile_Scheduler_old
-       DSC
-No TimeScale specified
-Starting vcs inline pass...
-24 modules and 0 UDP read.
-recompiling module DLA_Controller
-	However, due to incremental compilation, only 1 module needs to be compiled. 
-make[1]: Entering directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/csrc' \
+The design hasn't changed and need not be recompiled. 
+If you really want to, delete file simv.daidir/.vcs.timestamp and
+run VCS again.
 
-rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
-if [ -x ../simv ]; then chmod a-x ../simv; fi
-g++  -o ../simv      -rdynamic  -Wl,-rpath='$ORIGIN'/simv.daidir -Wl,-rpath=./simv.daidir \
--Wl,-rpath=/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib -L/usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib \
--Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _271193_archive_1.so \
-_prev_archive_1.so   SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
-rmar_llvm_0_0.o            -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
--luclinative /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
--lvcsucli    -Wl,-no-whole-archive        _vcs_pli_stub_.o   /usr/cad/synopsys/vcs/2024.09-sp2/linux64/lib/vcs_save_restore_new.o \
-/usr/cad/synopsys/verdi/2024.09-sp2/share/PLI/VCS/LINUX64/pli.a -ldl  -lc -lm -lpthread \
--ldl 
-../simv up to date
-make[1]: Leaving directory '/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/csrc' \
-
-Command: /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/./simv +notimingcheck -a /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log +define++FSDB_ALL+DEPTHWISE_STRIDE2_TYPE
+Command: /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/build/./simv +notimingcheck -a /home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./log/token_PE.log +define++FSDB_ALL+POINTWISE_TYPE
 Chronologic VCS simulator copyright 1991-2024
 Contains Synopsys proprietary information.
-Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 16:41 2025
+Compiler version W-2024.09-SP2_Full64; Runtime version W-2024.09-SP2_Full64;  Jun 25 16:58 2025
 *Verdi* Loading libsscore_vcs202409.so
 FSDB Dumper for VCS, Release Verdi_W-2024.09-SP2, Linux x86_64/64bit, 03/03/2025
 (C) 1996 - 2025 by Synopsys, Inc.
@@ -114,303 +45,657 @@ FSDB Dumper for VCS, Release Verdi_W-2024.09-SP2, Linux x86_64/64bit, 03/03/2025
 *Verdi* : Begin traversing the scope (token_PE_tb.u_SRAM), layer (0).
 *Verdi* : Enable +all, +struct and +mda dumping.
 *Verdi* : End of traversing.
-===== SRAM initialized from depthwise_stride2_memory.hex =====
-===== Golden data loaded from depthwise_stride2_golden.hex =====
-===== SRAM initialized from depthwise_stride2_golden.hex =====
+===== SRAM initialized from pointwise_memory.hex =====
+===== Golden data loaded from pointwise_golden.hex =====
 Time=0 rst_n=0 pass_done_o=0
 Time=20 rst_n=1 pass_done_o=0
-Simulation finished successfully at time 106715
-===== Verifying opsum data in SRAM with depthwise_stride2_golden.hex =====
-Match at index 0 (SRAM addr 0x00003000): SRAM=0x00290020, Golden=0x00290020
-Match at index 1 (SRAM addr 0x00003001): SRAM=0x003a002d, Golden=0x003a002d
-Match at index 2 (SRAM addr 0x00003002): SRAM=0x00360028, Golden=0x00360028
-Match at index 3 (SRAM addr 0x00003003): SRAM=0x0034003f, Golden=0x0034003f
-Match at index 4 (SRAM addr 0x00003004): SRAM=0x0031001b, Golden=0x0031001b
-Match at index 5 (SRAM addr 0x00003005): SRAM=0x00490043, Golden=0x00490043
-Match at index 6 (SRAM addr 0x00003006): SRAM=0x00220036, Golden=0x00220036
-Match at index 7 (SRAM addr 0x00003007): SRAM=0x00370029, Golden=0x00370029
-Match at index 8 (SRAM addr 0x00003008): SRAM=0x00390048, Golden=0x00390048
-Match at index 9 (SRAM addr 0x00003009): SRAM=0x005a0045, Golden=0x005a0045
-Match at index 10 (SRAM addr 0x0000300a): SRAM=0x003d0038, Golden=0x003d0038
-Match at index 11 (SRAM addr 0x0000300b): SRAM=0x003f003a, Golden=0x003f003a
-Match at index 12 (SRAM addr 0x0000300c): SRAM=0x0045002f, Golden=0x0045002f
-Match at index 13 (SRAM addr 0x0000300d): SRAM=0x00450047, Golden=0x00450047
-Match at index 14 (SRAM addr 0x0000300e): SRAM=0x00310048, Golden=0x00310048
-Match at index 15 (SRAM addr 0x0000300f): SRAM=0x003a001d, Golden=0x003a001d
-Match at index 16 (SRAM addr 0x00003010): SRAM=0x002a002e, Golden=0x002a002e
-Match at index 17 (SRAM addr 0x00003011): SRAM=0x00390054, Golden=0x00390054
-Match at index 18 (SRAM addr 0x00003012): SRAM=0x003e002f, Golden=0x003e002f
-Match at index 19 (SRAM addr 0x00003013): SRAM=0x002b004c, Golden=0x002b004c
-Match at index 20 (SRAM addr 0x00003014): SRAM=0x0055003b, Golden=0x0055003b
-Match at index 21 (SRAM addr 0x00003015): SRAM=0x0054004f, Golden=0x0054004f
-Match at index 22 (SRAM addr 0x00003016): SRAM=0x0047005b, Golden=0x0047005b
-Match at index 23 (SRAM addr 0x00003017): SRAM=0x003f0038, Golden=0x003f0038
-Match at index 24 (SRAM addr 0x00003018): SRAM=0x002c002c, Golden=0x002c002c
-Match at index 25 (SRAM addr 0x00003019): SRAM=0x00430038, Golden=0x00430038
-Match at index 26 (SRAM addr 0x0000301a): SRAM=0x002e001c, Golden=0x002e001c
-Match at index 27 (SRAM addr 0x0000301b): SRAM=0x002c0037, Golden=0x002c0037
-Match at index 28 (SRAM addr 0x0000301c): SRAM=0x00200030, Golden=0x00200030
-Match at index 29 (SRAM addr 0x0000301d): SRAM=0x00370042, Golden=0x00370042
-Match at index 30 (SRAM addr 0x0000301e): SRAM=0x004b003d, Golden=0x004b003d
-Match at index 31 (SRAM addr 0x0000301f): SRAM=0x00300040, Golden=0x00300040
-Match at index 32 (SRAM addr 0x00003020): SRAM=0x0044004a, Golden=0x0044004a
-Match at index 33 (SRAM addr 0x00003021): SRAM=0x00660051, Golden=0x00660051
-Match at index 34 (SRAM addr 0x00003022): SRAM=0x00480059, Golden=0x00480059
-Match at index 35 (SRAM addr 0x00003023): SRAM=0x0028003b, Golden=0x0028003b
-Match at index 36 (SRAM addr 0x00003024): SRAM=0x00580042, Golden=0x00580042
-Match at index 37 (SRAM addr 0x00003025): SRAM=0x003b003d, Golden=0x003b003d
-Match at index 38 (SRAM addr 0x00003026): SRAM=0x00520077, Golden=0x00520077
-Match at index 39 (SRAM addr 0x00003027): SRAM=0x005b0050, Golden=0x005b0050
-Match at index 40 (SRAM addr 0x00003028): SRAM=0x004c004c, Golden=0x004c004c
-Match at index 41 (SRAM addr 0x00003029): SRAM=0x00380045, Golden=0x00380045
-Match at index 42 (SRAM addr 0x0000302a): SRAM=0x004d006c, Golden=0x004d006c
-Match at index 43 (SRAM addr 0x0000302b): SRAM=0x00420037, Golden=0x00420037
-Match at index 44 (SRAM addr 0x0000302c): SRAM=0x0032003f, Golden=0x0032003f
-Match at index 45 (SRAM addr 0x0000302d): SRAM=0x004c0031, Golden=0x004c0031
-Match at index 46 (SRAM addr 0x0000302e): SRAM=0x004c0054, Golden=0x004c0054
-Match at index 47 (SRAM addr 0x0000302f): SRAM=0x0049003f, Golden=0x0049003f
-Match at index 48 (SRAM addr 0x00003030): SRAM=0x004a004d, Golden=0x004a004d
-Match at index 49 (SRAM addr 0x00003031): SRAM=0x0072006f, Golden=0x0072006f
-Match at index 50 (SRAM addr 0x00003032): SRAM=0x005e005f, Golden=0x005e005f
-Match at index 51 (SRAM addr 0x00003033): SRAM=0x004d005f, Golden=0x004d005f
-Match at index 52 (SRAM addr 0x00003034): SRAM=0x005a0040, Golden=0x005a0040
-Match at index 53 (SRAM addr 0x00003035): SRAM=0x00670052, Golden=0x00670052
-Match at index 54 (SRAM addr 0x00003036): SRAM=0x00590052, Golden=0x00590052
-Match at index 55 (SRAM addr 0x00003037): SRAM=0x0032004b, Golden=0x0032004b
-Match at index 56 (SRAM addr 0x00003038): SRAM=0x005a0037, Golden=0x005a0037
-Match at index 57 (SRAM addr 0x00003039): SRAM=0x0035002a, Golden=0x0035002a
-Match at index 58 (SRAM addr 0x0000303a): SRAM=0x002b003b, Golden=0x002b003b
-Match at index 59 (SRAM addr 0x0000303b): SRAM=0x002a0047, Golden=0x002a0047
-Match at index 60 (SRAM addr 0x0000303c): SRAM=0x0034003b, Golden=0x0034003b
-Match at index 61 (SRAM addr 0x0000303d): SRAM=0x0034002b, Golden=0x0034002b
-Match at index 62 (SRAM addr 0x0000303e): SRAM=0x002f002e, Golden=0x002f002e
-Match at index 63 (SRAM addr 0x0000303f): SRAM=0x00300032, Golden=0x00300032
-Match at index 64 (SRAM addr 0x00003040): SRAM=0x00350024, Golden=0x00350024
-Match at index 65 (SRAM addr 0x00003041): SRAM=0x003f0032, Golden=0x003f0032
-Match at index 66 (SRAM addr 0x00003042): SRAM=0x0044001f, Golden=0x0044001f
-Match at index 67 (SRAM addr 0x00003043): SRAM=0x00570047, Golden=0x00570047
-Match at index 68 (SRAM addr 0x00003044): SRAM=0x0037002b, Golden=0x0037002b
-Match at index 69 (SRAM addr 0x00003045): SRAM=0x002a0039, Golden=0x002a0039
-Match at index 70 (SRAM addr 0x00003046): SRAM=0x00310042, Golden=0x00310042
-Match at index 71 (SRAM addr 0x00003047): SRAM=0x003e0046, Golden=0x003e0046
-Match at index 72 (SRAM addr 0x00003048): SRAM=0x002f001a, Golden=0x002f001a
-Match at index 73 (SRAM addr 0x00003049): SRAM=0x002d0029, Golden=0x002d0029
-Match at index 74 (SRAM addr 0x0000304a): SRAM=0x003a0037, Golden=0x003a0037
-Match at index 75 (SRAM addr 0x0000304b): SRAM=0x003f003b, Golden=0x003f003b
-Match at index 76 (SRAM addr 0x0000304c): SRAM=0x001a002a, Golden=0x001a002a
-Match at index 77 (SRAM addr 0x0000304d): SRAM=0x0034003c, Golden=0x0034003c
-Match at index 78 (SRAM addr 0x0000304e): SRAM=0x00450036, Golden=0x00450036
-Match at index 79 (SRAM addr 0x0000304f): SRAM=0x00280035, Golden=0x00280035
-Match at index 80 (SRAM addr 0x00003050): SRAM=0x00490038, Golden=0x00490038
-Match at index 81 (SRAM addr 0x00003051): SRAM=0x001c002a, Golden=0x001c002a
-Match at index 82 (SRAM addr 0x00003052): SRAM=0x0029002c, Golden=0x0029002c
-Match at index 83 (SRAM addr 0x00003053): SRAM=0x00350026, Golden=0x00350026
-Match at index 84 (SRAM addr 0x00003054): SRAM=0x002f0010, Golden=0x002f0010
-Match at index 85 (SRAM addr 0x00003055): SRAM=0x003f0037, Golden=0x003f0037
-Match at index 86 (SRAM addr 0x00003056): SRAM=0x00510057, Golden=0x00510057
-Match at index 87 (SRAM addr 0x00003057): SRAM=0x0055005c, Golden=0x0055005c
-Match at index 88 (SRAM addr 0x00003058): SRAM=0x004c003d, Golden=0x004c003d
-Match at index 89 (SRAM addr 0x00003059): SRAM=0x00510062, Golden=0x00510062
-Match at index 90 (SRAM addr 0x0000305a): SRAM=0x00550069, Golden=0x00550069
-Match at index 91 (SRAM addr 0x0000305b): SRAM=0x0067005c, Golden=0x0067005c
-Match at index 92 (SRAM addr 0x0000305c): SRAM=0x00550031, Golden=0x00550031
-Match at index 93 (SRAM addr 0x0000305d): SRAM=0x0074005f, Golden=0x0074005f
-Match at index 94 (SRAM addr 0x0000305e): SRAM=0x00480051, Golden=0x00480051
-Match at index 95 (SRAM addr 0x0000305f): SRAM=0x0074005b, Golden=0x0074005b
-Match at index 96 (SRAM addr 0x00003060): SRAM=0x0050006c, Golden=0x0050006c
-Match at index 97 (SRAM addr 0x00003061): SRAM=0x005e0053, Golden=0x005e0053
-Match at index 98 (SRAM addr 0x00003062): SRAM=0x005e004e, Golden=0x005e004e
-Match at index 99 (SRAM addr 0x00003063): SRAM=0x004f003d, Golden=0x004f003d
-Match at index 100 (SRAM addr 0x00003064): SRAM=0x0047004f, Golden=0x0047004f
-Match at index 101 (SRAM addr 0x00003065): SRAM=0x003e003f, Golden=0x003e003f
-Match at index 102 (SRAM addr 0x00003066): SRAM=0x005e003f, Golden=0x005e003f
-Match at index 103 (SRAM addr 0x00003067): SRAM=0x005f006e, Golden=0x005f006e
-Match at index 104 (SRAM addr 0x00003068): SRAM=0x00450078, Golden=0x00450078
-Match at index 105 (SRAM addr 0x00003069): SRAM=0x004d003f, Golden=0x004d003f
-Match at index 106 (SRAM addr 0x0000306a): SRAM=0x0061004a, Golden=0x0061004a
-Match at index 107 (SRAM addr 0x0000306b): SRAM=0x0077006a, Golden=0x0077006a
-Match at index 108 (SRAM addr 0x0000306c): SRAM=0x00480039, Golden=0x00480039
-Match at index 109 (SRAM addr 0x0000306d): SRAM=0x00410050, Golden=0x00410050
-Match at index 110 (SRAM addr 0x0000306e): SRAM=0x004a003c, Golden=0x004a003c
-Match at index 111 (SRAM addr 0x0000306f): SRAM=0x003d003a, Golden=0x003d003a
-Match at index 112 (SRAM addr 0x00003070): SRAM=0x0056005b, Golden=0x0056005b
-Match at index 113 (SRAM addr 0x00003071): SRAM=0x002e0037, Golden=0x002e0037
-Match at index 114 (SRAM addr 0x00003072): SRAM=0x0017001e, Golden=0x0017001e
-Match at index 115 (SRAM addr 0x00003073): SRAM=0x002a0020, Golden=0x002a0020
-Match at index 116 (SRAM addr 0x00003074): SRAM=0x00180012, Golden=0x00180012
-Match at index 117 (SRAM addr 0x00003075): SRAM=0x0014000c, Golden=0x0014000c
-Match at index 118 (SRAM addr 0x00003076): SRAM=0x001e0028, Golden=0x001e0028
-Match at index 119 (SRAM addr 0x00003077): SRAM=0x00160019, Golden=0x00160019
-Match at index 120 (SRAM addr 0x00003078): SRAM=0x002b002c, Golden=0x002b002c
-Match at index 121 (SRAM addr 0x00003079): SRAM=0x001f0014, Golden=0x001f0014
-Match at index 122 (SRAM addr 0x0000307a): SRAM=0x003a001f, Golden=0x003a001f
-Match at index 123 (SRAM addr 0x0000307b): SRAM=0x001f001a, Golden=0x001f001a
-Match at index 124 (SRAM addr 0x0000307c): SRAM=0x002a002c, Golden=0x002a002c
-Match at index 125 (SRAM addr 0x0000307d): SRAM=0x00130024, Golden=0x00130024
-Match at index 126 (SRAM addr 0x0000307e): SRAM=0x001f001c, Golden=0x001f001c
-Match at index 127 (SRAM addr 0x0000307f): SRAM=0x001c000e, Golden=0x001c000e
-Match at index 128 (SRAM addr 0x00003080): SRAM=0x0026001c, Golden=0x0026001c
-Match at index 129 (SRAM addr 0x00003081): SRAM=0x002c0039, Golden=0x002c0039
-Match at index 130 (SRAM addr 0x00003082): SRAM=0x0030003d, Golden=0x0030003d
-Match at index 131 (SRAM addr 0x00003083): SRAM=0x002e0035, Golden=0x002e0035
-Match at index 132 (SRAM addr 0x00003084): SRAM=0x0037002a, Golden=0x0037002a
-Match at index 133 (SRAM addr 0x00003085): SRAM=0x00220024, Golden=0x00220024
-Match at index 134 (SRAM addr 0x00003086): SRAM=0x000d0017, Golden=0x000d0017
-Match at index 135 (SRAM addr 0x00003087): SRAM=0x00270014, Golden=0x00270014
-Match at index 136 (SRAM addr 0x00003088): SRAM=0x00230028, Golden=0x00230028
-Match at index 137 (SRAM addr 0x00003089): SRAM=0x00200027, Golden=0x00200027
-Match at index 138 (SRAM addr 0x0000308a): SRAM=0x0020001e, Golden=0x0020001e
-Match at index 139 (SRAM addr 0x0000308b): SRAM=0x0028001b, Golden=0x0028001b
-Match at index 140 (SRAM addr 0x0000308c): SRAM=0x0034002a, Golden=0x0034002a
-Match at index 141 (SRAM addr 0x0000308d): SRAM=0x002f0034, Golden=0x002f0034
-Match at index 142 (SRAM addr 0x0000308e): SRAM=0x00210022, Golden=0x00210022
-Match at index 143 (SRAM addr 0x0000308f): SRAM=0x00360023, Golden=0x00360023
-Match at index 144 (SRAM addr 0x00003090): SRAM=0x002c004b, Golden=0x002c004b
-Match at index 145 (SRAM addr 0x00003091): SRAM=0x00450045, Golden=0x00450045
-Match at index 146 (SRAM addr 0x00003092): SRAM=0x00350036, Golden=0x00350036
-Match at index 147 (SRAM addr 0x00003093): SRAM=0x00410057, Golden=0x00410057
-Match at index 148 (SRAM addr 0x00003094): SRAM=0x002b0041, Golden=0x002b0041
-Match at index 149 (SRAM addr 0x00003095): SRAM=0x003a002c, Golden=0x003a002c
-Match at index 150 (SRAM addr 0x00003096): SRAM=0x00310030, Golden=0x00310030
-Match at index 151 (SRAM addr 0x00003097): SRAM=0x00470035, Golden=0x00470035
-Match at index 152 (SRAM addr 0x00003098): SRAM=0x00240037, Golden=0x00240037
-Match at index 153 (SRAM addr 0x00003099): SRAM=0x00280039, Golden=0x00280039
-Match at index 154 (SRAM addr 0x0000309a): SRAM=0x0042003c, Golden=0x0042003c
-Match at index 155 (SRAM addr 0x0000309b): SRAM=0x002c0026, Golden=0x002c0026
-Match at index 156 (SRAM addr 0x0000309c): SRAM=0x003e002d, Golden=0x003e002d
-Match at index 157 (SRAM addr 0x0000309d): SRAM=0x00320044, Golden=0x00320044
-Match at index 158 (SRAM addr 0x0000309e): SRAM=0x002e0042, Golden=0x002e0042
-Match at index 159 (SRAM addr 0x0000309f): SRAM=0x00230031, Golden=0x00230031
-Match at index 160 (SRAM addr 0x000030a0): SRAM=0x0021001a, Golden=0x0021001a
-Match at index 161 (SRAM addr 0x000030a1): SRAM=0x0049002f, Golden=0x0049002f
-Match at index 162 (SRAM addr 0x000030a2): SRAM=0x0032002c, Golden=0x0032002c
-Match at index 163 (SRAM addr 0x000030a3): SRAM=0x003b002f, Golden=0x003b002f
-Match at index 164 (SRAM addr 0x000030a4): SRAM=0x002b0042, Golden=0x002b0042
-Match at index 165 (SRAM addr 0x000030a5): SRAM=0x0027001b, Golden=0x0027001b
-Match at index 166 (SRAM addr 0x000030a6): SRAM=0x00360049, Golden=0x00360049
-Match at index 167 (SRAM addr 0x000030a7): SRAM=0x004b0035, Golden=0x004b0035
-Match at index 168 (SRAM addr 0x000030a8): SRAM=0x003f004b, Golden=0x003f004b
-Match at index 169 (SRAM addr 0x000030a9): SRAM=0x004a003a, Golden=0x004a003a
-Match at index 170 (SRAM addr 0x000030aa): SRAM=0x001f002d, Golden=0x001f002d
-Match at index 171 (SRAM addr 0x000030ab): SRAM=0x00270018, Golden=0x00270018
-Match at index 172 (SRAM addr 0x000030ac): SRAM=0x00310021, Golden=0x00310021
-Match at index 173 (SRAM addr 0x000030ad): SRAM=0x00120021, Golden=0x00120021
-Match at index 174 (SRAM addr 0x000030ae): SRAM=0x0022001c, Golden=0x0022001c
-Match at index 175 (SRAM addr 0x000030af): SRAM=0x00280023, Golden=0x00280023
-Match at index 176 (SRAM addr 0x000030b0): SRAM=0x0017001d, Golden=0x0017001d
-Match at index 177 (SRAM addr 0x000030b1): SRAM=0x001f0021, Golden=0x001f0021
-Match at index 178 (SRAM addr 0x000030b2): SRAM=0x001c001a, Golden=0x001c001a
-Match at index 179 (SRAM addr 0x000030b3): SRAM=0x0013001a, Golden=0x0013001a
-Match at index 180 (SRAM addr 0x000030b4): SRAM=0x0030002b, Golden=0x0030002b
-Match at index 181 (SRAM addr 0x000030b5): SRAM=0x00270030, Golden=0x00270030
-Match at index 182 (SRAM addr 0x000030b6): SRAM=0x00240021, Golden=0x00240021
-Match at index 183 (SRAM addr 0x000030b7): SRAM=0x00140022, Golden=0x00140022
-Match at index 184 (SRAM addr 0x000030b8): SRAM=0x00290028, Golden=0x00290028
-Match at index 185 (SRAM addr 0x000030b9): SRAM=0x0012002a, Golden=0x0012002a
-Match at index 186 (SRAM addr 0x000030ba): SRAM=0x002e0018, Golden=0x002e0018
-Match at index 187 (SRAM addr 0x000030bb): SRAM=0x00170029, Golden=0x00170029
-Match at index 188 (SRAM addr 0x000030bc): SRAM=0x002e0021, Golden=0x002e0021
-Match at index 189 (SRAM addr 0x000030bd): SRAM=0x00280038, Golden=0x00280038
-Match at index 190 (SRAM addr 0x000030be): SRAM=0x002e001b, Golden=0x002e001b
-Match at index 191 (SRAM addr 0x000030bf): SRAM=0x002e0031, Golden=0x002e0031
-Match at index 192 (SRAM addr 0x000030c0): SRAM=0x0028001b, Golden=0x0028001b
-Match at index 193 (SRAM addr 0x000030c1): SRAM=0x000e0027, Golden=0x000e0027
-Match at index 194 (SRAM addr 0x000030c2): SRAM=0x001c0022, Golden=0x001c0022
-Match at index 195 (SRAM addr 0x000030c3): SRAM=0x002c0020, Golden=0x002c0020
-Match at index 196 (SRAM addr 0x000030c4): SRAM=0x00210035, Golden=0x00210035
-Match at index 197 (SRAM addr 0x000030c5): SRAM=0x0020001f, Golden=0x0020001f
-Match at index 198 (SRAM addr 0x000030c6): SRAM=0x001b001e, Golden=0x001b001e
-Match at index 199 (SRAM addr 0x000030c7): SRAM=0x00270022, Golden=0x00270022
-Match at index 200 (SRAM addr 0x000030c8): SRAM=0x002e0030, Golden=0x002e0030
-Match at index 201 (SRAM addr 0x000030c9): SRAM=0x001e0036, Golden=0x001e0036
-Match at index 202 (SRAM addr 0x000030ca): SRAM=0x00250024, Golden=0x00250024
-Match at index 203 (SRAM addr 0x000030cb): SRAM=0x002e002f, Golden=0x002e002f
-Match at index 204 (SRAM addr 0x000030cc): SRAM=0x00280028, Golden=0x00280028
-Match at index 205 (SRAM addr 0x000030cd): SRAM=0x00320016, Golden=0x00320016
-Match at index 206 (SRAM addr 0x000030ce): SRAM=0x0040003f, Golden=0x0040003f
-Match at index 207 (SRAM addr 0x000030cf): SRAM=0x00290024, Golden=0x00290024
-Match at index 208 (SRAM addr 0x000030d0): SRAM=0x003c0024, Golden=0x003c0024
-Match at index 209 (SRAM addr 0x000030d1): SRAM=0x0019003c, Golden=0x0019003c
-Match at index 210 (SRAM addr 0x000030d2): SRAM=0x00330043, Golden=0x00330043
-Match at index 211 (SRAM addr 0x000030d3): SRAM=0x0039003b, Golden=0x0039003b
-Match at index 212 (SRAM addr 0x000030d4): SRAM=0x0026002f, Golden=0x0026002f
-Match at index 213 (SRAM addr 0x000030d5): SRAM=0x00320023, Golden=0x00320023
-Match at index 214 (SRAM addr 0x000030d6): SRAM=0x0029001f, Golden=0x0029001f
-Match at index 215 (SRAM addr 0x000030d7): SRAM=0x0034002b, Golden=0x0034002b
-Match at index 216 (SRAM addr 0x000030d8): SRAM=0x001f0020, Golden=0x001f0020
-Match at index 217 (SRAM addr 0x000030d9): SRAM=0x0032002f, Golden=0x0032002f
-Match at index 218 (SRAM addr 0x000030da): SRAM=0x0026002e, Golden=0x0026002e
-Match at index 219 (SRAM addr 0x000030db): SRAM=0x003d0036, Golden=0x003d0036
-Match at index 220 (SRAM addr 0x000030dc): SRAM=0x0038002a, Golden=0x0038002a
-Match at index 221 (SRAM addr 0x000030dd): SRAM=0x001d002a, Golden=0x001d002a
-Match at index 222 (SRAM addr 0x000030de): SRAM=0x00320019, Golden=0x00320019
-Match at index 223 (SRAM addr 0x000030df): SRAM=0x001f003b, Golden=0x001f003b
-Match at index 224 (SRAM addr 0x000030e0): SRAM=0x0020001f, Golden=0x0020001f
-Match at index 225 (SRAM addr 0x000030e1): SRAM=0x0025002a, Golden=0x0025002a
-Match at index 226 (SRAM addr 0x000030e2): SRAM=0x0024001f, Golden=0x0024001f
-Match at index 227 (SRAM addr 0x000030e3): SRAM=0x00320029, Golden=0x00320029
-Match at index 228 (SRAM addr 0x000030e4): SRAM=0x004e0043, Golden=0x004e0043
-Match at index 229 (SRAM addr 0x000030e5): SRAM=0x004f0045, Golden=0x004f0045
-Match at index 230 (SRAM addr 0x000030e6): SRAM=0x00630051, Golden=0x00630051
-Match at index 231 (SRAM addr 0x000030e7): SRAM=0x00580060, Golden=0x00580060
-Match at index 232 (SRAM addr 0x000030e8): SRAM=0x00320062, Golden=0x00320062
-Match at index 233 (SRAM addr 0x000030e9): SRAM=0x00320020, Golden=0x00320020
-Match at index 234 (SRAM addr 0x000030ea): SRAM=0x004a0038, Golden=0x004a0038
-Match at index 235 (SRAM addr 0x000030eb): SRAM=0x004a0059, Golden=0x004a0059
-Match at index 236 (SRAM addr 0x000030ec): SRAM=0x0056004e, Golden=0x0056004e
-Match at index 237 (SRAM addr 0x000030ed): SRAM=0x00410043, Golden=0x00410043
-Match at index 238 (SRAM addr 0x000030ee): SRAM=0x00530046, Golden=0x00530046
-Match at index 239 (SRAM addr 0x000030ef): SRAM=0x00370050, Golden=0x00370050
-Match at index 240 (SRAM addr 0x000030f0): SRAM=0x0037002c, Golden=0x0037002c
-Match at index 241 (SRAM addr 0x000030f1): SRAM=0x00690045, Golden=0x00690045
-Match at index 242 (SRAM addr 0x000030f2): SRAM=0x0039004c, Golden=0x0039004c
-Match at index 243 (SRAM addr 0x000030f3): SRAM=0x00390033, Golden=0x00390033
-Match at index 244 (SRAM addr 0x000030f4): SRAM=0x00250029, Golden=0x00250029
-Match at index 245 (SRAM addr 0x000030f5): SRAM=0x00450040, Golden=0x00450040
-Match at index 246 (SRAM addr 0x000030f6): SRAM=0x005d0062, Golden=0x005d0062
-Match at index 247 (SRAM addr 0x000030f7): SRAM=0x005f0049, Golden=0x005f0049
-Match at index 248 (SRAM addr 0x000030f8): SRAM=0x0032003d, Golden=0x0032003d
-Match at index 249 (SRAM addr 0x000030f9): SRAM=0x0043004b, Golden=0x0043004b
-Match at index 250 (SRAM addr 0x000030fa): SRAM=0x0035003d, Golden=0x0035003d
-Match at index 251 (SRAM addr 0x000030fb): SRAM=0x00330032, Golden=0x00330032
-Match at index 252 (SRAM addr 0x000030fc): SRAM=0x003f003d, Golden=0x003f003d
-Match at index 253 (SRAM addr 0x000030fd): SRAM=0x00480027, Golden=0x00480027
-Match at index 254 (SRAM addr 0x000030fe): SRAM=0x00440048, Golden=0x00440048
-Match at index 255 (SRAM addr 0x000030ff): SRAM=0x0041003f, Golden=0x0041003f
-Match at index 256 (SRAM addr 0x00003100): SRAM=0x0043002f, Golden=0x0043002f
-Match at index 257 (SRAM addr 0x00003101): SRAM=0x004b003d, Golden=0x004b003d
-Match at index 258 (SRAM addr 0x00003102): SRAM=0x00510061, Golden=0x00510061
-Match at index 259 (SRAM addr 0x00003103): SRAM=0x006d0048, Golden=0x006d0048
-Match at index 260 (SRAM addr 0x00003104): SRAM=0x005d0059, Golden=0x005d0059
-Match at index 261 (SRAM addr 0x00003105): SRAM=0x0044004a, Golden=0x0044004a
-Match at index 262 (SRAM addr 0x00003106): SRAM=0x006a006b, Golden=0x006a006b
-Match at index 263 (SRAM addr 0x00003107): SRAM=0x00600052, Golden=0x00600052
-Match at index 264 (SRAM addr 0x00003108): SRAM=0x00690050, Golden=0x00690050
-Match at index 265 (SRAM addr 0x00003109): SRAM=0x0067004b, Golden=0x0067004b
-Match at index 266 (SRAM addr 0x0000310a): SRAM=0x00370042, Golden=0x00370042
-Match at index 267 (SRAM addr 0x0000310b): SRAM=0x004b005f, Golden=0x004b005f
-Match at index 268 (SRAM addr 0x0000310c): SRAM=0x00460049, Golden=0x00460049
-Match at index 269 (SRAM addr 0x0000310d): SRAM=0x00730065, Golden=0x00730065
-Match at index 270 (SRAM addr 0x0000310e): SRAM=0x004c0077, Golden=0x004c0077
-Match at index 271 (SRAM addr 0x0000310f): SRAM=0x004d0049, Golden=0x004d0049
-Match at index 272 (SRAM addr 0x00003110): SRAM=0x00700064, Golden=0x00700064
-Match at index 273 (SRAM addr 0x00003111): SRAM=0x00600069, Golden=0x00600069
-Match at index 274 (SRAM addr 0x00003112): SRAM=0x00700048, Golden=0x00700048
-Match at index 275 (SRAM addr 0x00003113): SRAM=0x00530053, Golden=0x00530053
-Match at index 276 (SRAM addr 0x00003114): SRAM=0x00410061, Golden=0x00410061
-Match at index 277 (SRAM addr 0x00003115): SRAM=0x005d006a, Golden=0x005d006a
-Match at index 278 (SRAM addr 0x00003116): SRAM=0x00510058, Golden=0x00510058
-Match at index 279 (SRAM addr 0x00003117): SRAM=0x00500036, Golden=0x00500036
-Match at index 280 (SRAM addr 0x00003118): SRAM=0x0059005c, Golden=0x0059005c
-Match at index 281 (SRAM addr 0x00003119): SRAM=0x006f006e, Golden=0x006f006e
-Match at index 282 (SRAM addr 0x0000311a): SRAM=0x004b0054, Golden=0x004b0054
-Match at index 283 (SRAM addr 0x0000311b): SRAM=0x0057006c, Golden=0x0057006c
-Match at index 284 (SRAM addr 0x0000311c): SRAM=0x00760065, Golden=0x00760065
+Simulation finished successfully at time 54815
+===== Verifying opsum data in SRAM with pointwise_golden.hex =====
+Match at index 0 (SRAM addr 0x00003000): SRAM=0x0107009e, Golden=0x0107009e
+Match at index 1 (SRAM addr 0x00003001): SRAM=0x00d60118, Golden=0x00d60118
+Match at index 2 (SRAM addr 0x00003002): SRAM=0x007600df, Golden=0x007600df
+Match at index 3 (SRAM addr 0x00003003): SRAM=0x010500bf, Golden=0x010500bf
+Match at index 4 (SRAM addr 0x00003004): SRAM=0x00e300f5, Golden=0x00e300f5
+Match at index 5 (SRAM addr 0x00003005): SRAM=0x00e600da, Golden=0x00e600da
+Match at index 6 (SRAM addr 0x00003006): SRAM=0x00ea00bd, Golden=0x00ea00bd
+Match at index 7 (SRAM addr 0x00003007): SRAM=0x00ee00cd, Golden=0x00ee00cd
+Match at index 8 (SRAM addr 0x00003008): SRAM=0x00cd00eb, Golden=0x00cd00eb
+Match at index 9 (SRAM addr 0x00003009): SRAM=0x00ba0109, Golden=0x00ba0109
+Match at index 10 (SRAM addr 0x0000300a): SRAM=0x00a200b5, Golden=0x00a200b5
+Match at index 11 (SRAM addr 0x0000300b): SRAM=0x00cc00d7, Golden=0x00cc00d7
+Match at index 12 (SRAM addr 0x0000300c): SRAM=0x00c800df, Golden=0x00c800df
+Match at index 13 (SRAM addr 0x0000300d): SRAM=0x00d200c7, Golden=0x00d200c7
+Match at index 14 (SRAM addr 0x0000300e): SRAM=0x00ad00cb, Golden=0x00ad00cb
+Match at index 15 (SRAM addr 0x0000300f): SRAM=0x00c900c0, Golden=0x00c900c0
+Match at index 16 (SRAM addr 0x00003010): SRAM=0x00bb00e3, Golden=0x00bb00e3
+Match at index 17 (SRAM addr 0x00003011): SRAM=0x00c000a6, Golden=0x00c000a6
+Match at index 18 (SRAM addr 0x00003012): SRAM=0x00f100c3, Golden=0x00f100c3
+Match at index 19 (SRAM addr 0x00003013): SRAM=0x010b00d0, Golden=0x010b00d0
+Match at index 20 (SRAM addr 0x00003014): SRAM=0x014c00c6, Golden=0x014c00c6
+Match at index 21 (SRAM addr 0x00003015): SRAM=0x010f0151, Golden=0x010f0151
+Match at index 22 (SRAM addr 0x00003016): SRAM=0x00c00128, Golden=0x00c00128
+Match at index 23 (SRAM addr 0x00003017): SRAM=0x011f00f6, Golden=0x011f00f6
+Match at index 24 (SRAM addr 0x00003018): SRAM=0x01120128, Golden=0x01120128
+Match at index 25 (SRAM addr 0x00003019): SRAM=0x01230101, Golden=0x01230101
+Match at index 26 (SRAM addr 0x0000301a): SRAM=0x010f00de, Golden=0x010f00de
+Match at index 27 (SRAM addr 0x0000301b): SRAM=0x010f0116, Golden=0x010f0116
+Match at index 28 (SRAM addr 0x0000301c): SRAM=0x0123010d, Golden=0x0123010d
+Match at index 29 (SRAM addr 0x0000301d): SRAM=0x01110141, Golden=0x01110141
+Match at index 30 (SRAM addr 0x0000301e): SRAM=0x00e500e6, Golden=0x00e500e6
+Match at index 31 (SRAM addr 0x0000301f): SRAM=0x00d9010a, Golden=0x00d9010a
+Match at index 32 (SRAM addr 0x00003020): SRAM=0x00f90110, Golden=0x00f90110
+Match at index 33 (SRAM addr 0x00003021): SRAM=0x010600fa, Golden=0x010600fa
+Match at index 34 (SRAM addr 0x00003022): SRAM=0x00bd010e, Golden=0x00bd010e
+Match at index 35 (SRAM addr 0x00003023): SRAM=0x00f500ec, Golden=0x00f500ec
+Match at index 36 (SRAM addr 0x00003024): SRAM=0x00dc012b, Golden=0x00dc012b
+Match at index 37 (SRAM addr 0x00003025): SRAM=0x00de00d0, Golden=0x00de00d0
+Match at index 38 (SRAM addr 0x00003026): SRAM=0x011300f1, Golden=0x011300f1
+Match at index 39 (SRAM addr 0x00003027): SRAM=0x013c00fa, Golden=0x013c00fa
+Match at index 40 (SRAM addr 0x00003028): SRAM=0x00e600aa, Golden=0x00e600aa
+Match at index 41 (SRAM addr 0x00003029): SRAM=0x00ea0105, Golden=0x00ea0105
+Match at index 42 (SRAM addr 0x0000302a): SRAM=0x008800fe, Golden=0x008800fe
+Match at index 43 (SRAM addr 0x0000302b): SRAM=0x00d200cf, Golden=0x00d200cf
+Match at index 44 (SRAM addr 0x0000302c): SRAM=0x00e400fe, Golden=0x00e400fe
+Match at index 45 (SRAM addr 0x0000302d): SRAM=0x00e200f5, Golden=0x00e200f5
+Match at index 46 (SRAM addr 0x0000302e): SRAM=0x00ec00cc, Golden=0x00ec00cc
+Match at index 47 (SRAM addr 0x0000302f): SRAM=0x00e700e7, Golden=0x00e700e7
+Match at index 48 (SRAM addr 0x00003030): SRAM=0x00e900bd, Golden=0x00e900bd
+Match at index 49 (SRAM addr 0x00003031): SRAM=0x00cf0109, Golden=0x00cf0109
+Match at index 50 (SRAM addr 0x00003032): SRAM=0x00bd00a7, Golden=0x00bd00a7
+Match at index 51 (SRAM addr 0x00003033): SRAM=0x00b500cd, Golden=0x00b500cd
+Match at index 52 (SRAM addr 0x00003034): SRAM=0x00c700f2, Golden=0x00c700f2
+Match at index 53 (SRAM addr 0x00003035): SRAM=0x00e100c2, Golden=0x00e100c2
+Match at index 54 (SRAM addr 0x00003036): SRAM=0x009500be, Golden=0x009500be
+Match at index 55 (SRAM addr 0x00003037): SRAM=0x00c90096, Golden=0x00c90096
+Match at index 56 (SRAM addr 0x00003038): SRAM=0x00c400e0, Golden=0x00c400e0
+Match at index 57 (SRAM addr 0x00003039): SRAM=0x00c600a0, Golden=0x00c600a0
+Match at index 58 (SRAM addr 0x0000303a): SRAM=0x00dc00ca, Golden=0x00dc00ca
+Match at index 59 (SRAM addr 0x0000303b): SRAM=0x012100bc, Golden=0x012100bc
+Match at index 60 (SRAM addr 0x0000303c): SRAM=0x0113009c, Golden=0x0113009c
+Match at index 61 (SRAM addr 0x0000303d): SRAM=0x00ed0122, Golden=0x00ed0122
+Match at index 62 (SRAM addr 0x0000303e): SRAM=0x00a300fe, Golden=0x00a300fe
+Match at index 63 (SRAM addr 0x0000303f): SRAM=0x00ee00bc, Golden=0x00ee00bc
+Match at index 64 (SRAM addr 0x00003040): SRAM=0x00c900ef, Golden=0x00c900ef
+Match at index 65 (SRAM addr 0x00003041): SRAM=0x00dd00c8, Golden=0x00dd00c8
+Match at index 66 (SRAM addr 0x00003042): SRAM=0x00d000df, Golden=0x00d000df
+Match at index 67 (SRAM addr 0x00003043): SRAM=0x00df00f7, Golden=0x00df00f7
+Match at index 68 (SRAM addr 0x00003044): SRAM=0x00f500d2, Golden=0x00f500d2
+Match at index 69 (SRAM addr 0x00003045): SRAM=0x00d30110, Golden=0x00d30110
+Match at index 70 (SRAM addr 0x00003046): SRAM=0x00c900d4, Golden=0x00c900d4
+Match at index 71 (SRAM addr 0x00003047): SRAM=0x00b400ed, Golden=0x00b400ed
+Match at index 72 (SRAM addr 0x00003048): SRAM=0x00cf00d4, Golden=0x00cf00d4
+Match at index 73 (SRAM addr 0x00003049): SRAM=0x00e000c2, Golden=0x00e000c2
+Match at index 74 (SRAM addr 0x0000304a): SRAM=0x00b200d0, Golden=0x00b200d0
+Match at index 75 (SRAM addr 0x0000304b): SRAM=0x00c900cb, Golden=0x00c900cb
+Match at index 76 (SRAM addr 0x0000304c): SRAM=0x00d50110, Golden=0x00d50110
+Match at index 77 (SRAM addr 0x0000304d): SRAM=0x00cc00c6, Golden=0x00cc00c6
+Match at index 78 (SRAM addr 0x0000304e): SRAM=0x00e100de, Golden=0x00e100de
+Match at index 79 (SRAM addr 0x0000304f): SRAM=0x011100c9, Golden=0x011100c9
+Match at index 80 (SRAM addr 0x00003050): SRAM=0x00fe00a3, Golden=0x00fe00a3
+Match at index 81 (SRAM addr 0x00003051): SRAM=0x00d000ff, Golden=0x00d000ff
+Match at index 82 (SRAM addr 0x00003052): SRAM=0x009700da, Golden=0x009700da
+Match at index 83 (SRAM addr 0x00003053): SRAM=0x00df00ad, Golden=0x00df00ad
+Match at index 84 (SRAM addr 0x00003054): SRAM=0x00dc00e0, Golden=0x00dc00e0
+Match at index 85 (SRAM addr 0x00003055): SRAM=0x00df00ea, Golden=0x00df00ea
+Match at index 86 (SRAM addr 0x00003056): SRAM=0x00c800ba, Golden=0x00c800ba
+Match at index 87 (SRAM addr 0x00003057): SRAM=0x00ca00c5, Golden=0x00ca00c5
+Match at index 88 (SRAM addr 0x00003058): SRAM=0x00f900dc, Golden=0x00f900dc
+Match at index 89 (SRAM addr 0x00003059): SRAM=0x00c1010d, Golden=0x00c1010d
+Match at index 90 (SRAM addr 0x0000305a): SRAM=0x00cb00a9, Golden=0x00cb00a9
+Match at index 91 (SRAM addr 0x0000305b): SRAM=0x009a00de, Golden=0x009a00de
+Match at index 92 (SRAM addr 0x0000305c): SRAM=0x00d000d7, Golden=0x00d000d7
+Match at index 93 (SRAM addr 0x0000305d): SRAM=0x00e900b7, Golden=0x00e900b7
+Match at index 94 (SRAM addr 0x0000305e): SRAM=0x009300d7, Golden=0x009300d7
+Match at index 95 (SRAM addr 0x0000305f): SRAM=0x00b700bd, Golden=0x00b700bd
+Match at index 96 (SRAM addr 0x00003060): SRAM=0x00d9010c, Golden=0x00d9010c
+Match at index 97 (SRAM addr 0x00003061): SRAM=0x00e200b1, Golden=0x00e200b1
+Match at index 98 (SRAM addr 0x00003062): SRAM=0x00ca00cf, Golden=0x00ca00cf
+Match at index 99 (SRAM addr 0x00003063): SRAM=0x011300c2, Golden=0x011300c2
+Match at index 100 (SRAM addr 0x00003064): SRAM=0x00f300bb, Golden=0x00f300bb
+Match at index 101 (SRAM addr 0x00003065): SRAM=0x00d10117, Golden=0x00d10117
+Match at index 102 (SRAM addr 0x00003066): SRAM=0x009100ed, Golden=0x009100ed
+Match at index 103 (SRAM addr 0x00003067): SRAM=0x010100cd, Golden=0x010100cd
+Match at index 104 (SRAM addr 0x00003068): SRAM=0x00f400cf, Golden=0x00f400cf
+Match at index 105 (SRAM addr 0x00003069): SRAM=0x00f700e0, Golden=0x00f700e0
+Match at index 106 (SRAM addr 0x0000306a): SRAM=0x00fe00c6, Golden=0x00fe00c6
+Match at index 107 (SRAM addr 0x0000306b): SRAM=0x00f200e3, Golden=0x00f200e3
+Match at index 108 (SRAM addr 0x0000306c): SRAM=0x011a0105, Golden=0x011a0105
+Match at index 109 (SRAM addr 0x0000306d): SRAM=0x00e10115, Golden=0x00e10115
+Match at index 110 (SRAM addr 0x0000306e): SRAM=0x00dd00b2, Golden=0x00dd00b2
+Match at index 111 (SRAM addr 0x0000306f): SRAM=0x00c200f0, Golden=0x00c200f0
+Match at index 112 (SRAM addr 0x00003070): SRAM=0x00e000f8, Golden=0x00e000f8
+Match at index 113 (SRAM addr 0x00003071): SRAM=0x00e300bb, Golden=0x00e300bb
+Match at index 114 (SRAM addr 0x00003072): SRAM=0x00b800d0, Golden=0x00b800d0
+Match at index 115 (SRAM addr 0x00003073): SRAM=0x00e300af, Golden=0x00e300af
+Match at index 116 (SRAM addr 0x00003074): SRAM=0x00c90101, Golden=0x00c90101
+Match at index 117 (SRAM addr 0x00003075): SRAM=0x010000d7, Golden=0x010000d7
+Match at index 118 (SRAM addr 0x00003076): SRAM=0x00e500d9, Golden=0x00e500d9
+Match at index 119 (SRAM addr 0x00003077): SRAM=0x00fa00e5, Golden=0x00fa00e5
+Match at index 120 (SRAM addr 0x00003078): SRAM=0x00cd006c, Golden=0x00cd006c
+Match at index 121 (SRAM addr 0x00003079): SRAM=0x00ae00dd, Golden=0x00ae00dd
+Match at index 122 (SRAM addr 0x0000307a): SRAM=0x007f00aa, Golden=0x007f00aa
+Match at index 123 (SRAM addr 0x0000307b): SRAM=0x00b8008f, Golden=0x00b8008f
+Match at index 124 (SRAM addr 0x0000307c): SRAM=0x009b00ad, Golden=0x009b00ad
+Match at index 125 (SRAM addr 0x0000307d): SRAM=0x00940098, Golden=0x00940098
+Match at index 126 (SRAM addr 0x0000307e): SRAM=0x00a200bf, Golden=0x00a200bf
+Match at index 127 (SRAM addr 0x0000307f): SRAM=0x00b100b2, Golden=0x00b100b2
+Match at index 128 (SRAM addr 0x00003080): SRAM=0x00d100a7, Golden=0x00d100a7
+Match at index 129 (SRAM addr 0x00003081): SRAM=0x009600dd, Golden=0x009600dd
+Match at index 130 (SRAM addr 0x00003082): SRAM=0x00950099, Golden=0x00950099
+Match at index 131 (SRAM addr 0x00003083): SRAM=0x008500b4, Golden=0x008500b4
+Match at index 132 (SRAM addr 0x00003084): SRAM=0x009500af, Golden=0x009500af
+Match at index 133 (SRAM addr 0x00003085): SRAM=0x00b00095, Golden=0x00b00095
+Match at index 134 (SRAM addr 0x00003086): SRAM=0x008600a1, Golden=0x008600a1
+Match at index 135 (SRAM addr 0x00003087): SRAM=0x00a30096, Golden=0x00a30096
+Match at index 136 (SRAM addr 0x00003088): SRAM=0x00b000d8, Golden=0x00b000d8
+Match at index 137 (SRAM addr 0x00003089): SRAM=0x00b900ab, Golden=0x00b900ab
+Match at index 138 (SRAM addr 0x0000308a): SRAM=0x00a000b0, Golden=0x00a000b0
+Match at index 139 (SRAM addr 0x0000308b): SRAM=0x00d000a1, Golden=0x00d000a1
+Match at index 140 (SRAM addr 0x0000308c): SRAM=0x013d00af, Golden=0x013d00af
+Match at index 141 (SRAM addr 0x0000308d): SRAM=0x010a0117, Golden=0x010a0117
+Match at index 142 (SRAM addr 0x0000308e): SRAM=0x00b8011f, Golden=0x00b8011f
+Match at index 143 (SRAM addr 0x0000308f): SRAM=0x011800da, Golden=0x011800da
+Match at index 144 (SRAM addr 0x00003090): SRAM=0x011d012c, Golden=0x011d012c
+Match at index 145 (SRAM addr 0x00003091): SRAM=0x010d0107, Golden=0x010d0107
+Match at index 146 (SRAM addr 0x00003092): SRAM=0x012000e1, Golden=0x012000e1
+Match at index 147 (SRAM addr 0x00003093): SRAM=0x00e500fe, Golden=0x00e500fe
+Match at index 148 (SRAM addr 0x00003094): SRAM=0x011e0102, Golden=0x011e0102
+Match at index 149 (SRAM addr 0x00003095): SRAM=0x00de012d, Golden=0x00de012d
+Match at index 150 (SRAM addr 0x00003096): SRAM=0x00da00b9, Golden=0x00da00b9
+Match at index 151 (SRAM addr 0x00003097): SRAM=0x00ca0101, Golden=0x00ca0101
+Match at index 152 (SRAM addr 0x00003098): SRAM=0x01170117, Golden=0x01170117
+Match at index 153 (SRAM addr 0x00003099): SRAM=0x00fe00ec, Golden=0x00fe00ec
+Match at index 154 (SRAM addr 0x0000309a): SRAM=0x00bd00f1, Golden=0x00bd00f1
+Match at index 155 (SRAM addr 0x0000309b): SRAM=0x00ed00e7, Golden=0x00ed00e7
+Match at index 156 (SRAM addr 0x0000309c): SRAM=0x00db0124, Golden=0x00db0124
+Match at index 157 (SRAM addr 0x0000309d): SRAM=0x00d800b7, Golden=0x00d800b7
+Match at index 158 (SRAM addr 0x0000309e): SRAM=0x00ed00d8, Golden=0x00ed00d8
+Match at index 159 (SRAM addr 0x0000309f): SRAM=0x015500dc, Golden=0x015500dc
+Match at index 160 (SRAM addr 0x000030a0): SRAM=0x0112008f, Golden=0x0112008f
+Match at index 161 (SRAM addr 0x000030a1): SRAM=0x010f00f8, Golden=0x010f00f8
+Match at index 162 (SRAM addr 0x000030a2): SRAM=0x00a000ed, Golden=0x00a000ed
+Match at index 163 (SRAM addr 0x000030a3): SRAM=0x00dc00c8, Golden=0x00dc00c8
+Match at index 164 (SRAM addr 0x000030a4): SRAM=0x00ee00fd, Golden=0x00ee00fd
+Match at index 165 (SRAM addr 0x000030a5): SRAM=0x00e100bc, Golden=0x00e100bc
+Match at index 166 (SRAM addr 0x000030a6): SRAM=0x00e300d3, Golden=0x00e300d3
+Match at index 167 (SRAM addr 0x000030a7): SRAM=0x00db00d5, Golden=0x00db00d5
+Match at index 168 (SRAM addr 0x000030a8): SRAM=0x00df00d0, Golden=0x00df00d0
+Match at index 169 (SRAM addr 0x000030a9): SRAM=0x00a40110, Golden=0x00a40110
+Match at index 170 (SRAM addr 0x000030aa): SRAM=0x009800a6, Golden=0x009800a6
+Match at index 171 (SRAM addr 0x000030ab): SRAM=0x00ac00e9, Golden=0x00ac00e9
+Match at index 172 (SRAM addr 0x000030ac): SRAM=0x00e100db, Golden=0x00e100db
+Match at index 173 (SRAM addr 0x000030ad): SRAM=0x00e100a8, Golden=0x00e100a8
+Match at index 174 (SRAM addr 0x000030ae): SRAM=0x00a300cd, Golden=0x00a300cd
+Match at index 175 (SRAM addr 0x000030af): SRAM=0x00c900bf, Golden=0x00c900bf
+Match at index 176 (SRAM addr 0x000030b0): SRAM=0x00e3010d, Golden=0x00e3010d
+Match at index 177 (SRAM addr 0x000030b1): SRAM=0x00be00ae, Golden=0x00be00ae
+Match at index 178 (SRAM addr 0x000030b2): SRAM=0x00c600df, Golden=0x00c600df
+Match at index 179 (SRAM addr 0x000030b3): SRAM=0x012300c4, Golden=0x012300c4
+Match at index 180 (SRAM addr 0x000030b4): SRAM=0x012700ac, Golden=0x012700ac
+Match at index 181 (SRAM addr 0x000030b5): SRAM=0x01150135, Golden=0x01150135
+Match at index 182 (SRAM addr 0x000030b6): SRAM=0x00ae010e, Golden=0x00ae010e
+Match at index 183 (SRAM addr 0x000030b7): SRAM=0x011d00e4, Golden=0x011d00e4
+Match at index 184 (SRAM addr 0x000030b8): SRAM=0x00fb010e, Golden=0x00fb010e
+Match at index 185 (SRAM addr 0x000030b9): SRAM=0x00fb00f0, Golden=0x00fb00f0
+Match at index 186 (SRAM addr 0x000030ba): SRAM=0x00fc00e8, Golden=0x00fc00e8
+Match at index 187 (SRAM addr 0x000030bb): SRAM=0x00fc0103, Golden=0x00fc0103
+Match at index 188 (SRAM addr 0x000030bc): SRAM=0x011000f1, Golden=0x011000f1
+Match at index 189 (SRAM addr 0x000030bd): SRAM=0x00d20137, Golden=0x00d20137
+Match at index 190 (SRAM addr 0x000030be): SRAM=0x00d500c0, Golden=0x00d500c0
+Match at index 191 (SRAM addr 0x000030bf): SRAM=0x00d50110, Golden=0x00d50110
+Match at index 192 (SRAM addr 0x000030c0): SRAM=0x01010108, Golden=0x01010108
+Match at index 193 (SRAM addr 0x000030c1): SRAM=0x00f500c6, Golden=0x00f500c6
+Match at index 194 (SRAM addr 0x000030c2): SRAM=0x00a600f7, Golden=0x00a600f7
+Match at index 195 (SRAM addr 0x000030c3): SRAM=0x00f100ca, Golden=0x00f100ca
+Match at index 196 (SRAM addr 0x000030c4): SRAM=0x00fc011f, Golden=0x00fc011f
+Match at index 197 (SRAM addr 0x000030c5): SRAM=0x00f600d6, Golden=0x00f600d6
+Match at index 198 (SRAM addr 0x000030c6): SRAM=0x00f400e5, Golden=0x00f400e5
+Match at index 199 (SRAM addr 0x000030c7): SRAM=0x014100e7, Golden=0x014100e7
+Match at index 200 (SRAM addr 0x000030c8): SRAM=0x00fd00aa, Golden=0x00fd00aa
+Match at index 201 (SRAM addr 0x000030c9): SRAM=0x00c800fd, Golden=0x00c800fd
+Match at index 202 (SRAM addr 0x000030ca): SRAM=0x009100fd, Golden=0x009100fd
+Match at index 203 (SRAM addr 0x000030cb): SRAM=0x00ef009f, Golden=0x00ef009f
+Match at index 204 (SRAM addr 0x000030cc): SRAM=0x00df00c6, Golden=0x00df00c6
+Match at index 205 (SRAM addr 0x000030cd): SRAM=0x00ce00b6, Golden=0x00ce00b6
+Match at index 206 (SRAM addr 0x000030ce): SRAM=0x00dc00c6, Golden=0x00dc00c6
+Match at index 207 (SRAM addr 0x000030cf): SRAM=0x00d300c4, Golden=0x00d300c4
+Match at index 208 (SRAM addr 0x000030d0): SRAM=0x00fe00be, Golden=0x00fe00be
+Match at index 209 (SRAM addr 0x000030d1): SRAM=0x00c60106, Golden=0x00c60106
+Match at index 210 (SRAM addr 0x000030d2): SRAM=0x00d400c3, Golden=0x00d400c3
+Match at index 211 (SRAM addr 0x000030d3): SRAM=0x00af00fb, Golden=0x00af00fb
+Match at index 212 (SRAM addr 0x000030d4): SRAM=0x00c700dd, Golden=0x00c700dd
+Match at index 213 (SRAM addr 0x000030d5): SRAM=0x00d100d4, Golden=0x00d100d4
+Match at index 214 (SRAM addr 0x000030d6): SRAM=0x009c00b2, Golden=0x009c00b2
+Match at index 215 (SRAM addr 0x000030d7): SRAM=0x00c300b4, Golden=0x00c300b4
+Match at index 216 (SRAM addr 0x000030d8): SRAM=0x00b900ca, Golden=0x00b900ca
+Match at index 217 (SRAM addr 0x000030d9): SRAM=0x00e000be, Golden=0x00e000be
+Match at index 218 (SRAM addr 0x000030da): SRAM=0x00cc00d3, Golden=0x00cc00d3
+Match at index 219 (SRAM addr 0x000030db): SRAM=0x010300ca, Golden=0x010300ca
+Match at index 220 (SRAM addr 0x000030dc): SRAM=0x00ff00b6, Golden=0x00ff00b6
+Match at index 221 (SRAM addr 0x000030dd): SRAM=0x00e300fb, Golden=0x00e300fb
+Match at index 222 (SRAM addr 0x000030de): SRAM=0x009e00f6, Golden=0x009e00f6
+Match at index 223 (SRAM addr 0x000030df): SRAM=0x00d700cc, Golden=0x00d700cc
+Match at index 224 (SRAM addr 0x000030e0): SRAM=0x00ef00f3, Golden=0x00ef00f3
+Match at index 225 (SRAM addr 0x000030e1): SRAM=0x00d100b3, Golden=0x00d100b3
+Match at index 226 (SRAM addr 0x000030e2): SRAM=0x00e800ab, Golden=0x00e800ab
+Match at index 227 (SRAM addr 0x000030e3): SRAM=0x00d900d1, Golden=0x00d900d1
+Match at index 228 (SRAM addr 0x000030e4): SRAM=0x00f300de, Golden=0x00f300de
+Match at index 229 (SRAM addr 0x000030e5): SRAM=0x009f0106, Golden=0x009f0106
+Match at index 230 (SRAM addr 0x000030e6): SRAM=0x00b100b8, Golden=0x00b100b8
+Match at index 231 (SRAM addr 0x000030e7): SRAM=0x009d00df, Golden=0x009d00df
+Match at index 232 (SRAM addr 0x000030e8): SRAM=0x00db00ed, Golden=0x00db00ed
+Match at index 233 (SRAM addr 0x000030e9): SRAM=0x00ef00b3, Golden=0x00ef00b3
+Match at index 234 (SRAM addr 0x000030ea): SRAM=0x008300e0, Golden=0x008300e0
+Match at index 235 (SRAM addr 0x000030eb): SRAM=0x00cf00b2, Golden=0x00cf00b2
+Match at index 236 (SRAM addr 0x000030ec): SRAM=0x00d60107, Golden=0x00d60107
+Match at index 237 (SRAM addr 0x000030ed): SRAM=0x00e000aa, Golden=0x00e000aa
+Match at index 238 (SRAM addr 0x000030ee): SRAM=0x00b600cc, Golden=0x00b600cc
+Match at index 239 (SRAM addr 0x000030ef): SRAM=0x011000ed, Golden=0x011000ed
+Match at index 240 (SRAM addr 0x000030f0): SRAM=0x01060092, Golden=0x01060092
+Match at index 241 (SRAM addr 0x000030f1): SRAM=0x00cf00f0, Golden=0x00cf00f0
+Match at index 242 (SRAM addr 0x000030f2): SRAM=0x008b00e3, Golden=0x008b00e3
+Match at index 243 (SRAM addr 0x000030f3): SRAM=0x00d200a1, Golden=0x00d200a1
+Match at index 244 (SRAM addr 0x000030f4): SRAM=0x00de00c8, Golden=0x00de00c8
+Match at index 245 (SRAM addr 0x000030f5): SRAM=0x00c800bf, Golden=0x00c800bf
+Match at index 246 (SRAM addr 0x000030f6): SRAM=0x00d800bb, Golden=0x00d800bb
+Match at index 247 (SRAM addr 0x000030f7): SRAM=0x00b900bc, Golden=0x00b900bc
+Match at index 248 (SRAM addr 0x000030f8): SRAM=0x010800c1, Golden=0x010800c1
+Match at index 249 (SRAM addr 0x000030f9): SRAM=0x00be00f6, Golden=0x00be00f6
+Match at index 250 (SRAM addr 0x000030fa): SRAM=0x00ca0086, Golden=0x00ca0086
+Match at index 251 (SRAM addr 0x000030fb): SRAM=0x009a00dd, Golden=0x009a00dd
+Match at index 252 (SRAM addr 0x000030fc): SRAM=0x00dc00d0, Golden=0x00dc00d0
+Match at index 253 (SRAM addr 0x000030fd): SRAM=0x00cd00bc, Golden=0x00cd00bc
+Match at index 254 (SRAM addr 0x000030fe): SRAM=0x009700c3, Golden=0x009700c3
+Match at index 255 (SRAM addr 0x000030ff): SRAM=0x00c40099, Golden=0x00c40099
+Match at index 256 (SRAM addr 0x00003100): SRAM=0x00c200e0, Golden=0x00c200e0
+Match at index 257 (SRAM addr 0x00003101): SRAM=0x00da00b2, Golden=0x00da00b2
+Match at index 258 (SRAM addr 0x00003102): SRAM=0x00bb00bc, Golden=0x00bb00bc
+Match at index 259 (SRAM addr 0x00003103): SRAM=0x00df00a4, Golden=0x00df00a4
+Match at index 260 (SRAM addr 0x00003104): SRAM=0x01080095, Golden=0x01080095
+Match at index 261 (SRAM addr 0x00003105): SRAM=0x00e600f8, Golden=0x00e600f8
+Match at index 262 (SRAM addr 0x00003106): SRAM=0x008a00fd, Golden=0x008a00fd
+Match at index 263 (SRAM addr 0x00003107): SRAM=0x010900bd, Golden=0x010900bd
+Match at index 264 (SRAM addr 0x00003108): SRAM=0x00f600d7, Golden=0x00f600d7
+Match at index 265 (SRAM addr 0x00003109): SRAM=0x00fb00d7, Golden=0x00fb00d7
+Match at index 266 (SRAM addr 0x0000310a): SRAM=0x00f500d1, Golden=0x00f500d1
+Match at index 267 (SRAM addr 0x0000310b): SRAM=0x00d100df, Golden=0x00d100df
+Match at index 268 (SRAM addr 0x0000310c): SRAM=0x00f500d1, Golden=0x00f500d1
+Match at index 269 (SRAM addr 0x0000310d): SRAM=0x00c40103, Golden=0x00c40103
+Match at index 270 (SRAM addr 0x0000310e): SRAM=0x00c800d3, Golden=0x00c800d3
+Match at index 271 (SRAM addr 0x0000310f): SRAM=0x00cb00f3, Golden=0x00cb00f3
+Match at index 272 (SRAM addr 0x00003110): SRAM=0x00d400d6, Golden=0x00d400d6
+Match at index 273 (SRAM addr 0x00003111): SRAM=0x00c500d7, Golden=0x00c500d7
+Match at index 274 (SRAM addr 0x00003112): SRAM=0x00a200b6, Golden=0x00a200b6
+Match at index 275 (SRAM addr 0x00003113): SRAM=0x00c000d6, Golden=0x00c000d6
+Match at index 276 (SRAM addr 0x00003114): SRAM=0x00b70100, Golden=0x00b70100
+Match at index 277 (SRAM addr 0x00003115): SRAM=0x00c500b3, Golden=0x00c500b3
+Match at index 278 (SRAM addr 0x00003116): SRAM=0x00cf00c8, Golden=0x00cf00c8
+Match at index 279 (SRAM addr 0x00003117): SRAM=0x011200cb, Golden=0x011200cb
+Match at index 280 (SRAM addr 0x00003118): SRAM=0x00ec0084, Golden=0x00ec0084
+Match at index 281 (SRAM addr 0x00003119): SRAM=0x00cd00c9, Golden=0x00cd00c9
+Match at index 282 (SRAM addr 0x0000311a): SRAM=0x008a00c4, Golden=0x008a00c4
+Match at index 283 (SRAM addr 0x0000311b): SRAM=0x00ca0099, Golden=0x00ca0099
+Match at index 284 (SRAM addr 0x0000311c): SRAM=0x00ca00d2, Golden=0x00ca00d2
+Match at index 285 (SRAM addr 0x0000311d): SRAM=0x00cc00b6, Golden=0x00cc00b6
+Match at index 286 (SRAM addr 0x0000311e): SRAM=0x00c100ab, Golden=0x00c100ab
+Match at index 287 (SRAM addr 0x0000311f): SRAM=0x00af00c6, Golden=0x00af00c6
+Match at index 288 (SRAM addr 0x00003120): SRAM=0x00c100c1, Golden=0x00c100c1
+Match at index 289 (SRAM addr 0x00003121): SRAM=0x009b00d5, Golden=0x009b00d5
+Match at index 290 (SRAM addr 0x00003122): SRAM=0x0097009f, Golden=0x0097009f
+Match at index 291 (SRAM addr 0x00003123): SRAM=0x009400a2, Golden=0x009400a2
+Match at index 292 (SRAM addr 0x00003124): SRAM=0x00c500b2, Golden=0x00c500b2
+Match at index 293 (SRAM addr 0x00003125): SRAM=0x00b800a7, Golden=0x00b800a7
+Match at index 294 (SRAM addr 0x00003126): SRAM=0x00a200b4, Golden=0x00a200b4
+Match at index 295 (SRAM addr 0x00003127): SRAM=0x009100a8, Golden=0x009100a8
+Match at index 296 (SRAM addr 0x00003128): SRAM=0x00b200df, Golden=0x00b200df
+Match at index 297 (SRAM addr 0x00003129): SRAM=0x0093009d, Golden=0x0093009d
+Match at index 298 (SRAM addr 0x0000312a): SRAM=0x00c100b4, Golden=0x00c100b4
+Match at index 299 (SRAM addr 0x0000312b): SRAM=0x00dd00a6, Golden=0x00dd00a6
+Match at index 300 (SRAM addr 0x0000312c): SRAM=0x00f4009f, Golden=0x00f4009f
+Match at index 301 (SRAM addr 0x0000312d): SRAM=0x00dd0105, Golden=0x00dd0105
+Match at index 302 (SRAM addr 0x0000312e): SRAM=0x008300f2, Golden=0x008300f2
+Match at index 303 (SRAM addr 0x0000312f): SRAM=0x00b900a3, Golden=0x00b900a3
+Match at index 304 (SRAM addr 0x00003130): SRAM=0x00ca00c1, Golden=0x00ca00c1
+Match at index 305 (SRAM addr 0x00003131): SRAM=0x00b000bd, Golden=0x00b000bd
+Match at index 306 (SRAM addr 0x00003132): SRAM=0x00d000bd, Golden=0x00d000bd
+Match at index 307 (SRAM addr 0x00003133): SRAM=0x00c600ad, Golden=0x00c600ad
+Match at index 308 (SRAM addr 0x00003134): SRAM=0x00f200c7, Golden=0x00f200c7
+Match at index 309 (SRAM addr 0x00003135): SRAM=0x00bd00e0, Golden=0x00bd00e0
+Match at index 310 (SRAM addr 0x00003136): SRAM=0x00c200b2, Golden=0x00c200b2
+Match at index 311 (SRAM addr 0x00003137): SRAM=0x00a800d6, Golden=0x00a800d6
+Match at index 312 (SRAM addr 0x00003138): SRAM=0x00ca00cb, Golden=0x00ca00cb
+Match at index 313 (SRAM addr 0x00003139): SRAM=0x00d400cd, Golden=0x00d400cd
+Match at index 314 (SRAM addr 0x0000313a): SRAM=0x008500a8, Golden=0x008500a8
+Match at index 315 (SRAM addr 0x0000313b): SRAM=0x00c1009a, Golden=0x00c1009a
+Match at index 316 (SRAM addr 0x0000313c): SRAM=0x00b200bd, Golden=0x00b200bd
+Match at index 317 (SRAM addr 0x0000313d): SRAM=0x00ca00a3, Golden=0x00ca00a3
+Match at index 318 (SRAM addr 0x0000313e): SRAM=0x00d000d3, Golden=0x00d000d3
+Match at index 319 (SRAM addr 0x0000313f): SRAM=0x00e600c8, Golden=0x00e600c8
+Match at index 320 (SRAM addr 0x00003140): SRAM=0x00f60087, Golden=0x00f60087
+Match at index 321 (SRAM addr 0x00003141): SRAM=0x00d70105, Golden=0x00d70105
+Match at index 322 (SRAM addr 0x00003142): SRAM=0x008600e3, Golden=0x008600e3
+Match at index 323 (SRAM addr 0x00003143): SRAM=0x00e300c3, Golden=0x00e300c3
+Match at index 324 (SRAM addr 0x00003144): SRAM=0x00d500f3, Golden=0x00d500f3
+Match at index 325 (SRAM addr 0x00003145): SRAM=0x00e400ce, Golden=0x00e400ce
+Match at index 326 (SRAM addr 0x00003146): SRAM=0x00c100b1, Golden=0x00c100b1
+Match at index 327 (SRAM addr 0x00003147): SRAM=0x00d300d0, Golden=0x00d300d0
+Match at index 328 (SRAM addr 0x00003148): SRAM=0x00c200e0, Golden=0x00c200e0
+Match at index 329 (SRAM addr 0x00003149): SRAM=0x00bc00f7, Golden=0x00bc00f7
+Match at index 330 (SRAM addr 0x0000314a): SRAM=0x00b3009f, Golden=0x00b3009f
+Match at index 331 (SRAM addr 0x0000314b): SRAM=0x00a800e8, Golden=0x00a800e8
+Match at index 332 (SRAM addr 0x0000314c): SRAM=0x00b900cb, Golden=0x00b900cb
+Match at index 333 (SRAM addr 0x0000314d): SRAM=0x00ca00bb, Golden=0x00ca00bb
+Match at index 334 (SRAM addr 0x0000314e): SRAM=0x00b100c1, Golden=0x00b100c1
+Match at index 335 (SRAM addr 0x0000314f): SRAM=0x00d200aa, Golden=0x00d200aa
+Match at index 336 (SRAM addr 0x00003150): SRAM=0x00ad00dc, Golden=0x00ad00dc
+Match at index 337 (SRAM addr 0x00003151): SRAM=0x00ae00a2, Golden=0x00ae00a2
+Match at index 338 (SRAM addr 0x00003152): SRAM=0x00c900c7, Golden=0x00c900c7
+Match at index 339 (SRAM addr 0x00003153): SRAM=0x00fa00b0, Golden=0x00fa00b0
+Match at index 340 (SRAM addr 0x00003154): SRAM=0x01050096, Golden=0x01050096
+Match at index 341 (SRAM addr 0x00003155): SRAM=0x00d100f0, Golden=0x00d100f0
+Match at index 342 (SRAM addr 0x00003156): SRAM=0x00850101, Golden=0x00850101
+Match at index 343 (SRAM addr 0x00003157): SRAM=0x00f600af, Golden=0x00f600af
+Match at index 344 (SRAM addr 0x00003158): SRAM=0x00ee00e5, Golden=0x00ee00e5
+Match at index 345 (SRAM addr 0x00003159): SRAM=0x00de00ce, Golden=0x00de00ce
+Match at index 346 (SRAM addr 0x0000315a): SRAM=0x00db00ba, Golden=0x00db00ba
+Match at index 347 (SRAM addr 0x0000315b): SRAM=0x00c600e1, Golden=0x00c600e1
+Match at index 348 (SRAM addr 0x0000315c): SRAM=0x00f800e8, Golden=0x00f800e8
+Match at index 349 (SRAM addr 0x0000315d): SRAM=0x00b700f2, Golden=0x00b700f2
+Match at index 350 (SRAM addr 0x0000315e): SRAM=0x00cf00c6, Golden=0x00cf00c6
+Match at index 351 (SRAM addr 0x0000315f): SRAM=0x00ab00ea, Golden=0x00ab00ea
+Match at index 352 (SRAM addr 0x00003160): SRAM=0x00e000e3, Golden=0x00e000e3
+Match at index 353 (SRAM addr 0x00003161): SRAM=0x00e700b1, Golden=0x00e700b1
+Match at index 354 (SRAM addr 0x00003162): SRAM=0x00af00b3, Golden=0x00af00b3
+Match at index 355 (SRAM addr 0x00003163): SRAM=0x00a300ca, Golden=0x00a300ca
+Match at index 356 (SRAM addr 0x00003164): SRAM=0x00c800df, Golden=0x00c800df
+Match at index 357 (SRAM addr 0x00003165): SRAM=0x00ce00b2, Golden=0x00ce00b2
+Match at index 358 (SRAM addr 0x00003166): SRAM=0x00e300d0, Golden=0x00e300d0
+Match at index 359 (SRAM addr 0x00003167): SRAM=0x011b00d2, Golden=0x011b00d2
+Match at index 360 (SRAM addr 0x00003168): SRAM=0x00e300c3, Golden=0x00e300c3
+Match at index 361 (SRAM addr 0x00003169): SRAM=0x00c800ee, Golden=0x00c800ee
+Match at index 362 (SRAM addr 0x0000316a): SRAM=0x008800de, Golden=0x008800de
+Match at index 363 (SRAM addr 0x0000316b): SRAM=0x00d0008f, Golden=0x00d0008f
+Match at index 364 (SRAM addr 0x0000316c): SRAM=0x00d300db, Golden=0x00d300db
+Match at index 365 (SRAM addr 0x0000316d): SRAM=0x00db00e9, Golden=0x00db00e9
+Match at index 366 (SRAM addr 0x0000316e): SRAM=0x00cd00d1, Golden=0x00cd00d1
+Match at index 367 (SRAM addr 0x0000316f): SRAM=0x00d900ce, Golden=0x00d900ce
+Match at index 368 (SRAM addr 0x00003170): SRAM=0x00e200ac, Golden=0x00e200ac
+Match at index 369 (SRAM addr 0x00003171): SRAM=0x00c7010a, Golden=0x00c7010a
+Match at index 370 (SRAM addr 0x00003172): SRAM=0x00c300aa, Golden=0x00c300aa
+Match at index 371 (SRAM addr 0x00003173): SRAM=0x009c00bd, Golden=0x009c00bd
+Match at index 372 (SRAM addr 0x00003174): SRAM=0x00d400cf, Golden=0x00d400cf
+Match at index 373 (SRAM addr 0x00003175): SRAM=0x00c000b4, Golden=0x00c000b4
+Match at index 374 (SRAM addr 0x00003176): SRAM=0x008e00ab, Golden=0x008e00ab
+Match at index 375 (SRAM addr 0x00003177): SRAM=0x00a200b7, Golden=0x00a200b7
+Match at index 376 (SRAM addr 0x00003178): SRAM=0x00ca00dc, Golden=0x00ca00dc
+Match at index 377 (SRAM addr 0x00003179): SRAM=0x00c1009d, Golden=0x00c1009d
+Match at index 378 (SRAM addr 0x0000317a): SRAM=0x00cb00b1, Golden=0x00cb00b1
+Match at index 379 (SRAM addr 0x0000317b): SRAM=0x010200af, Golden=0x010200af
+Match at index 380 (SRAM addr 0x0000317c): SRAM=0x00d200a6, Golden=0x00d200a6
+Match at index 381 (SRAM addr 0x0000317d): SRAM=0x00ad00d7, Golden=0x00ad00d7
+Match at index 382 (SRAM addr 0x0000317e): SRAM=0x008900c5, Golden=0x008900c5
+Match at index 383 (SRAM addr 0x0000317f): SRAM=0x00b9008d, Golden=0x00b9008d
+Match at index 384 (SRAM addr 0x00003180): SRAM=0x00ce00d5, Golden=0x00ce00d5
+Match at index 385 (SRAM addr 0x00003181): SRAM=0x00c300cd, Golden=0x00c300cd
+Match at index 386 (SRAM addr 0x00003182): SRAM=0x00a7008f, Golden=0x00a7008f
+Match at index 387 (SRAM addr 0x00003183): SRAM=0x00aa00a5, Golden=0x00aa00a5
+Match at index 388 (SRAM addr 0x00003184): SRAM=0x00c600c0, Golden=0x00c600c0
+Match at index 389 (SRAM addr 0x00003185): SRAM=0x009e00da, Golden=0x009e00da
+Match at index 390 (SRAM addr 0x00003186): SRAM=0x00bd0091, Golden=0x00bd0091
+Match at index 391 (SRAM addr 0x00003187): SRAM=0x008600b3, Golden=0x008600b3
+Match at index 392 (SRAM addr 0x00003188): SRAM=0x00b100cd, Golden=0x00b100cd
+Match at index 393 (SRAM addr 0x00003189): SRAM=0x00b700b0, Golden=0x00b700b0
+Match at index 394 (SRAM addr 0x0000318a): SRAM=0x008e00c1, Golden=0x008e00c1
+Match at index 395 (SRAM addr 0x0000318b): SRAM=0x00b10083, Golden=0x00b10083
+Match at index 396 (SRAM addr 0x0000318c): SRAM=0x00a200b1, Golden=0x00a200b1
+Match at index 397 (SRAM addr 0x0000318d): SRAM=0x00bb008b, Golden=0x00bb008b
+Match at index 398 (SRAM addr 0x0000318e): SRAM=0x00b700bd, Golden=0x00b700bd
+Match at index 399 (SRAM addr 0x0000318f): SRAM=0x00f500b1, Golden=0x00f500b1
+Match at index 400 (SRAM addr 0x00003190): SRAM=0x010600ab, Golden=0x010600ab
+Match at index 401 (SRAM addr 0x00003191): SRAM=0x00f3010a, Golden=0x00f3010a
+Match at index 402 (SRAM addr 0x00003192): SRAM=0x00b100f7, Golden=0x00b100f7
+Match at index 403 (SRAM addr 0x00003193): SRAM=0x00f200d4, Golden=0x00f200d4
+Match at index 404 (SRAM addr 0x00003194): SRAM=0x00dc0109, Golden=0x00dc0109
+Match at index 405 (SRAM addr 0x00003195): SRAM=0x00f600f1, Golden=0x00f600f1
+Match at index 406 (SRAM addr 0x00003196): SRAM=0x00ea00d8, Golden=0x00ea00d8
+Match at index 407 (SRAM addr 0x00003197): SRAM=0x00f800f8, Golden=0x00f800f8
+Match at index 408 (SRAM addr 0x00003198): SRAM=0x010000e0, Golden=0x010000e0
+Match at index 409 (SRAM addr 0x00003199): SRAM=0x00ed0114, Golden=0x00ed0114
+Match at index 410 (SRAM addr 0x0000319a): SRAM=0x00c100ad, Golden=0x00c100ad
+Match at index 411 (SRAM addr 0x0000319b): SRAM=0x00ab00de, Golden=0x00ab00de
+Match at index 412 (SRAM addr 0x0000319c): SRAM=0x00dd00f6, Golden=0x00dd00f6
+Match at index 413 (SRAM addr 0x0000319d): SRAM=0x00ee00c5, Golden=0x00ee00c5
+Match at index 414 (SRAM addr 0x0000319e): SRAM=0x00a700e1, Golden=0x00a700e1
+Match at index 415 (SRAM addr 0x0000319f): SRAM=0x00b800cf, Golden=0x00b800cf
+Match at index 416 (SRAM addr 0x000031a0): SRAM=0x00d70100, Golden=0x00d70100
+Match at index 417 (SRAM addr 0x000031a1): SRAM=0x00cf00bb, Golden=0x00cf00bb
+Match at index 418 (SRAM addr 0x000031a2): SRAM=0x00f300cf, Golden=0x00f300cf
+Match at index 419 (SRAM addr 0x000031a3): SRAM=0x011e00ca, Golden=0x011e00ca
+Match at index 420 (SRAM addr 0x000031a4): SRAM=0x00f400b0, Golden=0x00f400b0
+Match at index 421 (SRAM addr 0x000031a5): SRAM=0x00e30106, Golden=0x00e30106
+Match at index 422 (SRAM addr 0x000031a6): SRAM=0x00a70105, Golden=0x00a70105
+Match at index 423 (SRAM addr 0x000031a7): SRAM=0x00c200bc, Golden=0x00c200bc
+Match at index 424 (SRAM addr 0x000031a8): SRAM=0x00ca00ff, Golden=0x00ca00ff
+Match at index 425 (SRAM addr 0x000031a9): SRAM=0x00e000df, Golden=0x00e000df
+Match at index 426 (SRAM addr 0x000031aa): SRAM=0x00e100b1, Golden=0x00e100b1
+Match at index 427 (SRAM addr 0x000031ab): SRAM=0x00cb00df, Golden=0x00cb00df
+Match at index 428 (SRAM addr 0x000031ac): SRAM=0x00e800c6, Golden=0x00e800c6
+Match at index 429 (SRAM addr 0x000031ad): SRAM=0x00cd010c, Golden=0x00cd010c
+Match at index 430 (SRAM addr 0x000031ae): SRAM=0x00ad00a2, Golden=0x00ad00a2
+Match at index 431 (SRAM addr 0x000031af): SRAM=0x009400d1, Golden=0x009400d1
+Match at index 432 (SRAM addr 0x000031b0): SRAM=0x00ef00ec, Golden=0x00ef00ec
+Match at index 433 (SRAM addr 0x000031b1): SRAM=0x00ea00b4, Golden=0x00ea00b4
+Match at index 434 (SRAM addr 0x000031b2): SRAM=0x007900c4, Golden=0x007900c4
+Match at index 435 (SRAM addr 0x000031b3): SRAM=0x00c300bd, Golden=0x00c300bd
+Match at index 436 (SRAM addr 0x000031b4): SRAM=0x00ca00f9, Golden=0x00ca00f9
+Match at index 437 (SRAM addr 0x000031b5): SRAM=0x00bd009f, Golden=0x00bd009f
+Match at index 438 (SRAM addr 0x000031b6): SRAM=0x00d100ac, Golden=0x00d100ac
+Match at index 439 (SRAM addr 0x000031b7): SRAM=0x012300c7, Golden=0x012300c7
+Match at index 440 (SRAM addr 0x000031b8): SRAM=0x013000d6, Golden=0x013000d6
+Match at index 441 (SRAM addr 0x000031b9): SRAM=0x01180122, Golden=0x01180122
+Match at index 442 (SRAM addr 0x000031ba): SRAM=0x00be0110, Golden=0x00be0110
+Match at index 443 (SRAM addr 0x000031bb): SRAM=0x010700e4, Golden=0x010700e4
+Match at index 444 (SRAM addr 0x000031bc): SRAM=0x012a011c, Golden=0x012a011c
+Match at index 445 (SRAM addr 0x000031bd): SRAM=0x011900f6, Golden=0x011900f6
+Match at index 446 (SRAM addr 0x000031be): SRAM=0x011f00d8, Golden=0x011f00d8
+Match at index 447 (SRAM addr 0x000031bf): SRAM=0x010900eb, Golden=0x010900eb
+Match at index 448 (SRAM addr 0x000031c0): SRAM=0x01160109, Golden=0x01160109
+Match at index 449 (SRAM addr 0x000031c1): SRAM=0x00bc012e, Golden=0x00bc012e
+Match at index 450 (SRAM addr 0x000031c2): SRAM=0x00d200f2, Golden=0x00d200f2
+Match at index 451 (SRAM addr 0x000031c3): SRAM=0x00d00106, Golden=0x00d00106
+Match at index 452 (SRAM addr 0x000031c4): SRAM=0x00eb0104, Golden=0x00eb0104
+Match at index 453 (SRAM addr 0x000031c5): SRAM=0x00f300e9, Golden=0x00f300e9
+Match at index 454 (SRAM addr 0x000031c6): SRAM=0x00980103, Golden=0x00980103
+Match at index 455 (SRAM addr 0x000031c7): SRAM=0x010800e3, Golden=0x010800e3
+Match at index 456 (SRAM addr 0x000031c8): SRAM=0x00e6013a, Golden=0x00e6013a
+Match at index 457 (SRAM addr 0x000031c9): SRAM=0x00fe00c2, Golden=0x00fe00c2
+Match at index 458 (SRAM addr 0x000031ca): SRAM=0x00db0100, Golden=0x00db0100
+Match at index 459 (SRAM addr 0x000031cb): SRAM=0x0130010a, Golden=0x0130010a
+Match at index 460 (SRAM addr 0x000031cc): SRAM=0x010f0095, Golden=0x010f0095
+Match at index 461 (SRAM addr 0x000031cd): SRAM=0x00c60112, Golden=0x00c60112
+Match at index 462 (SRAM addr 0x000031ce): SRAM=0x009b0110, Golden=0x009b0110
+Match at index 463 (SRAM addr 0x000031cf): SRAM=0x00f600b8, Golden=0x00f600b8
+Match at index 464 (SRAM addr 0x000031d0): SRAM=0x00d900e6, Golden=0x00d900e6
+Match at index 465 (SRAM addr 0x000031d1): SRAM=0x00ee00c3, Golden=0x00ee00c3
+Match at index 466 (SRAM addr 0x000031d2): SRAM=0x00e700d6, Golden=0x00e700d6
+Match at index 467 (SRAM addr 0x000031d3): SRAM=0x00d900e4, Golden=0x00d900e4
+Match at index 468 (SRAM addr 0x000031d4): SRAM=0x00f700d0, Golden=0x00f700d0
+Match at index 469 (SRAM addr 0x000031d5): SRAM=0x00c9010c, Golden=0x00c9010c
+Match at index 470 (SRAM addr 0x000031d6): SRAM=0x00be00a4, Golden=0x00be00a4
+Match at index 471 (SRAM addr 0x000031d7): SRAM=0x00a900f5, Golden=0x00a900f5
+Match at index 472 (SRAM addr 0x000031d8): SRAM=0x00ea00ed, Golden=0x00ea00ed
+Match at index 473 (SRAM addr 0x000031d9): SRAM=0x00f400c4, Golden=0x00f400c4
+Match at index 474 (SRAM addr 0x000031da): SRAM=0x00ba00b9, Golden=0x00ba00b9
+Match at index 475 (SRAM addr 0x000031db): SRAM=0x00f400b4, Golden=0x00f400b4
+Match at index 476 (SRAM addr 0x000031dc): SRAM=0x00be00ea, Golden=0x00be00ea
+Match at index 477 (SRAM addr 0x000031dd): SRAM=0x00db00bc, Golden=0x00db00bc
+Match at index 478 (SRAM addr 0x000031de): SRAM=0x00d400c1, Golden=0x00d400c1
+Match at index 479 (SRAM addr 0x000031df): SRAM=0x012e00a9, Golden=0x012e00a9
+Match at index 480 (SRAM addr 0x000031e0): SRAM=0x00f5008e, Golden=0x00f5008e
+Match at index 481 (SRAM addr 0x000031e1): SRAM=0x00e00102, Golden=0x00e00102
+Match at index 482 (SRAM addr 0x000031e2): SRAM=0x008b00e7, Golden=0x008b00e7
+Match at index 483 (SRAM addr 0x000031e3): SRAM=0x00c300c4, Golden=0x00c300c4
+Match at index 484 (SRAM addr 0x000031e4): SRAM=0x00d500e4, Golden=0x00d500e4
+Match at index 485 (SRAM addr 0x000031e5): SRAM=0x00c300f0, Golden=0x00c300f0
+Match at index 486 (SRAM addr 0x000031e6): SRAM=0x00d000ab, Golden=0x00d000ab
+Match at index 487 (SRAM addr 0x000031e7): SRAM=0x00b400ef, Golden=0x00b400ef
+Match at index 488 (SRAM addr 0x000031e8): SRAM=0x00fd00c0, Golden=0x00fd00c0
+Match at index 489 (SRAM addr 0x000031e9): SRAM=0x00c300f3, Golden=0x00c300f3
+Match at index 490 (SRAM addr 0x000031ea): SRAM=0x00c400b1, Golden=0x00c400b1
+Match at index 491 (SRAM addr 0x000031eb): SRAM=0x00a000cb, Golden=0x00a000cb
+Match at index 492 (SRAM addr 0x000031ec): SRAM=0x00a000c4, Golden=0x00a000c4
+Match at index 493 (SRAM addr 0x000031ed): SRAM=0x00cb00d7, Golden=0x00cb00d7
+Match at index 494 (SRAM addr 0x000031ee): SRAM=0x00a000cd, Golden=0x00a000cd
+Match at index 495 (SRAM addr 0x000031ef): SRAM=0x00c000a8, Golden=0x00c000a8
+Match at index 496 (SRAM addr 0x000031f0): SRAM=0x00cf0101, Golden=0x00cf0101
+Match at index 497 (SRAM addr 0x000031f1): SRAM=0x00c700b3, Golden=0x00c700b3
+Match at index 498 (SRAM addr 0x000031f2): SRAM=0x00ca00e0, Golden=0x00ca00e0
+Match at index 499 (SRAM addr 0x000031f3): SRAM=0x010f00af, Golden=0x010f00af
+Match at index 500 (SRAM addr 0x000031f4): SRAM=0x00ee0095, Golden=0x00ee0095
+Match at index 501 (SRAM addr 0x000031f5): SRAM=0x00de0104, Golden=0x00de0104
+Match at index 502 (SRAM addr 0x000031f6): SRAM=0x009100c6, Golden=0x009100c6
+Match at index 503 (SRAM addr 0x000031f7): SRAM=0x00e200c5, Golden=0x00e200c5
+Match at index 504 (SRAM addr 0x000031f8): SRAM=0x00e600e1, Golden=0x00e600e1
+Match at index 505 (SRAM addr 0x000031f9): SRAM=0x00ce00e5, Golden=0x00ce00e5
+Match at index 506 (SRAM addr 0x000031fa): SRAM=0x00ce00c7, Golden=0x00ce00c7
+Match at index 507 (SRAM addr 0x000031fb): SRAM=0x00e900e1, Golden=0x00e900e1
+Match at index 508 (SRAM addr 0x000031fc): SRAM=0x010300d9, Golden=0x010300d9
+Match at index 509 (SRAM addr 0x000031fd): SRAM=0x00c700ff, Golden=0x00c700ff
+Match at index 510 (SRAM addr 0x000031fe): SRAM=0x00cd00b6, Golden=0x00cd00b6
+Match at index 511 (SRAM addr 0x000031ff): SRAM=0x00c500cd, Golden=0x00c500cd
+Match at index 512 (SRAM addr 0x00003200): SRAM=0x00c500c7, Golden=0x00c500c7
+Match at index 513 (SRAM addr 0x00003201): SRAM=0x00da00d7, Golden=0x00da00d7
+Match at index 514 (SRAM addr 0x00003202): SRAM=0x00ce00da, Golden=0x00ce00da
+Match at index 515 (SRAM addr 0x00003203): SRAM=0x00b200a0, Golden=0x00b200a0
+Match at index 516 (SRAM addr 0x00003204): SRAM=0x00d900f6, Golden=0x00d900f6
+Match at index 517 (SRAM addr 0x00003205): SRAM=0x00d100ce, Golden=0x00d100ce
+Match at index 518 (SRAM addr 0x00003206): SRAM=0x00e800f1, Golden=0x00e800f1
+Match at index 519 (SRAM addr 0x00003207): SRAM=0x00f800ba, Golden=0x00f800ba
+Match at index 520 (SRAM addr 0x00003208): SRAM=0x00f500a5, Golden=0x00f500a5
+Match at index 521 (SRAM addr 0x00003209): SRAM=0x00e800ea, Golden=0x00e800ea
+Match at index 522 (SRAM addr 0x0000320a): SRAM=0x00ca00e9, Golden=0x00ca00e9
+Match at index 523 (SRAM addr 0x0000320b): SRAM=0x00e300bb, Golden=0x00e300bb
+Match at index 524 (SRAM addr 0x0000320c): SRAM=0x00fd0108, Golden=0x00fd0108
+Match at index 525 (SRAM addr 0x0000320d): SRAM=0x00e800c7, Golden=0x00e800c7
+Match at index 526 (SRAM addr 0x0000320e): SRAM=0x00f200c6, Golden=0x00f200c6
+Match at index 527 (SRAM addr 0x0000320f): SRAM=0x00e500d7, Golden=0x00e500d7
+Match at index 528 (SRAM addr 0x00003210): SRAM=0x00f100db, Golden=0x00f100db
+Match at index 529 (SRAM addr 0x00003211): SRAM=0x00b4010b, Golden=0x00b4010b
+Match at index 530 (SRAM addr 0x00003212): SRAM=0x00bb00b0, Golden=0x00bb00b0
+Match at index 531 (SRAM addr 0x00003213): SRAM=0x009f00d6, Golden=0x009f00d6
+Match at index 532 (SRAM addr 0x00003214): SRAM=0x00f100ea, Golden=0x00f100ea
+Match at index 533 (SRAM addr 0x00003215): SRAM=0x00f600a6, Golden=0x00f600a6
+Match at index 534 (SRAM addr 0x00003216): SRAM=0x008600e2, Golden=0x008600e2
+Match at index 535 (SRAM addr 0x00003217): SRAM=0x00b700c5, Golden=0x00b700c5
+Match at index 536 (SRAM addr 0x00003218): SRAM=0x00d60115, Golden=0x00d60115
+Match at index 537 (SRAM addr 0x00003219): SRAM=0x00cb00cc, Golden=0x00cb00cc
+Match at index 538 (SRAM addr 0x0000321a): SRAM=0x00b800cb, Golden=0x00b800cb
+Match at index 539 (SRAM addr 0x0000321b): SRAM=0x00ee00cc, Golden=0x00ee00cc
+Match at index 540 (SRAM addr 0x0000321c): SRAM=0x00c5008b, Golden=0x00c5008b
+Match at index 541 (SRAM addr 0x0000321d): SRAM=0x00b800d5, Golden=0x00b800d5
+Match at index 542 (SRAM addr 0x0000321e): SRAM=0x007d00cd, Golden=0x007d00cd
+Match at index 543 (SRAM addr 0x0000321f): SRAM=0x00a50091, Golden=0x00a50091
+Match at index 544 (SRAM addr 0x00003220): SRAM=0x00a700b5, Golden=0x00a700b5
+Match at index 545 (SRAM addr 0x00003221): SRAM=0x00ae009a, Golden=0x00ae009a
+Match at index 546 (SRAM addr 0x00003222): SRAM=0x00c7009c, Golden=0x00c7009c
+Match at index 547 (SRAM addr 0x00003223): SRAM=0x00ac0099, Golden=0x00ac0099
+Match at index 548 (SRAM addr 0x00003224): SRAM=0x00ba00a4, Golden=0x00ba00a4
+Match at index 549 (SRAM addr 0x00003225): SRAM=0x00a000d1, Golden=0x00a000d1
+Match at index 550 (SRAM addr 0x00003226): SRAM=0x00880069, Golden=0x00880069
+Match at index 551 (SRAM addr 0x00003227): SRAM=0x008500a9, Golden=0x008500a9
+Match at index 552 (SRAM addr 0x00003228): SRAM=0x00bb00bf, Golden=0x00bb00bf
+Match at index 553 (SRAM addr 0x00003229): SRAM=0x00d60084, Golden=0x00d60084
+Match at index 554 (SRAM addr 0x0000322a): SRAM=0x007a0095, Golden=0x007a0095
+Match at index 555 (SRAM addr 0x0000322b): SRAM=0x00a40079, Golden=0x00a40079
+Match at index 556 (SRAM addr 0x0000322c): SRAM=0x009f00b5, Golden=0x009f00b5
+Match at index 557 (SRAM addr 0x0000322d): SRAM=0x00af0090, Golden=0x00af0090
+Match at index 558 (SRAM addr 0x0000322e): SRAM=0x00a200a0, Golden=0x00a200a0
+Match at index 559 (SRAM addr 0x0000322f): SRAM=0x00d8008b, Golden=0x00d8008b
+Match at index 560 (SRAM addr 0x00003230): SRAM=0x011800b7, Golden=0x011800b7
+Match at index 561 (SRAM addr 0x00003231): SRAM=0x00ef00ff, Golden=0x00ef00ff
+Match at index 562 (SRAM addr 0x00003232): SRAM=0x00a10108, Golden=0x00a10108
+Match at index 563 (SRAM addr 0x00003233): SRAM=0x00ed00c6, Golden=0x00ed00c6
+Match at index 564 (SRAM addr 0x00003234): SRAM=0x011000e7, Golden=0x011000e7
+Match at index 565 (SRAM addr 0x00003235): SRAM=0x012c00f4, Golden=0x012c00f4
+Match at index 566 (SRAM addr 0x00003236): SRAM=0x010500c7, Golden=0x010500c7
+Match at index 567 (SRAM addr 0x00003237): SRAM=0x00f400fb, Golden=0x00f400fb
+Match at index 568 (SRAM addr 0x00003238): SRAM=0x012a0112, Golden=0x012a0112
+Match at index 569 (SRAM addr 0x00003239): SRAM=0x00d5010d, Golden=0x00d5010d
+Match at index 570 (SRAM addr 0x0000323a): SRAM=0x00cb00e5, Golden=0x00cb00e5
+Match at index 571 (SRAM addr 0x0000323b): SRAM=0x00cb00dc, Golden=0x00cb00dc
+Match at index 572 (SRAM addr 0x0000323c): SRAM=0x00e000e0, Golden=0x00e000e0
+Match at index 573 (SRAM addr 0x0000323d): SRAM=0x00d000c3, Golden=0x00d000c3
+Match at index 574 (SRAM addr 0x0000323e): SRAM=0x00ab00de, Golden=0x00ab00de
+Match at index 575 (SRAM addr 0x0000323f): SRAM=0x00ca00db, Golden=0x00ca00db
+Match at index 576 (SRAM addr 0x00003240): SRAM=0x00d10111, Golden=0x00d10111
+Match at index 577 (SRAM addr 0x00003241): SRAM=0x00f800c7, Golden=0x00f800c7
+Match at index 578 (SRAM addr 0x00003242): SRAM=0x00f600ef, Golden=0x00f600ef
+Match at index 579 (SRAM addr 0x00003243): SRAM=0x010f00e9, Golden=0x010f00e9
+Match at index 580 (SRAM addr 0x00003244): SRAM=0x011b00a2, Golden=0x011b00a2
+Match at index 581 (SRAM addr 0x00003245): SRAM=0x00f50127, Golden=0x00f50127
+Match at index 582 (SRAM addr 0x00003246): SRAM=0x00a500fd, Golden=0x00a500fd
+Match at index 583 (SRAM addr 0x00003247): SRAM=0x00fc00d3, Golden=0x00fc00d3
+Match at index 584 (SRAM addr 0x00003248): SRAM=0x00ec0111, Golden=0x00ec0111
+Match at index 585 (SRAM addr 0x00003249): SRAM=0x00cc00e5, Golden=0x00cc00e5
+Match at index 586 (SRAM addr 0x0000324a): SRAM=0x00f000a9, Golden=0x00f000a9
+Match at index 587 (SRAM addr 0x0000324b): SRAM=0x00cb00c6, Golden=0x00cb00c6
+Match at index 588 (SRAM addr 0x0000324c): SRAM=0x00ee00f4, Golden=0x00ee00f4
+Match at index 589 (SRAM addr 0x0000324d): SRAM=0x00b30112, Golden=0x00b30112
+Match at index 590 (SRAM addr 0x0000324e): SRAM=0x00bb00ab, Golden=0x00bb00ab
+Match at index 591 (SRAM addr 0x0000324f): SRAM=0x00b3010b, Golden=0x00b3010b
+Match at index 592 (SRAM addr 0x00003250): SRAM=0x00ed0104, Golden=0x00ed0104
+Match at index 593 (SRAM addr 0x00003251): SRAM=0x00f900ee, Golden=0x00f900ee
+Match at index 594 (SRAM addr 0x00003252): SRAM=0x009e00e1, Golden=0x009e00e1
+Match at index 595 (SRAM addr 0x00003253): SRAM=0x00e500c4, Golden=0x00e500c4
+Match at index 596 (SRAM addr 0x00003254): SRAM=0x00d500f6, Golden=0x00d500f6
+Match at index 597 (SRAM addr 0x00003255): SRAM=0x00d300c1, Golden=0x00d300c1
+Match at index 598 (SRAM addr 0x00003256): SRAM=0x00da00e5, Golden=0x00da00e5
+Match at index 599 (SRAM addr 0x00003257): SRAM=0x012000e6, Golden=0x012000e6
+Match at index 600 (SRAM addr 0x00003258): SRAM=0x00f10098, Golden=0x00f10098
+Match at index 601 (SRAM addr 0x00003259): SRAM=0x00d000cc, Golden=0x00d000cc
+Match at index 602 (SRAM addr 0x0000325a): SRAM=0x008f00b8, Golden=0x008f00b8
+Match at index 603 (SRAM addr 0x0000325b): SRAM=0x00ee009a, Golden=0x00ee009a
+Match at index 604 (SRAM addr 0x0000325c): SRAM=0x00e300af, Golden=0x00e300af
+Match at index 605 (SRAM addr 0x0000325d): SRAM=0x00cf00da, Golden=0x00cf00da
+Match at index 606 (SRAM addr 0x0000325e): SRAM=0x00d800ce, Golden=0x00d800ce
+Match at index 607 (SRAM addr 0x0000325f): SRAM=0x00cd00c1, Golden=0x00cd00c1
+Match at index 608 (SRAM addr 0x00003260): SRAM=0x00f500b9, Golden=0x00f500b9
+Match at index 609 (SRAM addr 0x00003261): SRAM=0x009200da, Golden=0x009200da
+Match at index 610 (SRAM addr 0x00003262): SRAM=0x00b400ab, Golden=0x00b400ab
+Match at index 611 (SRAM addr 0x00003263): SRAM=0x00a600ad, Golden=0x00a600ad
+Match at index 612 (SRAM addr 0x00003264): SRAM=0x00d700c1, Golden=0x00d700c1
+Match at index 613 (SRAM addr 0x00003265): SRAM=0x00c400b9, Golden=0x00c400b9
+Match at index 614 (SRAM addr 0x00003266): SRAM=0x009b00cf, Golden=0x009b00cf
+Match at index 615 (SRAM addr 0x00003267): SRAM=0x00bd00a5, Golden=0x00bd00a5
+Match at index 616 (SRAM addr 0x00003268): SRAM=0x00e00104, Golden=0x00e00104
+Match at index 617 (SRAM addr 0x00003269): SRAM=0x00cc00b4, Golden=0x00cc00b4
+Match at index 618 (SRAM addr 0x0000326a): SRAM=0x00ca00cb, Golden=0x00ca00cb
+Match at index 619 (SRAM addr 0x0000326b): SRAM=0x00ee00b1, Golden=0x00ee00b1
+Match at index 620 (SRAM addr 0x0000326c): SRAM=0x00f600a2, Golden=0x00f600a2
+Match at index 621 (SRAM addr 0x0000326d): SRAM=0x00e300e4, Golden=0x00e300e4
+Match at index 622 (SRAM addr 0x0000326e): SRAM=0x00ac00d5, Golden=0x00ac00d5
+Match at index 623 (SRAM addr 0x0000326f): SRAM=0x00ef00c9, Golden=0x00ef00c9
+Match at index 624 (SRAM addr 0x00003270): SRAM=0x00d600ee, Golden=0x00d600ee
+Match at index 625 (SRAM addr 0x00003271): SRAM=0x00f200d6, Golden=0x00f200d6
+Match at index 626 (SRAM addr 0x00003272): SRAM=0x00f400bd, Golden=0x00f400bd
+Match at index 627 (SRAM addr 0x00003273): SRAM=0x00d300e3, Golden=0x00d300e3
+Match at index 628 (SRAM addr 0x00003274): SRAM=0x010000dc, Golden=0x010000dc
+Match at index 629 (SRAM addr 0x00003275): SRAM=0x00c800fe, Golden=0x00c800fe
+Match at index 630 (SRAM addr 0x00003276): SRAM=0x00c2009c, Golden=0x00c2009c
+Match at index 631 (SRAM addr 0x00003277): SRAM=0x00a300c6, Golden=0x00a300c6
+Match at index 632 (SRAM addr 0x00003278): SRAM=0x00e700fb, Golden=0x00e700fb
+Match at index 633 (SRAM addr 0x00003279): SRAM=0x00d000ab, Golden=0x00d000ab
+Match at index 634 (SRAM addr 0x0000327a): SRAM=0x00b500e9, Golden=0x00b500e9
+Match at index 635 (SRAM addr 0x0000327b): SRAM=0x00be009c, Golden=0x00be009c
+Match at index 636 (SRAM addr 0x0000327c): SRAM=0x00e300f0, Golden=0x00e300f0
+Match at index 637 (SRAM addr 0x0000327d): SRAM=0x00db00c1, Golden=0x00db00c1
+Match at index 638 (SRAM addr 0x0000327e): SRAM=0x00fa00e3, Golden=0x00fa00e3
+Match at index 639 (SRAM addr 0x0000327f): SRAM=0x00fe00e3, Golden=0x00fe00e3
 Verification PASSED: All opsum data matches golden data!
 $finish called from file "/home/n26130126/Desktop/AOC_Final_Project/AIoC_Final_Project/./sim/token_PE_tb.sv", line 521.
-$finish at simulation time               106715
+$finish at simulation time                54815
            V C S   S i m u l a t i o n   R e p o r t 
-Time: 106715
-CPU Time:      6.040 seconds;       Data structure size:   1.7Mb
-Wed Jun 25 16:41:40 2025
-CPU time: 3.189 seconds to compile + .284 seconds to elab + .187 seconds to link + 6.061 seconds in simulation
+Time: 54815
+CPU Time:      2.450 seconds;       Data structure size:   1.7Mb
+Wed Jun 25 16:58:11 2025
+CPU time: 2.482 seconds in simulation
